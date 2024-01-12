@@ -13,38 +13,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.reto.elorchat.model.Group;
-import com.reto.elorchat.model.GroupPostRequest;
-import com.reto.elorchat.repository.GroupRepository;
+import com.reto.elorchat.model.Chat;
+import com.reto.elorchat.model.ChatPostRequest;
+import com.reto.elorchat.repository.ChatRepository;
 
 @RestController
 @RequestMapping("api")
-public class GroupController {
+public class ChatController {
 	@Autowired
-	private GroupRepository groupRepository;
+	private ChatRepository chatRepository;
 	
-	@GetMapping("/groups")
-	public ResponseEntity<Iterable<Group>> getGroups(){
-		return new ResponseEntity<Iterable<Group>>(groupRepository.findAll(),HttpStatus.OK);
+	@GetMapping("/chats")
+	public ResponseEntity<Iterable<Chat>> getChats(){
+		return new ResponseEntity<Iterable<Chat>>(chatRepository.findAll(),HttpStatus.OK);
 	}
 	
-	@PostMapping("/groups")
-	public ResponseEntity<Group> createGroup(@RequestBody GroupPostRequest groupPostRequest){
+	@PostMapping("/chats")
+	public ResponseEntity<Chat> createChat(@RequestBody ChatPostRequest chatPostRequest){
 
-		Group group = new Group (
-				groupPostRequest.getName(),
-				groupPostRequest.getType()
+		Chat group = new Chat (
+				chatPostRequest.getName(),
+				chatPostRequest.getType(),
+				chatPostRequest.getUserId()
 				);
-		groupRepository.save(group);
-		return new ResponseEntity<Group>(HttpStatus.CREATED);
+		chatRepository.save(group);
+		return new ResponseEntity<Chat>(HttpStatus.CREATED);
 	}
-	@DeleteMapping("/groups/{id}")
-	public ResponseEntity<Integer> deleteGroupById(@PathVariable("id") Integer id){
+	@DeleteMapping("/chats/{id}")
+	public ResponseEntity<Integer> deleteChatById(@PathVariable("id") Integer id){
 		try {
-			groupRepository.deleteById(id);
+			chatRepository.deleteById(id);
 			return new ResponseEntity<Integer>(HttpStatus.NO_CONTENT);
 		}catch(EmptyResultDataAccessException e) {
 			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Grupo no encontrado");
 		}
 	}
 }
+

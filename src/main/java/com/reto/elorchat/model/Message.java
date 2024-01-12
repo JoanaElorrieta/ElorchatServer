@@ -26,54 +26,56 @@ public class Message {
 	@Column
 	private Date date;
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "Fk_group_id" ))
+	@JoinColumn(name = "chat_id", foreignKey = @ForeignKey(name = "Fk_chat_id" ))
 	@JsonManagedReference
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	private Group group;
-	
-	@Column(name = "group_id", insertable = false, updatable = false)
-	private Integer groupId;
-	
+	private Chat chat;
+
+	@Column(name = "chat_id", insertable = false, updatable = false)
+	private Integer chatId;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "Fk_user_id" ))
 	@JsonManagedReference
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private User user;
-	
+
 	@Column(name = "user_id", insertable = false, updatable = false)
 	private Integer userId;
-	
+
 	public Message () {}
 
-	public Message(String text, Date date) {
+	public Message(String text, Date date, Integer chatId, Integer userId) {
 		super();
 		this.text = text;
 		this.date = date;
+		this.chatId = chatId;
+		this.userId = userId;
 	}
 
-	public Message(String text, Date date, Group group, Integer groupId) {
+	public Message(String text, Date date, Chat chat, Integer chatId) {
 		super();
 		this.text = text;
 		this.date = date;
-		this.group = group;
-		this.groupId= groupId;
+		this.chat = chat;
+		this.chatId= chatId;
 	}
-	public Message(Integer id, String text, Date date, Group group, Integer groupId) {
+	public Message(Integer id, String text, Date date, Chat chat, Integer chatId) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.date = date;
-		this.group = group;
-		this.groupId= groupId;
+		this.chat = chat;
+		this.chatId= chatId;
 	}
 
-	public Message(Integer id, String text, Date date, Group group, Integer groupId, User user, Integer userId) {
+	public Message(Integer id, String text, Date date, Chat chat, Integer chatId, User user, Integer userId) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.date = date;
-		this.group = group;
-		this.groupId = groupId;
+		this.chat = chat;
+		this.chatId = chatId;
 		this.user = user;
 		this.userId = userId;
 	}
@@ -102,20 +104,20 @@ public class Message {
 		this.date = date;
 	}
 
-	public Group getGroup() {
-		return group;
+	public Chat getChat() {
+		return chat;
 	}
 
-	public void setGroup(Group group) {
-		this.group = group;
+	public void setChat(Chat chat) {
+		this.chat = chat;
 	}
 
-	public Integer getGroupId() {
-		return groupId;
+	public Integer getChatId() {
+		return chatId;
 	}
 
-	public void setGroupId(Integer groupId) {
-		this.groupId = groupId;
+	public void setChatId(Integer chatId) {
+		this.chatId = chatId;
 	}
 
 	public User getUser() {
@@ -133,6 +135,6 @@ public class Message {
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
-	
-	
+
+
 }

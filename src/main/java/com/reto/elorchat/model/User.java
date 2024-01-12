@@ -29,54 +29,65 @@ public class User {
 	private String surname;
 	@Column(length=60)
 	private String email;
+	@Column
+	private String password;
 	@Column(length=15)
-	private int phoneNumber;
-	
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
-    @JoinTable(name = "user_group",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "group_id")
-    )
-	private List<Group> groups;
-	
+	private int phone_Number1;
+	@Column(length=15)
+	private int phone_Number2;
+	@Column
+	private String address;
+	@Column
+	private String photo;
+	@Column
+	private Boolean FCTDUAL;
+
+
+	@ManyToMany(cascade = {
+			CascadeType.PERSIST,
+			CascadeType.MERGE
+	})
+	@JoinTable(name = "user_chat",
+	joinColumns = @JoinColumn(name = "user_id"),
+	inverseJoinColumns = @JoinColumn(name = "chat_id")
+			)
+	private List<Chat> chats;
+
 
 	@OneToMany(mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonBackReference
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private List<Message> messages;
-	
+
 	public User() {}
 
-	public User(String name, String surname, String email, int phoneNumber) {
+	public User(String name, String surname, String email, int phoneNumber1) {
 		super();
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phoneNumber = phoneNumber;
+		this.phone_Number1 = phoneNumber1;
 	}
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber) {
+	public User(Integer id, String name, String surname, String email, int phoneNumber1) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phoneNumber = phoneNumber;
+		this.phone_Number1 = phoneNumber1;
 	}
 
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber, List<Group> groups,
+	public User(Integer id, String name, String surname, String email, int phoneNumber1, List<Chat> chats,
 			List<Message> messages) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phoneNumber = phoneNumber;
-		this.groups = groups;
+		this.phone_Number1 = phoneNumber1;
+		this.chats = chats;
 		this.messages = messages;
 	}
 
@@ -120,22 +131,22 @@ public class User {
 		this.email = email;
 	}
 
-	public int getPhoneNumber() {
-		return phoneNumber;
+	public int getPhoneNumber1() {
+		return phone_Number1;
 	}
 
-	public void setPhoneNumber(int phoneNumber) {
-		this.phoneNumber = phoneNumber;
+	public void setPhoneNumber1(int phoneNumber1) {
+		this.phone_Number1 = phoneNumber1;
 	}
 
-	public List<Group> getGroups() {
-		return groups;
+	public List<Chat> getChats() {
+		return chats;
 	}
 
-	public void setGroups(List<Group> groups) {
-		this.groups = groups;
+	public void setChats(List<Chat> chats) {
+		this.chats = chats;
 	}
 
-	
-	
+
+
 }

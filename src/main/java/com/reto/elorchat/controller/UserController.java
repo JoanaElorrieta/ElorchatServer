@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.reto.elorchat.model.Group;
+import com.reto.elorchat.model.Chat;
 import com.reto.elorchat.model.User;
 import com.reto.elorchat.model.UserPostRequest;
 import com.reto.elorchat.repository.UserRepository;
@@ -30,7 +30,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/users")
-	public ResponseEntity<Group> createUsers(@RequestBody UserPostRequest userPostRequest){
+	public ResponseEntity<Chat> createUsers(@RequestBody UserPostRequest userPostRequest){
 
 		User user = new User (
 				userPostRequest.getName(),
@@ -39,7 +39,7 @@ public class UserController {
 				userPostRequest.getPhoneNumber()
 				);
 		userRepository.save(user);
-		return new ResponseEntity<Group>(HttpStatus.CREATED);
+		return new ResponseEntity<Chat>(HttpStatus.CREATED);
 	}
 	
 	@DeleteMapping("/users/{id}")
