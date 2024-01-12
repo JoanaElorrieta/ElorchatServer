@@ -4,22 +4,21 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 @Entity
-@Table(name = "usersMobile")
+@Table(name = "users")
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,19 +32,21 @@ public class User {
 	@Column(length=15)
 	private int phoneNumber;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "group_id", foreignKey = @ForeignKey(name = "Fk_group_id" ))
-	@JsonManagedReference
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	private Group group;
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "user_group",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_id")
+    )
+	private List<Group> groups;
 	
-	@Column(name = "group_id", insertable = false, updatable = false)
-	private Integer groupId;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonBackReference
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-	private List<User> messages;
+	private List<Message> messages;
 	
 	public User() {}
 
@@ -66,35 +67,24 @@ public class User {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber, Group group, Integer groupId) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.surname = surname;
-		this.email = email;
-		this.phoneNumber = phoneNumber;
-		this.group = group;
-		this.groupId = groupId;
-	}
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber, Group group, Integer groupId,
-			List<User> messages) {
+	public User(Integer id, String name, String surname, String email, int phoneNumber, List<Group> groups,
+			List<Message> messages) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
-		this.group = group;
-		this.groupId = groupId;
+		this.groups = groups;
 		this.messages = messages;
 	}
 
-	public List<User> getMessages() {
+	public List<Message> getMessages() {
 		return messages;
 	}
 
-	public void setMessages(List<User> messages) {
+	public void setMessages(List<Message> messages) {
 		this.messages = messages;
 	}
 
@@ -138,21 +128,14 @@ public class User {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public Group getGroup() {
-		return group;
+	public List<Group> getGroups() {
+		return groups;
 	}
 
-	public void setGroup(Group group) {
-		this.group = group;
+	public void setGroups(List<Group> groups) {
+		this.groups = groups;
 	}
 
-	public Integer getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(Integer groupId) {
-		this.groupId = groupId;
-	}
 	
 	
 }
