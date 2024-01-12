@@ -1,8 +1,12 @@
 package com.reto.elorchat.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 @Entity
 @Table(name = "usersMobile")
@@ -37,6 +42,11 @@ public class User {
 	@Column(name = "group_id", insertable = false, updatable = false)
 	private Integer groupId;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JsonBackReference
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+	private List<User> messages;
+	
 	public User() {}
 
 	public User(String name, String surname, String email, int phoneNumber) {
@@ -65,6 +75,27 @@ public class User {
 		this.phoneNumber = phoneNumber;
 		this.group = group;
 		this.groupId = groupId;
+	}
+
+	public User(Integer id, String name, String surname, String email, int phoneNumber, Group group, Integer groupId,
+			List<User> messages) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.surname = surname;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+		this.group = group;
+		this.groupId = groupId;
+		this.messages = messages;
+	}
+
+	public List<User> getMessages() {
+		return messages;
+	}
+
+	public void setMessages(List<User> messages) {
+		this.messages = messages;
 	}
 
 	public Integer getId() {
