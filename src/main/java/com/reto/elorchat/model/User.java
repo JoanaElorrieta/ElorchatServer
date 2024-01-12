@@ -43,7 +43,7 @@ public class User {
 	private List<Group> groups;
 	
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "user", orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonBackReference
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private List<Message> messages;
