@@ -31,12 +31,13 @@ public class ChatController {
 	@PostMapping("/chats")
 	public ResponseEntity<Chat> createChat(@RequestBody ChatPostRequest chatPostRequest){
 
-		Chat group = new Chat (
+		Chat chat = new Chat (
 				chatPostRequest.getName(),
 				chatPostRequest.getType(),
 				chatPostRequest.getUserId()
 				);
-		chatRepository.save(group);
+		
+		chatRepository.save(chat);
 		return new ResponseEntity<Chat>(HttpStatus.CREATED);
 	}
 	@DeleteMapping("/chats/{id}")

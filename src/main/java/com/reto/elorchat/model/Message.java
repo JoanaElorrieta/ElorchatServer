@@ -45,12 +45,12 @@ public class Message {
 
 	public Message () {}
 
-	public Message(String text, Date date, Integer chatId, Integer userId) {
+	public Message(String text, Date date, Chat chat, User user) {
 		super();
 		this.text = text;
 		this.date = date;
-		this.chatId = chatId;
-		this.userId = userId;
+		this.chat = chat;
+		this.user = user;
 	}
 
 	public Message(String text, Date date, Chat chat, Integer chatId) {

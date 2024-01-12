@@ -35,19 +35,19 @@ public class MessagePostRequest {
 		this.date = date;
 	}
 
-	public Integer getGroupId() {
+	public Integer getChatId() {
 		return chatId;
 	}
 
-	public void setGroupId(Integer groupId) {
-		this.chatId = groupId;
+	public void setChatId(Integer chatId) {
+		this.chatId = chatId;
 	}
 
-	public Integer getUseId() {
+	public Integer getUserId() {
 		return userId;
 	}
 
-	public void setUser_id(Integer userId) {
+	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
 	

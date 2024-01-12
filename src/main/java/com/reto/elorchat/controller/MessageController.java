@@ -8,17 +8,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.model.Chat;
 import com.reto.elorchat.model.Message;
 import com.reto.elorchat.model.MessagePostRequest;
+import com.reto.elorchat.model.User;
+import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.repository.MessageRepository;
+import com.reto.elorchat.repository.UserRepository;
 
 @RestController
 @RequestMapping("api")
 public class MessageController {
 	@Autowired
 	private MessageRepository messageRepository;
+	@Autowired
+	private UserRepository userRepository;
+	@Autowired
+	private ChatRepository chatRepository;
 
 	@GetMapping("/messages")
 	public ResponseEntity<Iterable<Message>> getMessages(){
@@ -26,15 +34,23 @@ public class MessageController {
 	}
 
 	@PostMapping("/messages")
-	public ResponseEntity<Chat> createMessage(@RequestBody MessagePostRequest messagePostRequest){
+	public ResponseEntity<Message> createMessage(@RequestBody MessagePostRequest messagePostRequest){
 
+		Chat chat= chatRepository.findById(messagePostRequest.getChatId()).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Jefe no encontrado")
+				);
+		User user = userRepository.findById(messagePostRequest.getUserId()).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Departamento no encontrado")
+				);
+		
 		Message message = new Message (
 				messagePostRequest.getText(),
 				messagePostRequest.getDate(),
-				messagePostRequest.getGroupId(),
-				messagePostRequest.getUseId()
+				chat,
+				user
 				);
+		
 		messageRepository.save(message);
-		return new ResponseEntity<Chat>(HttpStatus.CREATED);
+		return new ResponseEntity<Message>(HttpStatus.CREATED);
 	}
 }
