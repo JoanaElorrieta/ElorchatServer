@@ -1,4 +1,4 @@
-package com.reto.elorchat.model;
+package com.reto.elorchat.model.persistence;
 
 import java.util.Date;
 

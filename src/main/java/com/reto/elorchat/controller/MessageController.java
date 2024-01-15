@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.reto.elorchat.model.Chat;
-import com.reto.elorchat.model.Message;
-import com.reto.elorchat.model.MessagePostRequest;
-import com.reto.elorchat.model.User;
+import com.reto.elorchat.model.controller.request.MessagePostRequest;
+import com.reto.elorchat.model.persistence.Chat;
+import com.reto.elorchat.model.persistence.Message;
+import com.reto.elorchat.model.persistence.User;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.repository.MessageRepository;
 import com.reto.elorchat.repository.UserRepository;

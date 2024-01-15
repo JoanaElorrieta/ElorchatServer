@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.reto.elorchat.model.User;
-import com.reto.elorchat.model.UserPostRequest;
+import com.reto.elorchat.model.controller.request.UserPostRequest;
+import com.reto.elorchat.model.persistence.User;
 import com.reto.elorchat.repository.UserRepository;
 
 @RestController

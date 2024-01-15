@@ -1,4 +1,4 @@
-package com.reto.elorchat.model;
+package com.reto.elorchat.model.persistence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +55,14 @@ public class Chat{
 		this.name = name;
 		this.type = type;
 		this.adminId = adminId;
+	}
+	
+	public Chat(Integer id, String name, String type, User admin) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.type = type;
+		this.admin = admin;
 	}
 
 	public Chat(Integer id, String name, String type, Integer adminId) {

@@ -1,4 +1,4 @@
-package com.reto.elorchat.model;
+package com.reto.elorchat.model.controller.request;
 
 public class UserPostRequest {
 	private String name;

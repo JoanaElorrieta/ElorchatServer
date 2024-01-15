@@ -1,4 +1,4 @@
-package com.reto.elorchat.model;
+package com.reto.elorchat.model.controller.request;
 
 import java.util.Date;
 
