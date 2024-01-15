@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.reto.elorchat.model.enums.ChatTypeEnum;
-import com.reto.elorchat.model.persistence.User;
+import com.reto.elorchat.security.persistance.User;
 
 public class ChatGetResponse {
 	

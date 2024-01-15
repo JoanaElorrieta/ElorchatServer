@@ -1,7 +1,7 @@
 package com.reto.elorchat.model.controller.response;
 
 import com.reto.elorchat.model.enums.ChatTypeEnum;
-import com.reto.elorchat.model.persistence.User;
+import com.reto.elorchat.security.persistance.User;
 
 public class ChatPostResponse {
 	private Integer id;

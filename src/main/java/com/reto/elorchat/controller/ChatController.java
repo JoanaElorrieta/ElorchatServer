@@ -18,9 +18,7 @@ import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
-import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
-import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.service.IChatService;
 
 @RestController
@@ -36,9 +34,16 @@ public class ChatController {
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
 		//Transform every DTO from the list to GetResponse
 		for(ChatDTO chatDTO: listChatDTO) {
-			response.add(convertFromChatDTOToDepartmentGetResponse(chatDTO));
+			response.add(convertFromChatDTOToGetResponse(chatDTO));
 		}
 		return new ResponseEntity<Iterable<ChatGetResponse>>(response ,HttpStatus.OK);
+	}
+
+	@GetMapping("/chats/{id}")
+	public ResponseEntity<ChatGetResponse> getChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
+		ChatDTO chatDTO = chatService.findById(id);
+		ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		return new ResponseEntity<ChatGetResponse>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/chats")
@@ -56,7 +61,7 @@ public class ChatController {
 
 	//CONVERTS
 	//---------------------------------------
-	private ChatGetResponse convertFromChatDTOToDepartmentGetResponse(ChatDTO chatDTO) {
+	private ChatGetResponse convertFromChatDTOToGetResponse(ChatDTO chatDTO) {
 
 		ChatGetResponse response = new ChatGetResponse(
 				chatDTO.getId(),
@@ -65,29 +70,6 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
-		if (chatDTO.getUsers() != null) {
-			List<UserGetResponse> usersList = new ArrayList<UserGetResponse>();
-			for(UserDTO userDTO: chatDTO.getUsers()) {
-				usersList.add(convertFromUserDTOToGetResponse(userDTO));
-			}
-			response.setUsers(usersList);
-		}
-
-		return response;
-	}
-	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
-		UserGetResponse response = new UserGetResponse(
-				userDTO.getId(),
-				userDTO.getName(),
-				userDTO.getSurname(),
-				userDTO.getEmail(),
-				userDTO.getPassword(),
-				userDTO.getPhone_Number1(),
-				userDTO.getPhone_Number2(),
-				userDTO.getAddress(),
-				userDTO.getPhoto(),
-				userDTO.getFCTDUAL()
-				);
 		return response;
 	}
 

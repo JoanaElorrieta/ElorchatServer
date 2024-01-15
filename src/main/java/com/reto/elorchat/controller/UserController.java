@@ -14,33 +14,32 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.model.controller.request.UserPostRequest;
-import com.reto.elorchat.model.persistence.User;
-import com.reto.elorchat.repository.UserRepository;
+import com.reto.elorchat.security.persistance.User;
+import com.reto.elorchat.security.repository.UserRepository;
 
 @RestController
 @RequestMapping("api")
 public class UserController {
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@GetMapping("/users")
 	public ResponseEntity<Iterable<User>> getUsers(){
 		return new ResponseEntity<Iterable<User>>(userRepository.findAll(),HttpStatus.OK);
 	}
-	
+
 	@PostMapping("/users")
 	public ResponseEntity<User> createUsers(@RequestBody UserPostRequest userPostRequest){
 
 		User user = new User (
 				userPostRequest.getName(),
 				userPostRequest.getSurname(),
-				userPostRequest.getEmail(),
-				userPostRequest.getPhoneNumber()
+				userPostRequest.getEmail()
 				);
 		userRepository.save(user);
 		return new ResponseEntity<User>(HttpStatus.CREATED);
 	}
-	
+
 	@DeleteMapping("/users/{id}")
 	public ResponseEntity<Integer> deleteUserById(@PathVariable("id") Integer id){
 		try {

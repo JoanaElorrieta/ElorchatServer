@@ -10,10 +10,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.model.persistence.Chat;
-import com.reto.elorchat.model.persistence.User;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.repository.ChatRepository;
-import com.reto.elorchat.repository.UserRepository;
+import com.reto.elorchat.security.persistance.User;
+import com.reto.elorchat.security.repository.UserRepository;
 
 @Service
 public class ChatService implements IChatService{
@@ -38,9 +38,15 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public ChatDTO findById(Integer id, List<ChatDTO> expand) {
-		// TODO Auto-generated method stub
-		return null;
+	public ChatDTO findById(Integer id) {
+
+		Chat chat = chatRepository.findById(id).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+				);
+
+
+		ChatDTO response = convertFromChatDAOToDTO(chat);
+		return response;
 	}
 
 	@Override
@@ -67,7 +73,7 @@ public class ChatService implements IChatService{
 	//CONVERTS
 	//---------------------------------------
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
-		
+
 		ChatDTO response = new ChatDTO(
 				chat.getId(),
 				chat.getName(),

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.reto.elorchat.model.enums.ChatTypeEnum;
+import com.reto.elorchat.security.persistance.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

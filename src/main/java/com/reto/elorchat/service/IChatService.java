@@ -9,7 +9,7 @@ public interface IChatService {
 	
 	List<ChatDTO> findAll();
 
-	ChatDTO findById(Integer id, List<ChatDTO> expand);
+	ChatDTO findById(Integer id);
 
 	ChatDTO createChat(ChatDTO chatDTO);
 

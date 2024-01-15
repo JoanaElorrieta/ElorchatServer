@@ -1,9 +1,15 @@
-package com.reto.elorchat.model.persistence;
+package com.reto.elorchat.security.persistance;
 
+import java.util.Collection;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.reto.elorchat.model.persistence.Chat;
+import com.reto.elorchat.model.persistence.Message;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,7 +25,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -31,17 +39,6 @@ public class User {
 	private String email;
 	@Column
 	private String password;
-	@Column(length=15)
-	private int phone_Number1;
-	@Column(length=15)
-	private int phone_Number2;
-	@Column
-	private String address;
-	@Column
-	private String photo;
-	@Column
-	private Boolean FCTDUAL;
-
 
 	@ManyToMany(cascade = {
 			CascadeType.PERSIST,
@@ -61,32 +58,29 @@ public class User {
 
 	public User() {}
 
-	public User(String name, String surname, String email, int phoneNumber1) {
+	public User(String name, String surname, String email) {
 		super();
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phone_Number1 = phoneNumber1;
 	}
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber1) {
+	public User(Integer id, String name, String surname, String email) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phone_Number1 = phoneNumber1;
 	}
 
 
-	public User(Integer id, String name, String surname, String email, int phoneNumber1, List<Chat> chats,
+	public User(Integer id, String name, String surname, String email, List<Chat> chats,
 			List<Message> messages) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.phone_Number1 = phoneNumber1;
 		this.chats = chats;
 		this.messages = messages;
 	}
@@ -131,14 +125,6 @@ public class User {
 		this.email = email;
 	}
 
-	public int getPhoneNumber1() {
-		return phone_Number1;
-	}
-
-	public void setPhoneNumber1(int phoneNumber1) {
-		this.phone_Number1 = phoneNumber1;
-	}
-
 	public List<Chat> getChats() {
 		return chats;
 	}
@@ -147,6 +133,46 @@ public class User {
 		this.chats = chats;
 	}
 
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public String getPassword() {
+		// TODO Auto-generated method stub
+		return password;
+	}
+
+	@Override
+	public String getUsername() {
+		// TODO Auto-generated method stub
+		return email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		// TODO Auto-generated method stub
+		return true;
+	}
 
 }
