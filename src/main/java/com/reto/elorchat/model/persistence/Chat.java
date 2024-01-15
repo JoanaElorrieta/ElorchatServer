@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.reto.elorchat.model.enums.ChatTypeEnum;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,10 +27,12 @@ public class Chat{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
 	@Column(length=60)
 	private String name;
+	
 	@Column
-	private String type;
+	private ChatTypeEnum type;
 
 	@ManyToMany(mappedBy = "chats")
 	private List<User> users= new ArrayList<>();
@@ -50,22 +53,14 @@ public class Chat{
 
 	public Chat() {}
 
-	public Chat(String name, String type, Integer adminId) {
+	public Chat(String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.name = name;
 		this.type = type;
 		this.adminId = adminId;
 	}
-	
-	public Chat(Integer id, String name, String type, User admin) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.type = type;
-		this.admin = admin;
-	}
 
-	public Chat(Integer id, String name, String type, Integer adminId) {
+	public Chat(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -73,7 +68,7 @@ public class Chat{
 		this.adminId = adminId;
 	}
 
-	public Chat(Integer id, String name, String type, List<User> users, User admin, Integer adminId,
+	public Chat(Integer id, String name, ChatTypeEnum type, List<User> users, User admin, Integer adminId,
 			List<Message> messages) {
 		super();
 		this.id = id;
@@ -101,11 +96,11 @@ public class Chat{
 		this.name = name;
 	}
 
-	public String getType() {
+	public ChatTypeEnum getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(ChatTypeEnum type) {
 		this.type = type;
 	}
 

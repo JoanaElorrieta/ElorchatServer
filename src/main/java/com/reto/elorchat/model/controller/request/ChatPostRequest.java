@@ -1,15 +1,17 @@
 package com.reto.elorchat.model.controller.request;
 
+import com.reto.elorchat.model.enums.ChatTypeEnum;
+
 public class ChatPostRequest {
 	
 	private Integer id;
 	private String name;
-	private String type;
+	private ChatTypeEnum type;
 	private Integer adminId;
 	
 	public ChatPostRequest() {}
 
-	public ChatPostRequest(Integer id, String name, String type, Integer adminId) {
+	public ChatPostRequest(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -34,11 +36,11 @@ public class ChatPostRequest {
 		this.id = id;
 	}
 
-	public String getType() {
+	public ChatTypeEnum getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(ChatTypeEnum type) {
 		this.type = type;
 	}
 

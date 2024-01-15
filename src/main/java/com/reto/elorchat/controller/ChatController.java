@@ -22,7 +22,7 @@ import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.service.IChatService;
-		
+
 @RestController
 @RequestMapping("api")
 public class ChatController {
@@ -36,7 +36,7 @@ public class ChatController {
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
 		//Transform every DTO from the list to GetResponse
 		for(ChatDTO chatDTO: listChatDTO) {
-			response.add(convertFromDepartmentDTOToDepartmentGetResponse(chatDTO));
+			response.add(convertFromChatDTOToDepartmentGetResponse(chatDTO));
 		}
 		return new ResponseEntity<Iterable<ChatGetResponse>>(response ,HttpStatus.OK);
 	}
@@ -56,7 +56,7 @@ public class ChatController {
 
 	//CONVERTS
 	//---------------------------------------
-	private ChatGetResponse convertFromDepartmentDTOToDepartmentGetResponse(ChatDTO chatDTO) {
+	private ChatGetResponse convertFromChatDTOToDepartmentGetResponse(ChatDTO chatDTO) {
 
 		ChatGetResponse response = new ChatGetResponse(
 				chatDTO.getId(),
@@ -64,7 +64,7 @@ public class ChatController {
 				chatDTO.getType(),
 				chatDTO.getAdminId()
 				);
-		
+
 		if (chatDTO.getUsers() != null) {
 			List<UserGetResponse> usersList = new ArrayList<UserGetResponse>();
 			for(UserDTO userDTO: chatDTO.getUsers()) {

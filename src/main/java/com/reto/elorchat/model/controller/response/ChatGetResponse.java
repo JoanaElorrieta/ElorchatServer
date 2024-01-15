@@ -3,18 +3,20 @@ package com.reto.elorchat.model.controller.response;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.persistence.User;
 
 public class ChatGetResponse {
 	
 	private Integer id;
 	private String name;
-	private String type;
+	private ChatTypeEnum type;
 	private List<UserGetResponse> users= new ArrayList<>();
 	private User admin;
 	private Integer adminId;
 	private List<MessageGetResponse> messages;
-	public ChatGetResponse(Integer id, String name, String type, Integer adminId) {
+	
+	public ChatGetResponse(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -33,10 +35,10 @@ public class ChatGetResponse {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getType() {
+	public ChatTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(ChatTypeEnum type) {
 		this.type = type;
 	}
 	public List<UserGetResponse> getUsers() {

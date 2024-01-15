@@ -1,22 +1,16 @@
 package com.reto.elorchat.model.controller.response;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.persistence.User;
-import com.reto.elorchat.model.service.MessageDTO;
-import com.reto.elorchat.model.service.UserDTO;
 
 public class ChatPostResponse {
 	private Integer id;
 	private String name;
-	private String type;
-	private List<UserDTO> users= new ArrayList<>();
+	private ChatTypeEnum type;
 	private User admin;
 	private Integer adminId;
-	private List<MessageDTO> messages;
 	
-	public ChatPostResponse(Integer id, String name, String type, Integer adminId) {
+	public ChatPostResponse(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -35,17 +29,11 @@ public class ChatPostResponse {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getType() {
+	public ChatTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(ChatTypeEnum type) {
 		this.type = type;
-	}
-	public List<UserDTO> getUsers() {
-		return users;
-	}
-	public void setUsers(List<UserDTO> users) {
-		this.users = users;
 	}
 	public User getAdmin() {
 		return admin;
@@ -58,12 +46,6 @@ public class ChatPostResponse {
 	}
 	public void setAdminId(Integer adminId) {
 		this.adminId = adminId;
-	}
-	public List<MessageDTO> getMessages() {
-		return messages;
-	}
-	public void setMessages(List<MessageDTO> messages) {
-		this.messages = messages;
 	}
 
 }

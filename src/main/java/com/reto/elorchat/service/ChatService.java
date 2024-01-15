@@ -67,6 +67,7 @@ public class ChatService implements IChatService{
 	//CONVERTS
 	//---------------------------------------
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
+		
 		ChatDTO response = new ChatDTO(
 				chat.getId(),
 				chat.getName(),
@@ -83,8 +84,9 @@ public class ChatService implements IChatService{
 				chatDTO.getId(),
 				chatDTO.getName(),
 				chatDTO.getType(),
-				admin
+				chatDTO.getAdminId()
 				);
+		response.setAdmin(admin);
 		return response;
 	}
 	//---------------------------------------

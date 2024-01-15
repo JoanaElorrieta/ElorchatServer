@@ -3,19 +3,20 @@ package com.reto.elorchat.model.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.persistence.User;
 
 public class ChatDTO {
 	private Integer id;
 	private String name;
-	private String type;
+	private ChatTypeEnum type;
 	private List<UserDTO> users= new ArrayList<>();
 	private User admin;
 	private Integer adminId;
 	//FIXME NECESITO ESTO?
 	private List<MessageDTO> messages;
-	
-	public ChatDTO(Integer id, String name, String type, Integer adminId) {
+
+	public ChatDTO(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -34,14 +35,14 @@ public class ChatDTO {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getType() {
+	public ChatTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(ChatTypeEnum type) {
 		this.type = type;
 	}
 	public List<UserDTO> getUsers() {
-		return users;
+		return users; 
 	}
 	public void setUsers(List<UserDTO> users) {
 		this.users = users;
