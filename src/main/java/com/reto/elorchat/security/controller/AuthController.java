@@ -23,7 +23,7 @@ import jakarta.validation.Valid;
 
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/auth")
 public class AuthController {
 	
 	@Autowired 
@@ -35,12 +35,12 @@ public class AuthController {
 	@Autowired
 	IUserService userService;
 	
-	@GetMapping("/auth/users")
+	@GetMapping("/users")
 	public ResponseEntity<?> users() {
 		return ResponseEntity.ok().body(userService.findAll());
 	}
 	
-	@PostMapping("/auth/login")
+	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
 		try {
 			// esta es la funcion que va a intentar identificarse, dado el username y la password introducida
@@ -62,7 +62,7 @@ public class AuthController {
 	}
 	
 	// utilizamos el /me por que vamos a coger el nuestro, el que estamos logueado...
-	@GetMapping("/auth/me")
+	@GetMapping("/me")
 	public ResponseEntity<?> getUserInfo(Authentication authentication) {
 		// aqui podemos castearlo a UserDetails o User. El UserDetails es una interfaz, 
 		// si lo casteamos a la interfaz no podremos sacar campos como la ID del usuario

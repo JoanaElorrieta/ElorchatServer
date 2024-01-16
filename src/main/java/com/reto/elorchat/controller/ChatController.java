@@ -22,13 +22,13 @@ import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.service.IChatService;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/chats")
 public class ChatController {
 
 	@Autowired
 	private IChatService chatService;
 
-	@GetMapping("/chats")
+	@GetMapping
 	public ResponseEntity<Iterable<ChatGetResponse>> getChats(){
 		List<ChatDTO> listChatDTO = chatService.findAll();
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
@@ -39,21 +39,21 @@ public class ChatController {
 		return new ResponseEntity<Iterable<ChatGetResponse>>(response ,HttpStatus.OK);
 	}
 
-	@GetMapping("/chats/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<ChatGetResponse> getChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
 		ChatDTO chatDTO = chatService.findById(id);
 		ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
 		return new ResponseEntity<ChatGetResponse>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/chats")
+	@PostMapping
 	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest){
 		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest)));
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
 	}
 
 
-	@DeleteMapping("/chats/{id}")
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Integer> deleteChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
 		chatService.deleteChat(id);
 		return new ResponseEntity<>(HttpStatus.OK);

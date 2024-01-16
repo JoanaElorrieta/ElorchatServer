@@ -15,8 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.reto.elorchat.security.model.RoleEnum;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
@@ -64,7 +62,7 @@ public class WebSecurityConfig {
 					
 				// vamos a permitir registro y login para todos. Al no especificar metodo
 				// podran hacer todos los metodos a dichas urls...
-				.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/signup").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 				
 				
 				
@@ -74,10 +72,11 @@ public class WebSecurityConfig {
 				// .requestMatchers(HttpMethod.GET, "/api/employees", "/api/employees/{id}").permitAll()
 				
 				// para todo lo demas habra que estar autenticado
-				.requestMatchers(HttpMethod.GET, "/api/employees").hasAuthority(RoleEnum.ADMIN.toString())
+				//.requestMatchers(HttpMethod.GET, "/api/employees").hasAuthority(RoleEnum.ADMIN.toString())
+				.requestMatchers(HttpMethod.GET, "/index.html").permitAll()
 				
 				.anyRequest().authenticated()
-				// .anyRequest().permitAll()
+				//.anyRequest().permitAll()
 			)
 			// el siguiente bloque de codigo ajusta los codigos de error, para devolver 401 en caso de que tenga que estar autenticado
 			.exceptionHandling((exceptionHandling) ->

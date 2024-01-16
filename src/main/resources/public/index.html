@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <style>
+        body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  
+        #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
+        #message { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
+        #message:focus { outline: none; }
+        #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+  
+        #messages { list-style-type: none; margin: 0; padding: 0; }
+        #messages > li { padding: 0.5rem 1rem; }
+        #messages > li:nth-child(odd) { background: #efefef; }
+    </style>
+    <!-- Incluye la biblioteca socket.io-client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.2/socket.io.js"></script>
+</head>
+<body>
+
+    <h1>Cliente con Socket IO</h1>
+
+    <div id="messages"></div>
+
+    <form id="form" action="">
+        <input id="room" name="room" autocomplete="off" placeholder="Room..." value="default-room"/>
+        <input id="message" name="message" autocomplete="off" /><button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        // Conexion al servidor Socket.IO
+        const socket = io('http://localhost:8085',
+            {
+                withCredentials: true,
+                extraHeaders: {
+                    "Authorization": "Bearer jwtDesdeWeb:33:webuser",
+                }
+            }
+        ); 
+
+        // Listener del evento "chat message"
+        socket.on('chat message', (message) => {
+            // Muestra el mensaje en la página
+            console.log("mensaje recibido")
+            console.log(message)
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<p>${message.message} - ${message.authorName} - ${message.room}</p>`;
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (message.value && room.value) {
+                // emitir el evento "chat message"
+                socket.emit('chat message', {message: message.value, room: room.value});
+
+                // quitamos el valor del input del html para nuevos chats
+                message.value = "";
+            }
+        });
+    </script>
+
+</body>
+</html>

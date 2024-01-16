@@ -19,7 +19,7 @@ import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.repository.UserRepository;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/messages")
 public class MessageController {
 	@Autowired
 	private MessageRepository messageRepository;
@@ -28,12 +28,12 @@ public class MessageController {
 	@Autowired
 	private ChatRepository chatRepository;
 
-	@GetMapping("/messages")
+	@GetMapping
 	public ResponseEntity<Iterable<Message>> getMessages(){
 		return new ResponseEntity<Iterable<Message>>(messageRepository.findAll(),HttpStatus.OK);
 	}
 
-	@PostMapping("/messages")
+	@PostMapping
 	public ResponseEntity<Message> createMessage(@RequestBody MessagePostRequest messagePostRequest){
 
 		Chat chat= chatRepository.findById(messagePostRequest.getChatId()).orElseThrow(
