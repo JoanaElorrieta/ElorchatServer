@@ -3,13 +3,19 @@ package com.reto.elorchat.config.socketio;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-
-import com.corundumstudio.socketio.*;
-import com.corundumstudio.socketio.listener.*;
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.listener.ConnectListener;
+import com.corundumstudio.socketio.listener.DataListener;
+import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
+import com.reto.elorchat.security.persistance.User;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
@@ -71,6 +77,7 @@ public class SocketIOConfig {
 				System.out.println("Nuevo cliente no permitida la conexion: " + client.getSessionId());
 				client.disconnect();
 			} else {
+				//Authentication authentication = getAuthenticationFromSecurityContext();
 				loadClientData(headers, client);
 				System.out.printf("Nuevo cliente conectado: %s . Clientes conectados ahora mismo: %d \n", client.getSessionId(), this.server.getAllClients().size());
 
@@ -82,9 +89,11 @@ public class SocketIOConfig {
 		private void loadClientData(HttpHeaders headers, SocketIOClient client) {
 
 			try {
-				
+
+				//User userDetails = (User) authentication.getPrincipal();
+				//System.out.println(userDetails.getName());
 				String authorization = headers.get(AUTHORIZATION_HEADER);
-				
+
 				String jwt = authorization.split(" ")[1];
 
 				// TODO HAY QUE VALIDAR Y CARGAR ESTOS DATOS DEL JWT! y si no no dejar conectarle o desconectarle
@@ -188,5 +197,11 @@ public class SocketIOConfig {
 	@PreDestroy
 	public void stopSocketIOServer() {
 		this.server.stop();
+	}
+
+	private static Authentication getAuthenticationFromSecurityContext() {
+		SecurityContext securityContext = SecurityContextHolder.getContext();
+		Authentication authentication = securityContext.getAuthentication();
+		return authentication;
 	}
 }

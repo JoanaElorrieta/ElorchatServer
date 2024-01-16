@@ -70,6 +70,29 @@ public class ChatService implements IChatService{
 		}
 	}
 
+	@Override
+	public Integer countByUsers_IdAndId(Integer idChat, Integer IdUser) {
+		// TODO Auto-generated method stub
+		return chatRepository.countByUsers_IdAndId(idChat, IdUser);
+	}
+
+	@Override
+	public Integer countByIdAndAdminId(Integer idChat, Integer IdUser) {
+		// TODO Auto-generated method stub
+		return chatRepository.countByIdAndAdminId(idChat, IdUser);
+	}
+
+	@Override
+	public void deleteByUsers_IdAndId(Integer idChat, Integer IdUser) {
+		// TODO VERIFICAR SI SE HA BORRADO
+		chatRepository.deleteByUsers_IdAndId(idChat, IdUser);
+	}
+
+	@Override
+	public boolean existsByIdAndUsers_Id(Integer idChat, Integer IdUser) {
+		// TODO Auto-generated method stub
+		return chatRepository.existsByIdAndUsers_Id(idChat, IdUser);
+	}
 	//CONVERTS
 	//---------------------------------------
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {

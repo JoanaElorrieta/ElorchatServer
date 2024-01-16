@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.service.IChatService;
 
 @RestController
@@ -59,6 +61,55 @@ public class ChatController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@GetMapping("entryPermission/{idChat}")
+	public ResponseEntity<Integer> countByUsers_IdAndId(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException{
+		User user = (User) authentication.getPrincipal();
+		Integer response = chatService.countByUsers_IdAndId(idChat, user.getId());
+		//ChatDTO chatDTO = chatService.findById(id);
+		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		return new ResponseEntity<Integer>(response, HttpStatus.OK);
+	}
+
+
+	@GetMapping("deletePermission/{idChat}")
+	public ResponseEntity<Integer> countByIdAndAdminId(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException{
+		User user = (User) authentication.getPrincipal();
+		Integer response = chatService.countByIdAndAdminId(idChat, user.getId());
+		//ChatDTO chatDTO = chatService.findById(id);
+		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		return new ResponseEntity<Integer>(response, HttpStatus.OK);
+	}
+
+
+	@GetMapping("exists/{idChat}")
+	public ResponseEntity<Integer> existsByIdAndUsers_Id(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException{
+		Integer response; 
+		User user = (User) authentication.getPrincipal();
+		boolean boolValue = chatService.existsByIdAndUsers_Id(idChat, user.getId());
+
+		if (boolValue) {
+			response = 1;
+		}
+		else {
+			response = 0;
+		}
+
+		//ChatDTO chatDTO = chatService.findById(id);
+		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		return new ResponseEntity<Integer>(response, HttpStatus.OK);
+	}
+
+	//ASK ES CORRECTO ESTAR PASANDO EL AUTHENTICATION??
+	@DeleteMapping("delete/{idChat}")
+	public ResponseEntity<Integer> deleteByUsers_IdAndId(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException{
+		User user = (User) authentication.getPrincipal();
+		chatService.deleteByUsers_IdAndId(idChat, user.getId());
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 	//CONVERTS
 	//---------------------------------------
 	private ChatGetResponse convertFromChatDTOToGetResponse(ChatDTO chatDTO) {
