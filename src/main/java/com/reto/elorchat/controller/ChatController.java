@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
@@ -62,12 +64,10 @@ public class ChatController {
 	}
 
 	@GetMapping("entryPermission/{idChat}")
-	public ResponseEntity<Integer> countByUsers_IdAndId(@PathVariable Integer idChat,
+	public ResponseEntity<Integer> canEnterUserChat(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		User user = (User) authentication.getPrincipal();
-		Integer response = chatService.countByUsers_IdAndId(idChat, user.getId());
-		//ChatDTO chatDTO = chatService.findById(id);
-		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		Integer response = chatService.canEnterUserChat(idChat, user.getId());
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
@@ -76,14 +76,12 @@ public class ChatController {
 	public ResponseEntity<Integer> countByIdAndAdminId(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		User user = (User) authentication.getPrincipal();
-		Integer response = chatService.countByIdAndAdminId(idChat, user.getId());
-		//ChatDTO chatDTO = chatService.findById(id);
-		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
+		Integer response = chatService.canDeleteChat(idChat, user.getId());
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
 
-	@GetMapping("exists/{idChat}")
+	@GetMapping("existsOnChat/{idChat}")
 	public ResponseEntity<Integer> existsByIdAndUsers_Id(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		Integer response; 
@@ -96,18 +94,24 @@ public class ChatController {
 		else {
 			response = 0;
 		}
-
-		//ChatDTO chatDTO = chatService.findById(id);
-		//ChatGetResponse response = convertFromChatDTOToGetResponse(chatDTO);
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
-	//ASK ES CORRECTO ESTAR PASANDO EL AUTHENTICATION??
-	@DeleteMapping("delete/{idChat}")
-	public ResponseEntity<Integer> deleteByUsers_IdAndId(@PathVariable Integer idChat,
-			Authentication authentication) throws ChatNotFoundException{
+	@PostMapping("addToGroup/{idChat}")
+	public ResponseEntity<Integer> addUserToChat(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat{
 		User user = (User) authentication.getPrincipal();
-		chatService.deleteByUsers_IdAndId(idChat, user.getId());
+		chatService.addUserToChat(idChat, user.getId());			
+		// TODO: handle exception
+		return new ResponseEntity<Integer>(HttpStatus.OK);
+	}
+
+	//ASK ES CORRECTO ESTAR PASANDO EL AUTHENTICATION??
+	@DeleteMapping("leaveChat/{idChat}")
+	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat,
+			Authentication authentication) throws ChatNotFoundException, CantLeaveChatException{
+		User user = (User) authentication.getPrincipal();
+		chatService.leaveChat(idChat, user.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	//CONVERTS

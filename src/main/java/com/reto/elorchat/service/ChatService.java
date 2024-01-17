@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.repository.ChatRepository;
@@ -66,32 +68,53 @@ public class ChatService implements IChatService{
 		if(chatRepository.existsById(id)) {
 			chatRepository.deleteById(id);
 		}else {
-			throw new ChatNotFoundException("El departamento no existe");
+			throw new ChatNotFoundException("El chat no existe");
 		}
 	}
 
 	@Override
-	public Integer countByUsers_IdAndId(Integer idChat, Integer IdUser) {
+	public Integer canEnterUserChat(Integer idChat, Integer idUser) {
 		// TODO Auto-generated method stub
-		return chatRepository.countByUsers_IdAndId(idChat, IdUser);
+		return chatRepository.canEnterUserChat(idChat, idUser);
 	}
 
 	@Override
-	public Integer countByIdAndAdminId(Integer idChat, Integer IdUser) {
+	public Integer canDeleteChat(Integer idChat, Integer idUser) {
 		// TODO Auto-generated method stub
-		return chatRepository.countByIdAndAdminId(idChat, IdUser);
+		return chatRepository.canDeleteChat(idChat, idUser);
 	}
 
 	@Override
-	public void deleteByUsers_IdAndId(Integer idChat, Integer IdUser) {
-		// TODO VERIFICAR SI SE HA BORRADO
-		chatRepository.deleteByUsers_IdAndId(idChat, IdUser);
+	public boolean existsByIdAndUsers_Id(Integer idChat, Integer idUser) {
+		// TODO Auto-generated method stub
+		return chatRepository.existsByIdAndUsers_Id(idChat, idUser);
 	}
 
 	@Override
-	public boolean existsByIdAndUsers_Id(Integer idChat, Integer IdUser) {
+	public void addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat{
 		// TODO Auto-generated method stub
-		return chatRepository.existsByIdAndUsers_Id(idChat, IdUser);
+		
+		Chat chat = chatRepository.findById(idChat).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+				);
+		for(User user : chat.getUsers()){
+			if(user.getId() == idUser) {
+				throw new UserAlreadyExistsOnChat("User already exists on Chat");
+			}
+		}
+		chatRepository.addUserToChat(idChat, idUser);
+	}
+
+	@Override
+	public void leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException{
+
+		Chat chat = chatRepository.findById(idChat).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+				);
+		if(idUser == chat.getAdminId()) {
+			throw new CantLeaveChatException("Admin Cant Leave the Group");
+		}			
+		chatRepository.leaveChat(idChat, idUser);
 	}
 	//CONVERTS
 	//---------------------------------------
