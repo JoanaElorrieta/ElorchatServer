@@ -21,7 +21,11 @@ import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
+import com.reto.elorchat.model.controller.response.MessageGetResponse;
+import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.MessageDTO;
+import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.service.IChatService;
 
@@ -51,8 +55,9 @@ public class ChatController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest){
-		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest)));
+	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication){
+		User user = (User) authentication.getPrincipal();
+		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest, user.getId())));
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
 	}
 
@@ -63,7 +68,7 @@ public class ChatController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("entryPermission/{idChat}")
+	@GetMapping("/entryPermission/{idChat}")
 	public ResponseEntity<Integer> canEnterUserChat(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		User user = (User) authentication.getPrincipal();
@@ -72,7 +77,7 @@ public class ChatController {
 	}
 
 
-	@GetMapping("deletePermission/{idChat}")
+	@GetMapping("/deletePermission/{idChat}")
 	public ResponseEntity<Integer> countByIdAndAdminId(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		User user = (User) authentication.getPrincipal();
@@ -81,7 +86,7 @@ public class ChatController {
 	}
 
 
-	@GetMapping("existsOnChat/{idChat}")
+	@GetMapping("/existsOnChat/{idChat}")
 	public ResponseEntity<Integer> existsByIdAndUsers_Id(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException{
 		Integer response; 
@@ -97,7 +102,7 @@ public class ChatController {
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("addToGroup/{idChat}")
+	@PostMapping("/addToGroup/{idChat}")
 	public ResponseEntity<Integer> addUserToChat(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat{
 		User user = (User) authentication.getPrincipal();
@@ -106,14 +111,14 @@ public class ChatController {
 		return new ResponseEntity<Integer>(HttpStatus.OK);
 	}
 
-	//ASK ES CORRECTO ESTAR PASANDO EL AUTHENTICATION??
-	@DeleteMapping("leaveChat/{idChat}")
+	@DeleteMapping("/leaveChat/{idChat}")
 	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException, CantLeaveChatException{
 		User user = (User) authentication.getPrincipal();
 		chatService.leaveChat(idChat, user.getId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+
 	//CONVERTS
 	//---------------------------------------
 	private ChatGetResponse convertFromChatDTOToGetResponse(ChatDTO chatDTO) {
@@ -125,6 +130,20 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
+		if (chatDTO.getUsers() != null) {
+			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+			for(UserDTO userDTO : chatDTO.getUsers()) {
+				userList.add(convertFromUserDTOToGetResponse(userDTO));
+			}
+			response.setUsers(userList);
+		}
+		if (chatDTO.getMessages() != null) {
+			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+			}
+			response.setMessages(messageList);
+		}
 		return response;
 	}
 
@@ -135,19 +154,56 @@ public class ChatController {
 				chatDTO.getType(),
 				chatDTO.getAdminId()
 				);
+
+		if (chatDTO.getUsers() != null) {
+			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+			for(UserDTO userDTO : chatDTO.getUsers()) {
+				userList.add(convertFromUserDTOToGetResponse(userDTO));
+			}
+			response.setUsers(userList);
+		}
+		if (chatDTO.getMessages() != null) {
+			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+			}
+			response.setMessages(messageList);
+		}
 		return response;
 	}
 
-	private ChatDTO convertFromChatPostRequestToDTO(ChatPostRequest chatPostRequest) {
+	private ChatDTO convertFromChatPostRequestToDTO(ChatPostRequest chatPostRequest, Integer adminId) {
 
 		ChatDTO response = new ChatDTO(
 				chatPostRequest.getId(),
 				chatPostRequest.getName(),
 				chatPostRequest.getType(),
-				chatPostRequest.getAdminId()
+				adminId
 				);
 		return response;
 	}
+	
+	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
+		MessageGetResponse response = new MessageGetResponse(
+				messageDTO.getId(),
+				messageDTO.getText(),
+				messageDTO.getDate()
+				);
+		return response;
+	}
+
+
+	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
+		UserGetResponse response = new UserGetResponse(
+				userDTO.getId(),
+				userDTO.getName(),
+				userDTO.getSurname(),
+				userDTO.getEmail(),
+				userDTO.getPhoneNumber1(),
+				userDTO.getPhoto());
+		return response;
+	}
+
 	/////
 }
 

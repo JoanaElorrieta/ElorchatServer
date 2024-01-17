@@ -39,6 +39,10 @@ public class User implements UserDetails {
 	private String email;
 	@Column
 	private String password;
+	@Column(name="phone_number1")
+	private Long phoneNumber1;
+	@Column
+	private String photo;
 
 	@ManyToMany(cascade = {
 			CascadeType.PERSIST,
@@ -46,8 +50,7 @@ public class User implements UserDetails {
 	})
 	@JoinTable(name = "user_chat",
 	joinColumns = @JoinColumn(name = "user_id"),
-	inverseJoinColumns = @JoinColumn(name = "chat_id")
-			)
+	inverseJoinColumns = @JoinColumn(name = "chat_id"))
 	private List<Chat> chats;
 
 
@@ -65,24 +68,14 @@ public class User implements UserDetails {
 		this.email = email;
 	}
 
-	public User(Integer id, String name, String surname, String email) {
+	public User(Integer id, String name, String surname, String email, Long phoneNumber1, String photo) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-	}
-
-
-	public User(Integer id, String name, String surname, String email, List<Chat> chats,
-			List<Message> messages) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.surname = surname;
-		this.email = email;
-		this.chats = chats;
-		this.messages = messages;
+		this.phoneNumber1 = phoneNumber1;
+		this.photo = photo;
 	}
 
 	public List<Message> getMessages() {
@@ -123,6 +116,26 @@ public class User implements UserDetails {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public Long getPhoneNumber1() {
+		return phoneNumber1;
+	}
+
+	public void setPhoneNumber1(Long phoneNumber1) {
+		this.phoneNumber1 = phoneNumber1;
+	}
+
+	public String getPhoto() {
+		return photo;
+	}
+
+	public void setPhoto(String photo) {
+		this.photo = photo;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public List<Chat> getChats() {

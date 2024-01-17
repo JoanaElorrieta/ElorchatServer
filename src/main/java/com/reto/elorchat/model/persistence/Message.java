@@ -46,6 +46,13 @@ public class Message {
 
 	public Message () {}
 
+	public Message(Integer id, String text, Date date) {
+		super();
+		this.id = id;
+		this.text = text;
+		this.date = date;
+	}
+
 	public Message(String text, Date date, Chat chat, User user) {
 		super();
 		this.text = text;

@@ -8,28 +8,20 @@ public class UserDTO {
 	private String name;
 	private String surname;
 	private String email;
-	private String password;
-	private int phone_Number1;
-	private int phone_Number2;
-	private String address;
+	private Long phoneNumber1;
 	private String photo;
-	private Boolean FCTDUAL;
 	private List<ChatDTO> chats;
 	private List<MessageDTO> messages;
 
-	public UserDTO(Integer id, String name, String surname, String email, String password, int phone_Number1,
-			int phone_Number2, String address, String photo, Boolean fCTDUAL) {
+	public UserDTO(Integer id, String name, String surname, String email, Long phoneNumber1,
+			String photo) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
-		this.password = password;
-		this.phone_Number1 = phone_Number1;
-		this.phone_Number2 = phone_Number2;
-		this.address = address;
+		this.phoneNumber1 = phoneNumber1;
 		this.photo = photo;
-		FCTDUAL = fCTDUAL;
 	}
 	public Integer getId() {
 		return id;
@@ -55,48 +47,29 @@ public class UserDTO {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	public String getPassword() {
-		return password;
+	
+	public Long getPhoneNumber1() {
+		return phoneNumber1;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPhoneNumber1(Long phoneNumber1) {
+		this.phoneNumber1 = phoneNumber1;
 	}
-	public int getPhone_Number1() {
-		return phone_Number1;
-	}
-	public void setPhone_Number1(int phone_Number1) {
-		this.phone_Number1 = phone_Number1;
-	}
-	public int getPhone_Number2() {
-		return phone_Number2;
-	}
-	public void setPhone_Number2(int phone_Number2) {
-		this.phone_Number2 = phone_Number2;
-	}
-	public String getAddress() {
-		return address;
-	}
-	public void setAddress(String address) {
-		this.address = address;
-	}
+
 	public String getPhoto() {
 		return photo;
 	}
 	public void setPhoto(String photo) {
 		this.photo = photo;
 	}
-	public Boolean getFCTDUAL() {
-		return FCTDUAL;
-	}
-	public void setFCTDUAL(Boolean fCTDUAL) {
-		FCTDUAL = fCTDUAL;
-	}
+
 	public List<ChatDTO> getChats() {
 		return chats;
 	}
+	
 	public void setChats(List<ChatDTO> chats) {
 		this.chats = chats;
 	}
+	
 	public List<MessageDTO> getMessages() {
 		return messages;
 	}

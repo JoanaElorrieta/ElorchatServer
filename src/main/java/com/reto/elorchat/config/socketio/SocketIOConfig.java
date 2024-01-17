@@ -1,11 +1,9 @@
 package com.reto.elorchat.config.socketio;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -15,13 +13,16 @@ import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
-import com.reto.elorchat.security.persistance.User;
+import com.reto.elorchat.security.configuration.JwtTokenUtil;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
 
 @Configuration
 public class SocketIOConfig {
+
+	@Autowired
+	static JwtTokenUtil jwtUtil;
 
 	@Value("${socket-server.host}")
 	private String host;
@@ -36,7 +37,6 @@ public class SocketIOConfig {
 	public final static String CLIENT_USER_NAME_PARAM = "authorname";
 	public final static String CLIENT_USER_ID_PARAM = "authorid";
 	public final static String AUTHORIZATION_HEADER = "Authorization";
-
 
 	@Bean
 	public SocketIOServer socketIOServer() {
@@ -69,7 +69,6 @@ public class SocketIOConfig {
 		@Override
 		public void onConnect(SocketIOClient client) {
 			// ojo por que este codigo no esta bien en si
-
 			// TODO el que no tenga autorization no deberia ni poder conectarse. gestionar
 			HttpHeaders headers = client.getHandshakeData().getHttpHeaders();
 			if (headers.get(AUTHORIZATION_HEADER) == null) {
@@ -89,24 +88,28 @@ public class SocketIOConfig {
 		private void loadClientData(HttpHeaders headers, SocketIOClient client) {
 
 			try {
-
-				//User userDetails = (User) authentication.getPrincipal();
-				//System.out.println(userDetails.getName());
 				String authorization = headers.get(AUTHORIZATION_HEADER);
 
-				String jwt = authorization.split(" ")[1];
+				boolean isTokenValid = jwtUtil.validateAccessToken(authorization);
+				if(isTokenValid) {
+					System.out.println(jwtUtil.getSubject(authorization));
+					System.out.println(jwtUtil.getUserId(authorization));
+				}
+				//User user = (User) client;
+				//System.out.println(user.getName());
+				//String jwt = authorization.split(" ")[1];
 
 				// TODO HAY QUE VALIDAR Y CARGAR ESTOS DATOS DEL JWT! y si no no dejar conectarle o desconectarle
 				// si esta autenticado y puede, meterle en sus salas correspondientes...
 				// Esto está hardcodeado
 				// vamos a meter el userId y el userName en el socket, para futuras operaciones.
 
-				String[] datos = jwt.split(":");
-				String authorId = datos[1];
-				String authorName = datos[2];
+				//String[] datos = jwt.split(":");
+				//String authorId = datos[1];
+				//String authorName = datos[2];
 
-				client.set(CLIENT_USER_ID_PARAM, authorId);
-				client.set(CLIENT_USER_NAME_PARAM, authorName);
+				//client.set(CLIENT_USER_ID_PARAM, authorId);
+				//client.set(CLIENT_USER_NAME_PARAM, authorName);
 
 				// TODO ejemplo de salas
 				// ojo por que "Room1" no es la misma sala que "room1"
@@ -199,9 +202,4 @@ public class SocketIOConfig {
 		this.server.stop();
 	}
 
-	private static Authentication getAuthenticationFromSecurityContext() {
-		SecurityContext securityContext = SecurityContextHolder.getContext();
-		Authentication authentication = securityContext.getAuthentication();
-		return authentication;
-	}
 }

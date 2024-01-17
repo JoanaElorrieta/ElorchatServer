@@ -4,17 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.reto.elorchat.model.enums.ChatTypeEnum;
-import com.reto.elorchat.security.persistance.User;
 
 public class ChatDTO {
 	private Integer id;
 	private String name;
 	private ChatTypeEnum type;
-	private List<UserDTO> users= new ArrayList<>();
-	private User admin;
+	private List<UserDTO> users = new ArrayList<>();
+	private UserDTO admin;
 	private Integer adminId;
 	//FIXME NECESITO ESTO?
-	private List<MessageDTO> messages;
+	private List<MessageDTO> messages = new ArrayList<>();
 
 	public ChatDTO(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
@@ -47,10 +46,10 @@ public class ChatDTO {
 	public void setUsers(List<UserDTO> users) {
 		this.users = users;
 	}
-	public User getAdmin() {
+	public UserDTO getAdmin() {
 		return admin;
 	}
-	public void setAdmin(User admin) {
+	public void setAdmin(UserDTO admin) {
 		this.admin = admin;
 	}
 	public Integer getAdminId() {

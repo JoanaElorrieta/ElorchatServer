@@ -17,6 +17,12 @@ public class MessageDTO {
 		this.chat = chat;
 		this.user = user;
 	}
+	public MessageDTO(Integer id, String text, Date date) {
+		super();
+		this.id = id;
+		this.text = text;
+		this.date = date;
+	}
 
 	public Integer getId() {
 		return id;
