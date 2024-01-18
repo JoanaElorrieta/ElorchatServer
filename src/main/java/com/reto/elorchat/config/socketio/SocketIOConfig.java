@@ -68,7 +68,7 @@ public class SocketIOConfig {
 
 		return server;
 	}
-	//SINO QUITO EL STATIC ME DICE QUE JWT ES NULOA
+	//SINO QUITO EL STATIC ME DICE QUE JWT ES NULO
 	private class MyConnectListener implements ConnectListener {
 
 		private SocketIOServer server;
@@ -102,6 +102,7 @@ public class SocketIOConfig {
 				String token = authorization.split(" ")[1].trim();
 
 				boolean isTokenValid = jwtUtil.validateAccessToken(token);
+
 				if(isTokenValid) {
 					Integer userId = jwtUtil.getUserId(token);
 					//ASK necesito hacer aqui otro converter? para que no dependa del modelo del service?
@@ -109,10 +110,10 @@ public class SocketIOConfig {
 					String authorId = userDTO.getId().toString();
 					String authorName = userDTO.getName();
 					String authorPhoto =  userDTO.getPhoto();
-					
+
 					client.set(CLIENT_USER_ID_PARAM, authorId);
 					client.set(CLIENT_USER_NAME_PARAM, authorName);
-					client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
+					//client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
 
 					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXCION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
 					//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
@@ -202,8 +203,13 @@ public class SocketIOConfig {
 						authorName, 
 						authorId
 						);
+				//				MessageFromClient message = new MessageFromClient(
+				//						data.getRoom(), 
+				//						data.getMessage()
+				//						);
 
 				// enviamos a la room correspondiente:
+				System.out.printf("Mensaje enviado a la room" + message);
 				server.getRoomOperations(data.getRoom()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
 				// TODO esto es para mandar a todos los clientes. No para mandar a los de una Room
 				// senderClient.getNamespace().getBroadcastOperations().sendEvent("chat message", message);
@@ -215,6 +221,16 @@ public class SocketIOConfig {
 				// como minimo no dejar. se podria devolver un mensaje como MessageType.SERVER de que no puede enviar...
 				// incluso ampliar la clase messageServer con otro enum de errores
 				// o crear un evento nuevo, no "chat message" con otros datos
+				//¿?¿?¿?¿?
+				MessageFromServer errorMessage  = new MessageFromServer(
+						MessageType.SERVER, 
+						data.getRoom(), 
+						"No puedes enviar a este grupo", 
+						"Server", 
+						0
+						);
+				System.out.printf("Mensaje reenviado al usuario" + errorMessage);
+				senderClient.sendEvent(SocketEvents.ON_MESSAGE_NOT_SENT.value, errorMessage);
 			}
 		};
 	}
