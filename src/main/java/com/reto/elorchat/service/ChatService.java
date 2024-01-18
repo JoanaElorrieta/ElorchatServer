@@ -20,12 +20,14 @@ import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.repository.UserRepository;
 
+//FIXME LLAMAR A LOS SERVICIOS EN VEZ DE REPOS
 @Service
 public class ChatService implements IChatService{
 
 	@Autowired
 	private ChatRepository chatRepository;
 
+	//ESTA BIEN LLAMAR AQUI AL REPO O DEBERIA LLAMAR AL SERVICIO
 	@Autowired
 	private UserRepository userRepository;
 

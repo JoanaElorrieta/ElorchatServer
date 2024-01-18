@@ -14,4 +14,7 @@ public interface UserRepository extends CrudRepository<User, Integer>{
 	
 	@Query("SELECT u FROM User u LEFT JOIN FETCH u.chats WHERE u.id = :id")
     Optional<User> findUserWithChatsById(@Param("id") Integer idUser);
+	
+	@Query("SELECT u FROM User u JOIN u.chats c WHERE c.id = :chatId")
+    Iterable<User> findAllUsersByChatId(@Param("chatId") Integer chatId);
 }

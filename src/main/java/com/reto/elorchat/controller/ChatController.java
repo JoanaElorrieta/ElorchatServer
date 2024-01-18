@@ -199,8 +199,7 @@ public class ChatController {
 				userDTO.getName(),
 				userDTO.getSurname(),
 				userDTO.getEmail(),
-				userDTO.getPhoneNumber1(),
-				userDTO.getPhoto());
+				userDTO.getPhoneNumber1());
 		return response;
 	}
 

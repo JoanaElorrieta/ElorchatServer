@@ -6,16 +6,14 @@ public class UserGetResponse {
 	private String surname;
 	private String email;
 	private Long phoneNumber1;
-	private String photo;
 
-	public UserGetResponse(Integer id, String name, String surname, String email, Long phoneNumber1, String photo) {
+	public UserGetResponse(Integer id, String name, String surname, String email, Long phoneNumber1) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 		this.email = email;
 		this.phoneNumber1 = phoneNumber1;
-		this.photo = photo;
 	}
 	public Integer getId() {
 		return id;
@@ -48,14 +46,4 @@ public class UserGetResponse {
 	public void setPhoneNumber1(Long phoneNumber1) {
 		this.phoneNumber1 = phoneNumber1;
 	}
-
-	public String getPhoto() {
-		return photo;
-	}
-	public void setPhoto(String photo) {
-		this.photo = photo;
-	}
-
-
-
 }

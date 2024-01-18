@@ -9,6 +9,6 @@ import com.reto.elorchat.model.persistence.Message;
 public interface MessageRepository extends CrudRepository<Message,Integer>{
 	
 	@Query("SELECT m FROM Message m WHERE m.chatId = :chatId")
-    Iterable<Message> findAllMessageByChatId(@Param("chatId") Integer chatId);
+    Iterable<Message> findAllMessagesByChatId(@Param("chatId") Integer chatId);
 
 }

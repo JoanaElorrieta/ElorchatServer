@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.repository.ChatRepository;
@@ -30,13 +27,13 @@ public class MessageService implements IMessageService{
 	}
 	
 	@Override
-	public List<MessageDTO> findAllMessageByChatId(Integer chatId) {
+	public List<MessageDTO> findAllMessagesByChatId(Integer chatId) {
 		
-		Chat chat = chatRepository.findById(chatId).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-				);
+//		Chat chat = chatRepository.findById(chatId).orElseThrow(
+//				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+//				);
 
-		Iterable<Message> listMessage = messageRepository.findAllMessageByChatId(chatId);
+		Iterable<Message> listMessage = messageRepository.findAllMessagesByChatId(chatId);
 
 		List<MessageDTO> response = new ArrayList<MessageDTO>();
 
@@ -44,7 +41,7 @@ public class MessageService implements IMessageService{
 			response.add(convertFromMessageDAOToDTO(message));
 		}
 
-		return response;
+		return response;	
 	}
 	
 	@Override

@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserDTO;
+import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.repository.UserRepository;
-import com.reto.elorchat.service.ChatService;
 
 
 @Service
@@ -24,7 +24,7 @@ public class UserService implements IUserService, UserDetailsService {
 	UserRepository userRepository;
 
 	@Autowired
-	ChatService chatService;
+	ChatRepository chatRepository;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -52,6 +52,24 @@ public class UserService implements IUserService, UserDetailsService {
 		System.out.println(response.toString());
 		return response;
 
+	}
+	
+	@Override
+	public List<UserDTO> findAllUsersByChatId(Integer chatId) {
+		
+//		Chat chat = chatRepository.findById(chatId).orElseThrow(
+//				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+//				);
+
+		Iterable<User> listUser= userRepository.findAllUsersByChatId(chatId);
+
+		List<UserDTO> response = new ArrayList<UserDTO>();
+
+		for(User user: listUser) {
+			response.add(convertFromUserDAOToDTO(user));
+		}
+
+		return response;	
 	}
 
 	//ASK

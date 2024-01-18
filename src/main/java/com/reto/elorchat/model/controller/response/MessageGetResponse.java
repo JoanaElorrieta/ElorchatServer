@@ -2,9 +2,6 @@ package com.reto.elorchat.model.controller.response;
 
 import java.util.Date;
 
-import com.reto.elorchat.model.service.ChatDTO;
-import com.reto.elorchat.model.service.UserDTO;
-
 public class MessageGetResponse {
 	private Integer id;
 	private String text;

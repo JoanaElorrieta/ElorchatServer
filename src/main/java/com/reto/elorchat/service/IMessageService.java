@@ -7,7 +7,7 @@ import com.reto.elorchat.model.service.MessageDTO;
 
 public interface IMessageService {
 
-	List<MessageDTO> findAllMessageByChatId(Integer chatId);
+	List<MessageDTO> findAllMessagesByChatId(Integer chatId);
 
 	Iterable<Message> findAll();
 
