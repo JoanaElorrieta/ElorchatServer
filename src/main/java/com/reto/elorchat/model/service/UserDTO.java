@@ -76,6 +76,11 @@ public class UserDTO {
 	public void setMessages(List<MessageDTO> messages) {
 		this.messages = messages;
 	}
+	@Override
+	public String toString() {
+		return "UserDTO [id=" + id + ", name=" + name + ", surname=" + surname + ", email=" + email + ", phoneNumber1="
+				+ phoneNumber1 + ", photo=" + photo + ", chats=" + chats + ", messages=" + messages + "]";
+	}
 
 
 }

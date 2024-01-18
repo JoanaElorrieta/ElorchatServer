@@ -64,6 +64,10 @@ public class ChatDTO {
 	public void setMessages(List<MessageDTO> messages) {
 		this.messages = messages;
 	}
-
+	@Override
+	public String toString() {
+		return "ChatDTO [id=" + id + ", name=" + name + ", type=" + type + ", users=" + users + ", admin=" + admin
+				+ ", adminId=" + adminId + ", messages=" + messages + "]";
+	}
 
 }

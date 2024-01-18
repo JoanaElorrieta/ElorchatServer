@@ -37,14 +37,14 @@ public class ChatController {
 	private IChatService chatService;
 
 	@GetMapping
-	public ResponseEntity<Iterable<ChatGetResponse>> getChats(){
+	public ResponseEntity<List<ChatGetResponse>> getChats(){
 		List<ChatDTO> listChatDTO = chatService.findAll();
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
 		//Transform every DTO from the list to GetResponse
 		for(ChatDTO chatDTO: listChatDTO) {
 			response.add(convertFromChatDTOToGetResponse(chatDTO));
 		}
-		return new ResponseEntity<Iterable<ChatGetResponse>>(response ,HttpStatus.OK);
+		return new ResponseEntity<List<ChatGetResponse>>(response ,HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")

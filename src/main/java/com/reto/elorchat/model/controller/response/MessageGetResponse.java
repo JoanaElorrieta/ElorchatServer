@@ -9,24 +9,25 @@ public class MessageGetResponse {
 	private Integer id;
 	private String text;
 	private Date date;
-	private ChatDTO chat;
-	private UserDTO user;
+	private Integer chatId;
+	private Integer userId;
 
-	public MessageGetResponse(Integer id, String text, Date date, ChatDTO chat, UserDTO user) {
+
+	public MessageGetResponse(Integer id, String text, Date date, Integer chatId,  Integer userId) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.date = date;
-		this.chat = chat;
-		this.user = user;
+		this.chatId = chatId;
+		this.userId = userId;
 	}
+	
 	public MessageGetResponse(Integer id, String text, Date date) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.date = date;
 	}
-
 	public Integer getId() {
 		return id;
 	}
@@ -51,20 +52,18 @@ public class MessageGetResponse {
 		this.date = date;
 	}
 
-	public ChatDTO getChat() {
-		return chat;
+	
+	public Integer getChatId() {
+		return chatId;
 	}
-
-	public void setChat(ChatDTO chat) {
-		this.chat = chat;
+	public void setChatId(Integer chatId) {
+		this.chatId = chatId;
 	}
-
-	public UserDTO getUser() {
-		return user;
+	
+	public Integer getUserId() {
+		return userId;
 	}
-
-	public void setUser(UserDTO user) {
-		this.user = user;
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
-
 }

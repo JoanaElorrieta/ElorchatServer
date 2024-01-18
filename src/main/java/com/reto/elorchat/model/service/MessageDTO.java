@@ -7,7 +7,9 @@ public class MessageDTO {
 	private String text;
 	private Date date;
 	private ChatDTO chat;
+	private Integer chatId;
 	private UserDTO user;
+	private Integer userId;
 
 	public MessageDTO(Integer id, String text, Date date, ChatDTO chat, UserDTO user) {
 		super();
@@ -17,6 +19,15 @@ public class MessageDTO {
 		this.chat = chat;
 		this.user = user;
 	}
+	public MessageDTO(Integer id, String text, Date date, Integer chatId,  Integer userId) {
+		super();
+		this.id = id;
+		this.text = text;
+		this.date = date;
+		this.chatId = chatId;
+		this.userId = userId;
+	}
+
 	public MessageDTO(Integer id, String text, Date date) {
 		super();
 		this.id = id;
@@ -56,12 +67,26 @@ public class MessageDTO {
 		this.chat = chat;
 	}
 
+	public Integer getChatId() {
+		return chatId;
+	}
+	public void setChatId(Integer chatId) {
+		this.chatId = chatId;
+	}
+	
 	public UserDTO getUser() {
 		return user;
 	}
 
 	public void setUser(UserDTO user) {
 		this.user = user;
+	}
+	
+	public Integer getUserId() {
+		return userId;
+	}
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
 

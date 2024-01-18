@@ -48,6 +48,8 @@ public class User implements UserDetails {
 			CascadeType.PERSIST,
 			CascadeType.MERGE
 	})
+	//NECESITO ESTO PARA QUE CUANDO LLAME AL USER TENGA LAS ROOMS DONDE METERLE
+	//fetch = FetchType.EAGER
 	@JoinTable(name = "user_chat",
 	joinColumns = @JoinColumn(name = "user_id"),
 	inverseJoinColumns = @JoinColumn(name = "chat_id"))
@@ -139,6 +141,8 @@ public class User implements UserDetails {
 	}
 
 	public List<Chat> getChats() {
+		//PARA NO TENERLO A EAGER PERO NO ME DEJA
+		//Hibernate.initialize(chats);
 		return chats;
 	}
 

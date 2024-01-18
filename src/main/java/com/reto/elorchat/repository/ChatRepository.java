@@ -38,6 +38,4 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	@Query(value = "DELETE FROM user_chat WHERE chat_Id = :id AND user_Id = :idUser", nativeQuery = true)
 	void leaveChat(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
 
-
-
 }

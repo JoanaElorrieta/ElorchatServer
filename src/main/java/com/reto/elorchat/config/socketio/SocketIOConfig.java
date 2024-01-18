@@ -11,9 +11,13 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.model.enums.MessageType;
+import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
 import com.reto.elorchat.security.configuration.JwtTokenUtil;
+import com.reto.elorchat.security.service.UserService;
+import com.reto.elorchat.service.ChatService;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
@@ -22,7 +26,13 @@ import jakarta.annotation.PreDestroy;
 public class SocketIOConfig {
 
 	@Autowired
-	static JwtTokenUtil jwtUtil;
+	JwtTokenUtil jwtUtil;
+
+	@Autowired
+	UserService userService;
+
+	@Autowired
+	ChatService chatService;
 
 	@Value("${socket-server.host}")
 	private String host;
@@ -36,6 +46,7 @@ public class SocketIOConfig {
 
 	public final static String CLIENT_USER_NAME_PARAM = "authorname";
 	public final static String CLIENT_USER_ID_PARAM = "authorid";
+	public final static String CLIENT_USER_PHOTO_PARAM = "authorPhoto";
 	public final static String AUTHORIZATION_HEADER = "Authorization";
 
 	@Bean
@@ -57,8 +68,8 @@ public class SocketIOConfig {
 
 		return server;
 	}
-
-	private static class MyConnectListener implements ConnectListener {
+	//SINO QUITO EL STATIC ME DICE QUE JWT ES NULOA
+	private class MyConnectListener implements ConnectListener {
 
 		private SocketIOServer server;
 
@@ -76,7 +87,6 @@ public class SocketIOConfig {
 				System.out.println("Nuevo cliente no permitida la conexion: " + client.getSessionId());
 				client.disconnect();
 			} else {
-				//Authentication authentication = getAuthenticationFromSecurityContext();
 				loadClientData(headers, client);
 				System.out.printf("Nuevo cliente conectado: %s . Clientes conectados ahora mismo: %d \n", client.getSessionId(), this.server.getAllClients().size());
 
@@ -89,11 +99,30 @@ public class SocketIOConfig {
 
 			try {
 				String authorization = headers.get(AUTHORIZATION_HEADER);
+				String token = authorization.split(" ")[1].trim();
 
-				boolean isTokenValid = jwtUtil.validateAccessToken(authorization);
+				boolean isTokenValid = jwtUtil.validateAccessToken(token);
 				if(isTokenValid) {
-					System.out.println(jwtUtil.getSubject(authorization));
-					System.out.println(jwtUtil.getUserId(authorization));
+					Integer userId = jwtUtil.getUserId(token);
+					//ASK necesito hacer aqui otro converter? para que no dependa del modelo del service?
+					UserDTO userDTO = userService.findById(userId);
+					String authorId = userDTO.getId().toString();
+					String authorName = userDTO.getName();
+					String authorPhoto =  userDTO.getPhoto();
+					
+					client.set(CLIENT_USER_ID_PARAM, authorId);
+					client.set(CLIENT_USER_NAME_PARAM, authorName);
+					client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
+
+					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXCION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
+					//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
+					for(ChatDTO chat: userDTO.getChats()) {			
+						System.out.println("Usuario " + CLIENT_USER_NAME_PARAM + " conectado a " + chat.getName());							
+						client.joinRoom(chat.getName());
+					}
+					client.joinRoom("Room1");
+					//System.out.println(jwtUtil.getSubject(token));
+					//System.out.println(jwtUtil.getUserId(token));
 				}
 				//User user = (User) client;
 				//System.out.println(user.getName());
@@ -105,16 +134,16 @@ public class SocketIOConfig {
 				// vamos a meter el userId y el userName en el socket, para futuras operaciones.
 
 				//String[] datos = jwt.split(":");
-				//String authorId = datos[1];
-				//String authorName = datos[2];
+				//				String authorId = datos[1];
+				//				String authorName = datos[2];
 
 				//client.set(CLIENT_USER_ID_PARAM, authorId);
 				//client.set(CLIENT_USER_NAME_PARAM, authorName);
 
 				// TODO ejemplo de salas
 				// ojo por que "Room1" no es la misma sala que "room1"
-				client.joinRoom("default-room");
-				client.joinRoom("Room1");
+				//				client.joinRoom("default-room");
+				//				client.joinRoom("Room1");
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -122,13 +151,15 @@ public class SocketIOConfig {
 		}
 	}
 
-	private static class MyDisconnectListener implements DisconnectListener {
+	private class MyDisconnectListener implements DisconnectListener {
 		@Override
 		public void onDisconnect(SocketIOClient client) {
 			client.getNamespace().getAllClients().stream().forEach(data-> {
 				System.out.println("user disconnected "+ data.getSessionId().toString());
+				//FIXME
 				// notificateDisconnectToUsers(client);
 			});
+			System.out.printf("Cliente restantes: %s . Clientes conectados ahora mismo: %d \n", client.getSessionId(), server.getAllClients().size());
 		}
 
 		// podemos notificar a los demas usuarios que ha salido. Ojo por que el broadcast envia a todos
@@ -151,6 +182,7 @@ public class SocketIOConfig {
 	}
 
 	private DataListener<MessageFromClient> onSendMessage() {
+		System.out.println("LLEGO");
 		return (senderClient, data, acknowledge) -> {
 
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);

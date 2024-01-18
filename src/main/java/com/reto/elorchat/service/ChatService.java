@@ -54,7 +54,9 @@ public class ChatService implements IChatService{
 		return response;
 	}
 
+	//PREGUNTAR PQ EL getUsers() no me carga la lista que he metido en addUserToChat
 	@Override
+	//@Transactional
 	public ChatDTO createChat(ChatDTO chatDTO) {
 
 		User admin = userRepository.findById(chatDTO.getAdminId()).orElseThrow(
@@ -64,12 +66,11 @@ public class ChatService implements IChatService{
 		Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
 		if(chat != null){
 			chatRepository.addUserToChat(chat.getId(), admin.getId());
+//			Chat chat2 = chatRepository.findById(chat.getId()).orElseThrow(
+//					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+//					);
+//			System.out.println("Usuarios asociados después de la creación del chat: " + chat2.getUsers());
 		}
-		System.out.println(chat.getId());
-		Chat chat2 = chatRepository.findById(chat.getId()).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-				);
-		System.out.println("Usuarios asociados después de la creación del chat: " + chat2.getUsers());
 		ChatDTO response = convertFromChatDAOToDTO(chat);
 		return response;
 	}
