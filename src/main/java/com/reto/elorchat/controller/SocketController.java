@@ -4,7 +4,8 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,13 +15,14 @@ import com.reto.elorchat.config.socketio.SocketEvents;
 import com.reto.elorchat.config.socketio.SocketIOConfig;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.socket.MessageFromServer;
+import com.reto.elorchat.model.socket.Room;
 
 @RestController
 @RequestMapping("/api/sockets")
 public class SocketController {
 
 	private final SocketIOServer socketIoServer;
-	
+
 	@Autowired
 	public SocketController(SocketIOServer socketIoServer) {
 		this.socketIoServer = socketIoServer;
@@ -45,18 +47,20 @@ public class SocketController {
 	}
 
 	// deberia ser un POST y con body, pero para probar desde el navegador...
-	@GetMapping("/join-room/{room}/{idUser}")
-	public String joinRoom(@PathVariable("room") String room, @PathVariable("idUser") Integer idUser) {
+	@PostMapping("/join-room")
+	public String joinRoom(@RequestBody Room room) {
 
-
-		SocketIOClient client = findClientByUserId(idUser);
+		SocketIOClient client = findClientByUserId(room.getUserId());
 		if (client != null) {
-			client.joinRoom(room);
+			client.joinRoom(room.getName());
 
-			// se podria notificar a aquellos que estan en la room
-			socketIoServer.getRoomOperations(room).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
+			System.out.println(client.getNamespace().getName() + "se unio a" + room);
+			// se podria notificar a aquellos que estan en la 
 
-			// aunque lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha accedido a la room
+			socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value);
+
+			socketIoServer.getRoomOperations(room.getName()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
+			//aunque lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha accedido a la room
 
 			return "Usuario unido a la sala";
 		} else {
@@ -67,37 +71,38 @@ public class SocketController {
 
 
 	// deberia ser un POST y con body, pero para probar desde el navegador...
-	@GetMapping("/leave-room/{room}/{idUser}")
-	public String leaveRoom(@PathVariable("room") String room, @PathVariable("idUser") Integer idUser) {
+	@PostMapping("/leave-room")
+			public String leaveRoom(@RequestBody Room room) {
 
-		SocketIOClient client = findClientByUserId(idUser);
-		if (client != null) {
-			System.out.println(client.getAllRooms().size());
-			client.leaveRoom(room);
-			System.out.println(client.getAllRooms().size());
-			// se podria notificar a aquellos que estan en la room
-			// socketIoServer.getRoomOperations(room).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
-			// podriamos registrar distintos eventos, no "chat message" para estos casos
+				SocketIOClient client = findClientByUserId(room.getUserId());
+				if (client != null) {
+					System.out.println(client.getAllRooms().size());
+					client.leaveRoom(room.getName());
+					System.out.println(client.getAllRooms().size());
+					// se podria notificar a aquellos que estan en la room
+					socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value);
+					socketIoServer.getRoomOperations(room.getName()).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
+					// podriamos registrar distintos eventos, no "chat message" para estos casos
 
-			// lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha sido eliminado de la room
-			return "Usuario expulsado de la sala";
-		} else {
-			return "Ese usuario no estaba conectado";
-		}
-	}
-
-
-	private SocketIOClient findClientByUserId(Integer idUser) {
-		SocketIOClient response = null;
-
-		Collection<SocketIOClient> clients = socketIoServer.getAllClients();
-		for (SocketIOClient client: clients) {
-			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
-			if (currentClientId == idUser) {
-				response = client;
-				break;
+					// lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha sido eliminado de la room
+					return "Usuario expulsado de la sala";
+				} else {
+					return "Ese usuario no estaba conectado";
+				}
 			}
-		}
-		return response;
-	}
+
+
+			private SocketIOClient findClientByUserId(Integer idUser) {
+				SocketIOClient response = null;
+
+				Collection<SocketIOClient> clients = socketIoServer.getAllClients();
+				for (SocketIOClient client: clients) {
+					Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
+					if (currentClientId == idUser) {
+						response = client;
+						break;
+					}
+				}
+				return response;
+			}
 }

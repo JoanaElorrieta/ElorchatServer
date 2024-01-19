@@ -19,6 +19,7 @@ import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
+import com.reto.elorchat.model.socket.Room;
 import com.reto.elorchat.security.configuration.JwtTokenUtil;
 import com.reto.elorchat.security.service.UserService;
 import com.reto.elorchat.service.ChatService;
@@ -73,12 +74,13 @@ public class SocketIOConfig {
 		server.addConnectListener(new MyConnectListener(server));
 		server.addDisconnectListener(new MyDisconnectListener());
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
-		//		server.addEventListener(SocketEvents.ON_ROOM_JOIN.value, MessageFromClient.class, onSendMessage());
-		//		server.addEventListener(SocketEvents.ON_ROOM_LEFT.value, MessageFromClient.class, onSendMessage());
+		server.addEventListener(SocketEvents.ON_ROOM_JOIN.value, Room.class, onRoomJoin());
+		server.addEventListener(SocketEvents.ON_ROOM_LEFT.value, Room.class, onRoomLeft());
 		server.start();
 
 		return server;
 	}
+
 	//SINO QUITO EL STATIC ME DICE QUE JWT ES NULO
 	private class MyConnectListener implements ConnectListener {
 
@@ -257,6 +259,27 @@ public class SocketIOConfig {
 			return false;
 		}
 	}
+
+	private DataListener<Room> onRoomJoin() {
+		return (senderClient, data, acknowledge) -> {
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+			String room = data.getName();
+			
+			senderClient.joinRoom(room);
+		};
+	}
+
+	private DataListener<Room> onRoomLeft() {
+		return (senderClient, data, acknowledge) -> {
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+			String room = data.getName();
+			
+			senderClient.leaveRoom(room);
+		};
+	}
+
 
 	@PreDestroy
 	public void stopSocketIOServer() {

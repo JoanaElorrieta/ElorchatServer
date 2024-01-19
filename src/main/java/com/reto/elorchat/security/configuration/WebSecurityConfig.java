@@ -75,8 +75,8 @@ public class WebSecurityConfig {
 				//.requestMatchers(HttpMethod.GET, "/api/employees").hasAuthority(RoleEnum.ADMIN.toString())
 				.requestMatchers(HttpMethod.GET, "/index.html", "/prueba1.html").permitAll()
 				
-				.anyRequest().authenticated()
-				//.anyRequest().permitAll()
+				//.anyRequest().authenticated()
+				.anyRequest().permitAll()
 			)
 			// el siguiente bloque de codigo ajusta los codigos de error, para devolver 401 en caso de que tenga que estar autenticado
 			.exceptionHandling((exceptionHandling) ->

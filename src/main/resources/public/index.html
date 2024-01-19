@@ -1,25 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket.IO Chat</title>
     <style>
-        body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  
-        #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-        #message { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-        #message:focus { outline: none; }
-        #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
-  
-        #messages { list-style-type: none; margin: 0; padding: 0; }
-        #messages > li { padding: 0.5rem 1rem; }
-        #messages > li:nth-child(odd) { background: #efefef; }
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #boton {
+            background: rgba(0, 0, 0, 0.15);
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+        #message {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #message:focus {
+            outline: none;
+        }
+
+        #form>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #boton>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages>li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages>li:nth-child(odd) {
+            background: #efefef;
+        }
     </style>
     <!-- Incluye la biblioteca socket.io-client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.2/socket.io.js"></script>
 </head>
+
 <body>
 
     <h1>Cliente con Socket IO</h1>
@@ -27,8 +94,12 @@
     <div id="messages"></div>
 
     <form id="form" action="">
-        <input id="room" name="room" autocomplete="off" placeholder="Room..." value="Grupo2"/>
+        <input id="room" name="room" autocomplete="off" placeholder="Room..." value="Grupo1" />
         <input id="message" name="message" autocomplete="off" /><button type="submit">Enviar</button>
+    </form>
+
+    <form id="boton" action="">
+        <input id="room2" name="room2" autocomplete="off" placeholder="Room..." value="Grupo1" /><button type="submit">Entrar</button>
     </form>
 
     <script>
@@ -37,13 +108,13 @@
             {
                 withCredentials: true,
                 extraHeaders: {
-                    "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNaXJpYW1CYXJhamFzQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA1Njg2OTg0LCJleHAiOjE3MDU3NzMzODQsInVzZXJJZCI6NTh9.K3duAth2VAW7Cpx_26KYCmNwCRIcQ1QFOpX7M8kJry1l8bDG3WH9jPqrcA3F0VtHXs5xAm1RMEFzmvOJxYr1UQ",
+                    "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNYW51ZWxhT3J0ZWdhQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA1Njg5OTE0LCJleHAiOjE3MDU3NzYzMTQsInVzZXJJZCI6Nn0.Tnu982bhPxFVkp8TxbsRssFRUHE_THw6HEgdCvm4N3ZsaAtzw5t2RZ6srlOeksXd8nrFuk1cqJDP2wDUlWBciQ",
                 }
             }
-        ); 
+        );
 
-        // Listener del evento "send message"
-        socket.on('send message', (message) => {
+        // Listener del evento "receive message"
+        socket.on('receive message', (message) => {
             // Muestra el mensaje en la página
             console.log("mensaje recibido")
             console.log(message)
@@ -54,9 +125,38 @@
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             if (message.value && room.value) {
-                // emitir el evento "receive message"
-                socket.emit('receive message', {message: message.value, room: room.value});
+                // emitir el evento "send message"
+                socket.emit('send message', { message: message.value, room: room.value });
 
+                // quitamos el valor del input del html para nuevos chats
+                message.value = "";
+            }
+        });
+
+        boton.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (room2.value) {
+                // emitir el evento "send message"
+                //socket.emit('send message', {message: message.value, room: room.value});
+                // realizar una petición GET HTTP
+                fetch('http://localhost:8063/api/sockets/join-room/Group1/18', {
+                    method: 'GET',
+                    // Puedes agregar encabezados u otras opciones según tus necesidades
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la solicitud');
+                        }
+                        // Puedes realizar acciones adicionales con la respuesta si es necesario
+                        return response.json(); // o response.text() según el formato esperado
+                    })
+                    .then(data => {
+                        // Realizar acciones con los datos obtenidos si es necesario
+                        console.log(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
                 // quitamos el valor del input del html para nuevos chats
                 message.value = "";
             }
@@ -64,4 +164,5 @@
     </script>
 
 </body>
+
 </html>
