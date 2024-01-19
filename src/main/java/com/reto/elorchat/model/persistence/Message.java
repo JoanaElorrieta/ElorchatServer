@@ -88,6 +88,15 @@ public class Message {
 		this.userId = userId;
 	}
 
+	public Message(Integer id, String text, Date date, Integer chatId, Integer userId) {
+		super();
+		this.id = id;
+		this.text = text;
+		this.date = date;
+		this.chatId = chatId;
+		this.userId = userId;
+	}
+
 	public Integer getId() {
 		return id;
 	}

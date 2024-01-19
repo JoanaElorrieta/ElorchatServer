@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
+import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.persistence.Chat;
@@ -55,26 +56,38 @@ public class ChatService implements IChatService{
 		ChatDTO response = convertFromChatDAOToDTO(chat);
 		return response;
 	}
+	
+	@Override
+	public ChatDTO findByName(String name) {
+
+		Chat chat = chatRepository.findByName(name).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+				);
+
+
+		ChatDTO response = convertFromChatDAOToDTO(chat);
+		return response;
+	}
 
 	//PREGUNTAR PQ EL getUsers() no me carga la lista que he metido en addUserToChat
 	@Override
 	//@Transactional
-	public ChatDTO createChat(ChatDTO chatDTO) {
+	public ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists {
 
 		User admin = userRepository.findById(chatDTO.getAdminId()).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Administrador no encontrado")
 				);
 
-		Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
-		if(chat != null){
-			chatRepository.addUserToChat(chat.getId(), admin.getId());
-//			Chat chat2 = chatRepository.findById(chat.getId()).orElseThrow(
-//					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-//					);
-//			System.out.println("Usuarios asociados después de la creación del chat: " + chat2.getUsers());
+		if(chatRepository.existsByName(chatDTO.getName())) {			
+			throw new ChatNameAlreadyExists("El chat no existe");
+		}else {
+			Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
+			if(chat != null){
+				chatRepository.addUserToChat(chat.getId(), admin.getId());
+			}
+			ChatDTO response = convertFromChatDAOToDTO(chat);
+			return response;
 		}
-		ChatDTO response = convertFromChatDAOToDTO(chat);
-		return response;
 	}
 
 	@Override
@@ -140,46 +153,46 @@ public class ChatService implements IChatService{
 				chat.getType(),
 				chat.getAdminId()
 				);
-
-		if (chat.getUsers() != null) {
-			List<UserDTO> userList = new ArrayList<UserDTO>();
-			for(User user : chat.getUsers()) {
-				userList.add(convertFromUserDAOToDTO(user));
-			}
-			response.setUsers(userList);
-		}
-		if (chat.getMessages() != null) {
-			List<MessageDTO> messageList = new ArrayList<MessageDTO>();
-			for(Message message : chat.getMessages()) {
-				messageList.add(convertFromMessageDAOToDTO(message));
-			}
-			response.setMessages(messageList);
-		}
+//
+//		if (chat.getUsers() != null) {
+//			List<UserDTO> userList = new ArrayList<UserDTO>();
+//			for(User user : chat.getUsers()) {
+//				userList.add(convertFromUserDAOToDTO(user));
+//			}
+//			response.setUsers(userList);
+//		}
+//		if (chat.getMessages() != null) {
+//			List<MessageDTO> messageList = new ArrayList<MessageDTO>();
+//			for(Message message : chat.getMessages()) {
+//				messageList.add(convertFromMessageDAOToDTO(message));
+//			}
+//			response.setMessages(messageList);
+//		}
 		return response;
 	}
 
 
-	private MessageDTO convertFromMessageDAOToDTO(Message message) {
-
-		MessageDTO response = new MessageDTO(
-				message.getId(),
-				message.getText(),
-				message.getDate()
-				);
-		return response;
-	}
-
-	private UserDTO convertFromUserDAOToDTO(User user) {
-		UserDTO response = new UserDTO(
-				user.getId(),
-				user.getName(),
-				user.getSurname(),
-				user.getEmail(),
-				user.getPhoneNumber1(),
-				user.getPhoto());
-
-		return response;
-	}
+//	private MessageDTO convertFromMessageDAOToDTO(Message message) {
+//
+//		MessageDTO response = new MessageDTO(
+//				message.getId(),
+//				message.getText(),
+//				message.getDate()
+//				);
+//		return response;
+//	}
+//
+//	private UserDTO convertFromUserDAOToDTO(User user) {
+//		UserDTO response = new UserDTO(
+//				user.getId(),
+//				user.getName(),
+//				user.getSurname(),
+//				user.getEmail(),
+//				user.getPhoneNumber1(),
+//				user.getPhoto());
+//
+//		return response;
+//	}
 
 	private Chat convertFromChatDTOToDAO(ChatDTO chatDTO, User admin) {
 

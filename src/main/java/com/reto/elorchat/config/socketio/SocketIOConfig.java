@@ -1,5 +1,8 @@
 package com.reto.elorchat.config.socketio;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,12 +15,14 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
 import com.reto.elorchat.security.configuration.JwtTokenUtil;
 import com.reto.elorchat.security.service.UserService;
 import com.reto.elorchat.service.ChatService;
+import com.reto.elorchat.service.MessageService;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
@@ -33,6 +38,10 @@ public class SocketIOConfig {
 
 	@Autowired
 	ChatService chatService;
+	
+
+	@Autowired
+	MessageService messageService;
 
 	@Value("${socket-server.host}")
 	private String host;
@@ -118,10 +127,9 @@ public class SocketIOConfig {
 					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXCION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
 					//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
 					for(ChatDTO chat: userDTO.getChats()) {			
-						System.out.println("Usuario " + CLIENT_USER_NAME_PARAM + " conectado a " + chat.getName());							
+						System.out.println("Usuario " + authorName + " conectado a " + chat.getName());							
 						client.joinRoom(chat.getName());
 					}
-					client.joinRoom("Room1");
 					//System.out.println(jwtUtil.getSubject(token));
 					//System.out.println(jwtUtil.getUserId(token));
 				}
@@ -203,14 +211,17 @@ public class SocketIOConfig {
 						authorName, 
 						authorId
 						);
-				//				MessageFromClient message = new MessageFromClient(
-				//						data.getRoom(), 
-				//						data.getMessage()
-				//						);
-
 				// enviamos a la room correspondiente:
 				System.out.printf("Mensaje enviado a la room" + message);
 				server.getRoomOperations(data.getRoom()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
+				//	public MessageDTO(Integer id, String text, Date date, Integer chatId,  Integer userId) {
+		        LocalDate currentDate = LocalDate.now();
+
+		        // Convert LocalDate to Date
+		        Date date = java.sql.Date.valueOf(currentDate);
+		        ChatDTO chatDTO = chatService.findByName(data.getRoom());
+				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), date, chatDTO.getId() , authorId);
+				messageService.createMessage(messageDTO);
 				// TODO esto es para mandar a todos los clientes. No para mandar a los de una Room
 				// senderClient.getNamespace().getBroadcastOperations().sendEvent("chat message", message);
 

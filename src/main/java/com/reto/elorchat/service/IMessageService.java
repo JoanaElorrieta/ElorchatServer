@@ -11,6 +11,6 @@ public interface IMessageService {
 
 	Iterable<Message> findAll();
 
-	MessageDTO createMessage(MessageDTO message);
+	MessageDTO createMessage(MessageDTO messageDTO);
 
 }

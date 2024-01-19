@@ -16,16 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
+import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
-import com.reto.elorchat.model.controller.response.MessageGetResponse;
-import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
-import com.reto.elorchat.model.service.MessageDTO;
-import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.service.IChatService;
 
@@ -55,7 +52,7 @@ public class ChatController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication){
+	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication) throws ChatNameAlreadyExists{
 		User user = (User) authentication.getPrincipal();
 		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest, user.getId())));
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
@@ -130,20 +127,20 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
-		if (chatDTO.getUsers() != null) {
-			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-			for(UserDTO userDTO : chatDTO.getUsers()) {
-				userList.add(convertFromUserDTOToGetResponse(userDTO));
-			}
-			response.setUsers(userList);
-		}
-		if (chatDTO.getMessages() != null) {
-			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-			}
-			response.setMessages(messageList);
-		}
+//		if (chatDTO.getUsers() != null) {
+//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+//			for(UserDTO userDTO : chatDTO.getUsers()) {
+//				userList.add(convertFromUserDTOToGetResponse(userDTO));
+//			}
+//			response.setUsers(userList);
+//		}
+//		if (chatDTO.getMessages() != null) {
+//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+//			}
+//			response.setMessages(messageList);
+//		}
 		return response;
 	}
 
@@ -155,20 +152,20 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
-		if (chatDTO.getUsers() != null) {
-			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-			for(UserDTO userDTO : chatDTO.getUsers()) {
-				userList.add(convertFromUserDTOToGetResponse(userDTO));
-			}
-			response.setUsers(userList);
-		}
-		if (chatDTO.getMessages() != null) {
-			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-			}
-			response.setMessages(messageList);
-		}
+//		if (chatDTO.getUsers() != null) {
+//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+//			for(UserDTO userDTO : chatDTO.getUsers()) {
+//				userList.add(convertFromUserDTOToGetResponse(userDTO));
+//			}
+//			response.setUsers(userList);
+//		}
+//		if (chatDTO.getMessages() != null) {
+//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+//			}
+//			response.setMessages(messageList);
+//		}
 		return response;
 	}
 
@@ -183,25 +180,25 @@ public class ChatController {
 		return response;
 	}
 	
-	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
-		MessageGetResponse response = new MessageGetResponse(
-				messageDTO.getId(),
-				messageDTO.getText(),
-				messageDTO.getDate()
-				);
-		return response;
-	}
-
-
-	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
-		UserGetResponse response = new UserGetResponse(
-				userDTO.getId(),
-				userDTO.getName(),
-				userDTO.getSurname(),
-				userDTO.getEmail(),
-				userDTO.getPhoneNumber1());
-		return response;
-	}
+//	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
+//		MessageGetResponse response = new MessageGetResponse(
+//				messageDTO.getId(),
+//				messageDTO.getText(),
+//				messageDTO.getDate()
+//				);
+//		return response;
+//	}
+//
+//
+//	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
+//		UserGetResponse response = new UserGetResponse(
+//				userDTO.getId(),
+//				userDTO.getName(),
+//				userDTO.getSurname(),
+//				userDTO.getEmail(),
+//				userDTO.getPhoneNumber1());
+//		return response;
+//	}
 
 	/////
 }

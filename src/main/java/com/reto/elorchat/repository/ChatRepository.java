@@ -1,5 +1,7 @@
 package com.reto.elorchat.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -37,5 +39,13 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	@Transactional
 	@Query(value = "DELETE FROM user_chat WHERE chat_Id = :id AND user_Id = :idUser", nativeQuery = true)
 	void leaveChat(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
+	
+	//Consulta con KeyWords
+	//EXISTS BY NAME
+	boolean existsByName(@Param("name")String name);
+	
+	//Consulta con KeyWords
+	//FIND BY NAME
+	Optional<Chat> findByName(String name);
 
 }

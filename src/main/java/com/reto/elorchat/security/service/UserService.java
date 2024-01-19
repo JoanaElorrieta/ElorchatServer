@@ -49,7 +49,6 @@ public class UserService implements IUserService, UserDetailsService {
 				.orElseThrow(() -> new UsernameNotFoundException("User " + id + " not found"));
 
 		UserDTO response = convertFromUserDAOToDTO(user);
-		System.out.println(response.toString());
 		return response;
 
 	}
