@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
+import com.reto.elorchat.model.persistence.Role;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,6 +62,15 @@ public class User implements UserDetails {
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private List<Message> messages;
 
+	@ManyToMany(cascade = {
+			CascadeType.PERSIST,
+			CascadeType.MERGE
+	})
+	@JoinTable(name = "user_role",
+	joinColumns = @JoinColumn(name = "user_id"),
+	inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private List<Role> roles;
+
 	public User() {}
 
 	public User(String name, String surname, String email) {
@@ -78,14 +88,6 @@ public class User implements UserDetails {
 		this.email = email;
 		this.phoneNumber1 = phoneNumber1;
 		this.photo = photo;
-	}
-
-	public List<Message> getMessages() {
-		return messages;
-	}
-
-	public void setMessages(List<Message> messages) {
-		this.messages = messages;
 	}
 
 	public Integer getId() {
@@ -148,6 +150,22 @@ public class User implements UserDetails {
 
 	public void setChats(List<Chat> chats) {
 		this.chats = chats;
+	}
+
+	public List<Message> getMessages() {
+		return messages;
+	}
+
+	public void setMessages(List<Message> messages) {
+		this.messages = messages;
+	}
+
+	public List<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
 	}
 
 	@Override

@@ -11,9 +11,13 @@ import org.springframework.web.server.ResponseStatusException;
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
+import com.reto.elorchat.model.enums.ChatTypeEnum;
+import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
+import com.reto.elorchat.model.persistence.Role;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.model.service.UserDTO;
@@ -56,7 +60,7 @@ public class ChatService implements IChatService{
 		ChatDTO response = convertFromChatDAOToDTO(chat);
 		return response;
 	}
-	
+
 	@Override
 	public ChatDTO findByName(String name) {
 
@@ -72,21 +76,36 @@ public class ChatService implements IChatService{
 	//PREGUNTAR PQ EL getUsers() no me carga la lista que he metido en addUserToChat
 	@Override
 	//@Transactional
-	public ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists {
+	public ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException {
 
 		User admin = userRepository.findById(chatDTO.getAdminId()).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Administrador no encontrado")
 				);
 
 		if(chatRepository.existsByName(chatDTO.getName())) {			
-			throw new ChatNameAlreadyExists("El chat no existe");
+			throw new ChatNameAlreadyExists("El chat con ese nombre ya existe");
 		}else {
-			Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
-			if(chat != null){
-				chatRepository.addUserToChat(chat.getId(), admin.getId());
+			boolean isPrivate = checkIfGroupIsPrivate(chatDTO);
+			if(isPrivate) {
+				boolean isProfessor = checkIfIsProfessor(admin);
+				if(isProfessor) {
+					Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
+					if(chat != null){
+						chatRepository.addUserToChat(chat.getId(), admin.getId());
+					}
+					ChatDTO response = convertFromChatDAOToDTO(chat);
+					return response;	
+				}else {
+					throw new HasNoRightToCreatePrivateException("Has no right to create a private");
+				}
+			}else{
+				Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
+				if(chat != null){
+					chatRepository.addUserToChat(chat.getId(), admin.getId());
+				}
+				ChatDTO response = convertFromChatDAOToDTO(chat);
+				return response;
 			}
-			ChatDTO response = convertFromChatDAOToDTO(chat);
-			return response;
 		}
 	}
 
@@ -142,8 +161,27 @@ public class ChatService implements IChatService{
 			throw new CantLeaveChatException("Admin Cant Leave the Group");
 		}			
 		chatRepository.leaveChat(idChat, idUser);
-	    return true;
-		
+		return true;
+
+	}
+
+	private boolean checkIfGroupIsPrivate(ChatDTO chatDTO) {
+		if (chatDTO.getType() == ChatTypeEnum.PRIVATE) {
+			System.out.println("Es privado");
+			return true;
+		}
+		return false;
+	}
+
+	private boolean checkIfIsProfessor(User admin) {
+
+		for(Role role: admin.getRoles()) {
+			if(role.getName().equalsIgnoreCase(RoleEnum.PROFESSOR.value)) {
+				return true;
+			}
+		}
+		return false;
+
 	}
 	//CONVERTS
 	//---------------------------------------
@@ -155,46 +193,46 @@ public class ChatService implements IChatService{
 				chat.getType(),
 				chat.getAdminId()
 				);
-//
-//		if (chat.getUsers() != null) {
-//			List<UserDTO> userList = new ArrayList<UserDTO>();
-//			for(User user : chat.getUsers()) {
-//				userList.add(convertFromUserDAOToDTO(user));
-//			}
-//			response.setUsers(userList);
-//		}
-//		if (chat.getMessages() != null) {
-//			List<MessageDTO> messageList = new ArrayList<MessageDTO>();
-//			for(Message message : chat.getMessages()) {
-//				messageList.add(convertFromMessageDAOToDTO(message));
-//			}
-//			response.setMessages(messageList);
-//		}
+		//
+		//		if (chat.getUsers() != null) {
+		//			List<UserDTO> userList = new ArrayList<UserDTO>();
+		//			for(User user : chat.getUsers()) {
+		//				userList.add(convertFromUserDAOToDTO(user));
+		//			}
+		//			response.setUsers(userList);
+		//		}
+		//		if (chat.getMessages() != null) {
+		//			List<MessageDTO> messageList = new ArrayList<MessageDTO>();
+		//			for(Message message : chat.getMessages()) {
+		//				messageList.add(convertFromMessageDAOToDTO(message));
+		//			}
+		//			response.setMessages(messageList);
+		//		}
 		return response;
 	}
 
 
-//	private MessageDTO convertFromMessageDAOToDTO(Message message) {
-//
-//		MessageDTO response = new MessageDTO(
-//				message.getId(),
-//				message.getText(),
-//				message.getDate()
-//				);
-//		return response;
-//	}
-//
-//	private UserDTO convertFromUserDAOToDTO(User user) {
-//		UserDTO response = new UserDTO(
-//				user.getId(),
-//				user.getName(),
-//				user.getSurname(),
-//				user.getEmail(),
-//				user.getPhoneNumber1(),
-//				user.getPhoto());
-//
-//		return response;
-//	}
+	//	private MessageDTO convertFromMessageDAOToDTO(Message message) {
+	//
+	//		MessageDTO response = new MessageDTO(
+	//				message.getId(),
+	//				message.getText(),
+	//				message.getDate()
+	//				);
+	//		return response;
+	//	}
+	//
+	//	private UserDTO convertFromUserDAOToDTO(User user) {
+	//		UserDTO response = new UserDTO(
+	//				user.getId(),
+	//				user.getName(),
+	//				user.getSurname(),
+	//				user.getEmail(),
+	//				user.getPhoneNumber1(),
+	//				user.getPhoto());
+	//
+	//		return response;
+	//	}
 
 	private Chat convertFromChatDTOToDAO(ChatDTO chatDTO, User admin) {
 

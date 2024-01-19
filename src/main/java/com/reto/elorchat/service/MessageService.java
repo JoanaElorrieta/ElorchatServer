@@ -10,7 +10,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
-import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.repository.MessageRepository;

@@ -54,7 +54,7 @@ public class SocketController {
 			client.joinRoom(room);
 
 			// se podria notificar a aquellos que estan en la room
-			// socketIoServer.getRoomOperations(room).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
+			socketIoServer.getRoomOperations(room).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
 
 			// aunque lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha accedido a la room
 
@@ -98,7 +98,6 @@ public class SocketController {
 				break;
 			}
 		}
-
 		return response;
 	}
 }

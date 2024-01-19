@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
@@ -52,7 +53,7 @@ public class ChatController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication) throws ChatNameAlreadyExists{
+	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException{
 		User user = (User) authentication.getPrincipal();
 		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest, user.getId())));
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);

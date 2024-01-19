@@ -5,6 +5,7 @@ import java.util.List;
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.service.ChatDTO;
 
@@ -16,7 +17,7 @@ public interface IChatService {
 
 	ChatDTO findByName(String name);
 
-	ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists ;
+	ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException;
 
 	Integer canEnterUserChat(Integer idChat, Integer idUser);
 

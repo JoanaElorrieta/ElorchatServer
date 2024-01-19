@@ -1,7 +1,7 @@
 package com.reto.elorchat.config.socketio;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +38,7 @@ public class SocketIOConfig {
 
 	@Autowired
 	ChatService chatService;
-	
+
 
 	@Autowired
 	MessageService messageService;
@@ -73,6 +73,8 @@ public class SocketIOConfig {
 		server.addConnectListener(new MyConnectListener(server));
 		server.addDisconnectListener(new MyDisconnectListener());
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
+		//		server.addEventListener(SocketEvents.ON_ROOM_JOIN.value, MessageFromClient.class, onSendMessage());
+		//		server.addEventListener(SocketEvents.ON_ROOM_LEFT.value, MessageFromClient.class, onSendMessage());
 		server.start();
 
 		return server;
@@ -214,13 +216,13 @@ public class SocketIOConfig {
 				// enviamos a la room correspondiente:
 				System.out.printf("Mensaje enviado a la room" + message);
 				server.getRoomOperations(data.getRoom()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
-				//	public MessageDTO(Integer id, String text, Date date, Integer chatId,  Integer userId) {
-		        LocalDate currentDate = LocalDate.now();
+				// Get the current timestamp
+				Instant currentInstant = Instant.now();
 
-		        // Convert LocalDate to Date
-		        Date date = java.sql.Date.valueOf(currentDate);
-		        ChatDTO chatDTO = chatService.findByName(data.getRoom());
-				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), date, chatDTO.getId() , authorId);
+				// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+				Timestamp currentTimestamp = Timestamp.from(currentInstant);
+				ChatDTO chatDTO = chatService.findByName(data.getRoom());
+				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), currentTimestamp, chatDTO.getId() , authorId);
 				messageService.createMessage(messageDTO);
 				// TODO esto es para mandar a todos los clientes. No para mandar a los de una Room
 				// senderClient.getNamespace().getBroadcastOperations().sendEvent("chat message", message);
