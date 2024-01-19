@@ -111,9 +111,16 @@ public class ChatController {
 	@DeleteMapping("/leaveChat/{idChat}")
 	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat,
 			Authentication authentication) throws ChatNotFoundException, CantLeaveChatException{
+		Integer response; 
 		User user = (User) authentication.getPrincipal();
-		chatService.leaveChat(idChat, user.getId());
-		return new ResponseEntity<>(HttpStatus.OK);
+		boolean boolValue =chatService.leaveChat(idChat, user.getId());
+		if (boolValue) {
+			response = 1;
+		}
+		else {
+			response = 0;
+		}
+		return new ResponseEntity<Integer>(response,HttpStatus.OK);
 	}
 
 	//CONVERTS

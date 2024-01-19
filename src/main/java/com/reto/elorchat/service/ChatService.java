@@ -133,7 +133,7 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public void leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException{
+	public boolean leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException{
 
 		Chat chat = chatRepository.findById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
@@ -142,6 +142,8 @@ public class ChatService implements IChatService{
 			throw new CantLeaveChatException("Admin Cant Leave the Group");
 		}			
 		chatRepository.leaveChat(idChat, idUser);
+	    return true;
+		
 	}
 	//CONVERTS
 	//---------------------------------------

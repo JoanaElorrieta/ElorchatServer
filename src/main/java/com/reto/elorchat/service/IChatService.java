@@ -26,7 +26,7 @@ public interface IChatService {
 	
 	void addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat;
 	
-	void leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException;
+	boolean leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException;
 
 	void deleteChat(Integer id) throws ChatNotFoundException;
 }
