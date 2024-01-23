@@ -99,7 +99,8 @@
     </form>
 
     <form id="boton" action="">
-        <input id="room2" name="room2" autocomplete="off" placeholder="Room..." value="Grupo1" /><button type="submit">Entrar</button>
+        <input id="room2" name="room2" autocomplete="off" placeholder="Room..." value="Grupo1" /><button
+            type="submit">Entrar</button>
     </form>
 
     <script>
@@ -140,8 +141,13 @@
                 //socket.emit('send message', {message: message.value, room: room.value});
                 // realizar una petición GET HTTP
                 fetch('http://localhost:8063/api/sockets/join-room/Group1/18', {
-                    method: 'GET',
-                    // Puedes agregar encabezados u otras opciones según tus necesidades
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', // Ajusta según tu necesidad
+                    },
+                    body: JSON.stringify({
+                        room2: room2.value,
+                    }),
                 })
                     .then(response => {
                         if (!response.ok) {
@@ -157,6 +163,7 @@
                     .catch(error => {
                         console.error('Error:', error);
                     });
+
                 // quitamos el valor del input del html para nuevos chats
                 message.value = "";
             }
