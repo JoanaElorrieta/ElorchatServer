@@ -1,17 +1,24 @@
 package com.reto.elorchat.model.socket;
 
-public class MessageFromClient {
-    private String room;
-    private String message;
+import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+public class MessageFromClient {
+    private Integer room;
+    private String message;
+    
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date sent;
 
     public MessageFromClient() {
         super();
     }
-    public MessageFromClient(String room, String message) {
+    public MessageFromClient(Integer room, String message, Date sent) {
     	super();
         this.message = message;
         this.room = room;
+        this.sent = sent;
     }
 
 	public String getMessage() {
@@ -22,14 +29,20 @@ public class MessageFromClient {
 		this.message = message;
 	}
 
-	public String getRoom() {
+	public Integer getRoom() {
 		return room;
 	}
 
-	public void setRoom(String room) {
+	public void setRoom(Integer room) {
 		this.room = room;
 	}
-	
+
+	public Date getSent() {
+		return sent;
+	}
+	public void setSent(Date sent) {
+		this.sent = sent;
+	}
 	@Override
 	public String toString() {
 		return "MessageFromClient [room=" + room + ", message=" + message + "]";

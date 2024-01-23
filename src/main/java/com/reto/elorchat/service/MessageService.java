@@ -76,7 +76,8 @@ public class MessageService implements IMessageService{
 		Message response = new Message(
 				messageDTO.getId(), 
 				messageDTO.getText(),
-				messageDTO.getDate(),
+				messageDTO.getSent(),
+				messageDTO.getSaved(),
 				messageDTO.getChatId(),
 				messageDTO.getUserId());
 
@@ -92,7 +93,8 @@ public class MessageService implements IMessageService{
 		MessageDTO response = new MessageDTO(
 				message.getId(), 
 				message.getText(),
-				message.getDate(),
+				message.getSent(),
+				message.getSaved(),
 				message.getChatId(),
 				message.getUserId());
 		return response;

@@ -92,20 +92,33 @@ public class SocketIOConfig {
 
 		@Override
 		public void onConnect(SocketIOClient client) {
-			// ojo por que este codigo no esta bien en si
-			// TODO el que no tenga autorization no deberia ni poder conectarse. gestionar
-			HttpHeaders headers = client.getHandshakeData().getHttpHeaders();
-			if (headers.get(AUTHORIZATION_HEADER) == null) {
+
+			if (!isAllowedToConnect(client)){
 				// FUERA
 				System.out.println("Nuevo cliente no permitida la conexion: " + client.getSessionId());
 				client.disconnect();
 			} else {
+				HttpHeaders headers = client.getHandshakeData().getHttpHeaders();
 				loadClientData(headers, client);
 				System.out.printf("Nuevo cliente conectado: %s . Clientes conectados ahora mismo: %d \n", client.getSessionId(), this.server.getAllClients().size());
-
 				// aqui incluso se podria notificar a todos o a salas de que se ha conectado...
 				// server.getBroadcastOperations().sendEvent("chat message", messageFromServer);
 			}
+		}
+
+		//COMPROBAMOS SI EL CLIENTE CUMPLE LOS REQUISITOS PARA CONECTARSE
+		private boolean isAllowedToConnect(SocketIOClient client) {
+
+			HttpHeaders headers = client.getHandshakeData().getHttpHeaders();
+
+			String authorization = headers.get(AUTHORIZATION_HEADER);
+			String token = authorization.split(" ")[1].trim();
+
+			boolean hasAuthorizationHeader = headers.get(AUTHORIZATION_HEADER) != null;
+
+			boolean isTokenValid = jwtUtil.validateAccessToken(token);
+
+			return hasAuthorizationHeader && isTokenValid;
 		}
 
 		private void loadClientData(HttpHeaders headers, SocketIOClient client) {
@@ -114,32 +127,24 @@ public class SocketIOConfig {
 				String authorization = headers.get(AUTHORIZATION_HEADER);
 				String token = authorization.split(" ")[1].trim();
 
-				boolean isTokenValid = jwtUtil.validateAccessToken(token);
+				Integer userId = jwtUtil.getUserId(token);
+				//ASK necesito hacer aqui otro converter? para que no dependa del modelo del service?
+				UserDTO userDTO = userService.findById(userId);
+				String authorId = userDTO.getId().toString();
+				String authorName = userDTO.getName();
+				String authorPhoto =  userDTO.getPhoto();
 
-				if(isTokenValid) {
-					Integer userId = jwtUtil.getUserId(token);
-					//ASK necesito hacer aqui otro converter? para que no dependa del modelo del service?
-					UserDTO userDTO = userService.findById(userId);
-					String authorId = userDTO.getId().toString();
-					String authorName = userDTO.getName();
-					String authorPhoto =  userDTO.getPhoto();
+				client.set(CLIENT_USER_ID_PARAM, authorId);
+				client.set(CLIENT_USER_NAME_PARAM, authorName);
+				//client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
 
-					client.set(CLIENT_USER_ID_PARAM, authorId);
-					client.set(CLIENT_USER_NAME_PARAM, authorName);
-					//client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
-
-					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
-					//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
-					System.out.println(userDTO.getChats().size());
-					for(ChatDTO chat: userDTO.getChats()) {			
-						System.out.println("Usuario " + authorName + " conectado a " + chat.getName());							
-						client.joinRoom(chat.getName());
-					}
-					//System.out.println(jwtUtil.getSubject(token));
-					//System.out.println(jwtUtil.getUserId(token));
-				} else {					
-					System.out.println(token);
-				}
+				//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
+				//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
+				System.out.println(userDTO.getChats().size());
+				for(ChatDTO chat: userDTO.getChats()) {			
+					client.joinRoom(chat.getId().toString());
+					System.out.println("Usuario " + authorName + " conectado a " + chat.getName() + " id: " + chat.getId());							
+				}			
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -159,7 +164,7 @@ public class SocketIOConfig {
 
 		// podemos notificar a los demas usuarios que ha salido. Ojo por que el broadcast envia a todos
 		private void notificateDisconnectToUsers(SocketIOClient client) {
-			String room = null;
+			Integer room = null;
 			String message = "el usuario se ha desconectado salido";
 			String authorIdS = client.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
@@ -168,9 +173,12 @@ public class SocketIOConfig {
 			MessageFromServer messageFromServer = new MessageFromServer(
 					MessageType.SERVER, 
 					room, 
+					null,
 					message, 
 					authorName, 
-					authorId
+					authorId,
+					null,
+					null
 					);
 			client.getNamespace().getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_MESSAGE.value, messageFromServer);
 		}
@@ -187,27 +195,59 @@ public class SocketIOConfig {
 			System.out.printf("Mensaje recibido de (%d) %s. El mensaje es el siguiente: %s \n", authorId, authorName, data.toString());
 
 			// TODO comprobar si el usuario esta en la room a la que quiere enviar...
-			boolean isAllowedToSendToRoom = checkIfSendCanSendToRoom(senderClient, data.getRoom());
+			boolean isAllowedToSendToRoom = checkIfSendCanSendToRoom(senderClient, data.getRoom().toString());
 			if (isAllowedToSendToRoom) {
 
+				if (data.getMessage() == null || data.getMessage().trim().isEmpty()) {
+					MessageFromServer errorMessage  = new MessageFromServer(
+							MessageType.SERVER, 
+							data.getRoom(), 
+							null,
+							"No puedes enviar un mensaje vacio", 
+							"Server", 
+							0,
+							null,
+							null
+							);
+					System.out.printf("Mensaje reenviado al usuario" + errorMessage);
+					senderClient.sendEvent(SocketEvents.ON_MESSAGE_NOT_SENT.value, errorMessage);
+					return;
+				}
+
 				MessageFromServer message = new MessageFromServer(
-						MessageType.CLIENT, 
+						MessageType.CLIENT,
 						data.getRoom(), 
+						null,
 						data.getMessage(), 
 						authorName, 
-						authorId
+						authorId,
+						data.getSent(),	
+						null
 						);
-				// enviamos a la room correspondiente:
-				System.out.printf("Mensaje enviado a la room" + message);
-				server.getRoomOperations(data.getRoom()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
+
+				//ASK PORQUE ME SUMA 1 HORA MAS¿?¿? LOL
+				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
+				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
+
+				ChatDTO chatDTO = chatService.findById(data.getRoom());
 				// Get the current timestamp
 				Instant currentInstant = Instant.now();
-
 				// Convert Instant to Timestamp para obtener la date con la hora/min/sec
-				Timestamp currentTimestamp = Timestamp.from(currentInstant);
-				ChatDTO chatDTO = chatService.findByName(data.getRoom());
-				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), currentTimestamp, chatDTO.getId() , authorId);
-				messageService.createMessage(messageDTO);
+				Timestamp savedDate = Timestamp.from(currentInstant);
+				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), data.getSent(), savedDate, chatDTO.getId() , authorId);
+				MessageDTO createdMessage = messageService.createMessage(messageDTO);
+
+				message.setMessageId(createdMessage.getId());
+
+				//ASK es mejor estar pillando los que va creando la bbdd? igual si, no?
+				message.setSaved(createdMessage.getSaved());
+
+
+				// enviamos a la room correspondiente:
+				System.out.printf("Mensaje enviado a la room" + message);
+				System.out.printf("A LAS " + createdMessage.getSent());
+				server.getRoomOperations(data.getRoom().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
+
 				// TODO esto es para mandar a todos los clientes. No para mandar a los de una Room
 				// senderClient.getNamespace().getBroadcastOperations().sendEvent("chat message", message);
 
@@ -219,12 +259,16 @@ public class SocketIOConfig {
 				// incluso ampliar la clase messageServer con otro enum de errores
 				// o crear un evento nuevo, no "chat message" con otros datos
 				//¿?¿?¿?¿?
+
 				MessageFromServer errorMessage  = new MessageFromServer(
 						MessageType.SERVER, 
 						data.getRoom(), 
+						null,
 						"No puedes enviar a este grupo", 
 						"Server", 
-						0
+						0,
+						null,
+						null
 						);
 				System.out.printf("Mensaje reenviado al usuario" + errorMessage);
 				senderClient.sendEvent(SocketEvents.ON_MESSAGE_NOT_SENT.value, errorMessage);
@@ -247,9 +291,11 @@ public class SocketIOConfig {
 			System.out.println("ROOM JOIN");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
-			String room = data.getName();
+			String room = data.getRoomId().toString();
 
 			senderClient.joinRoom(room);
+			System.out.println("Usuario " + authorId + " conectado a " + room);							
+
 		};
 	}
 
@@ -258,7 +304,7 @@ public class SocketIOConfig {
 			System.out.println("ROOM LEFT");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
-			String room = data.getName();
+			String room = data.getRoomId().toString();
 
 			senderClient.leaveRoom(room);
 		};

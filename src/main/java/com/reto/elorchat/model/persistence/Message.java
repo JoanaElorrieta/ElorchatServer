@@ -25,7 +25,9 @@ public class Message {
 	@Column
 	private String text;
 	@Column
-	private Date date;
+	private Date sent;
+	@Column
+	private Date saved;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_id", foreignKey = @ForeignKey(name = "Fk_chat_id" ))
 	@JsonManagedReference
@@ -46,53 +48,59 @@ public class Message {
 
 	public Message () {}
 
-	public Message(Integer id, String text, Date date) {
+	public Message(Integer id, String text, Date sent, Date saved) {
 		super();
 		this.id = id;
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 	}
 
-	public Message(String text, Date date, Chat chat, User user) {
+	public Message(String text, Date sent, Date saved, Chat chat, User user) {
 		super();
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 		this.chat = chat;
 		this.user = user;
 	}
 
-	public Message(String text, Date date, Chat chat, Integer chatId) {
+	public Message(String text, Date sent, Date saved, Chat chat, Integer chatId) {
 		super();
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 		this.chat = chat;
 		this.chatId= chatId;
 	}
-	public Message(Integer id, String text, Date date, Chat chat, Integer chatId) {
+	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId) {
 		super();
 		this.id = id;
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 		this.chat = chat;
 		this.chatId= chatId;
 	}
 
-	public Message(Integer id, String text, Date date, Chat chat, Integer chatId, User user, Integer userId) {
+	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId, User user, Integer userId) {
 		super();
 		this.id = id;
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 		this.chat = chat;
 		this.chatId = chatId;
 		this.user = user;
 		this.userId = userId;
 	}
 
-	public Message(Integer id, String text, Date date, Integer chatId, Integer userId) {
+	public Message(Integer id, String text, Date sent, Date saved, Integer chatId, Integer userId) {
 		super();
 		this.id = id;
 		this.text = text;
-		this.date = date;
+		this.sent = sent;
+		this.saved = saved;
 		this.chatId = chatId;
 		this.userId = userId;
 	}
@@ -113,12 +121,16 @@ public class Message {
 		this.text = text;
 	}
 
-	public Date getDate() {
-		return date;
+	public Date getSent() {
+		return sent;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setSaved(Date sent) {
+		this.sent = sent;
+	}
+
+	public Date getSaved() {
+		return saved;
 	}
 
 	public Chat getChat() {

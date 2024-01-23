@@ -2,23 +2,23 @@ package com.reto.elorchat.model.socket;
 
 public class Room {
 	
-	private String name;
+	private Integer roomId;
 	private Integer userId;
 	
 	public Room() {}
 	
-	public Room(String name, Integer userId) {
+	public Room(Integer roomId, Integer userId) {
 		super();
-		this.name = name;
+		this.roomId = roomId;
 		this.userId = userId;
 	}
 
-	public String getName() {
-		return name;
+	public Integer getRoomId() {
+		return roomId;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setRoomId(Integer name) {
+		this.roomId = name;
 	}
 
 	public Integer getUserId() {
@@ -31,6 +31,6 @@ public class Room {
 
 	@Override
 	public String toString() {
-		return "Room [name=" + name + ", userId=" + userId + "]";
+		return "Room [roomId=" + roomId + ", userId=" + userId + "]";
 	}
 }

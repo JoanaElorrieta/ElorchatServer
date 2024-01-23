@@ -36,9 +36,12 @@ public class SocketController {
 		MessageFromServer message = new MessageFromServer(
 				MessageType.SERVER, 
 				null, 
+				null,
 				"Hola, clientes de Socket.IO!", 
 				"Server", 
-				0
+				0,
+				null, 
+				null
 				);
 
 		socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
@@ -52,14 +55,14 @@ public class SocketController {
 
 		SocketIOClient client = findClientByUserId(room.getUserId());
 		if (client != null) {
-			client.joinRoom(room.getName());
+			client.joinRoom(room.getRoomId().toString());
 
 			System.out.println(client.getNamespace().getName() + "se unio a" + room);
 			// se podria notificar a aquellos que estan en la 
 
 			socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value);
 
-			socketIoServer.getRoomOperations(room.getName()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
+			socketIoServer.getRoomOperations(room.getRoomId().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, "el usuario XXXXXX se ha unido a la sala " + room);
 			//aunque lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha accedido a la room
 
 			return "Usuario unido a la sala";
@@ -77,11 +80,11 @@ public class SocketController {
 				SocketIOClient client = findClientByUserId(room.getUserId());
 				if (client != null) {
 					System.out.println(client.getAllRooms().size());
-					client.leaveRoom(room.getName());
+					client.leaveRoom(room.getRoomId().toString());
 					System.out.println(client.getAllRooms().size());
 					// se podria notificar a aquellos que estan en la room
 					socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value);
-					socketIoServer.getRoomOperations(room.getName()).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
+					socketIoServer.getRoomOperations(room.getRoomId().toString()).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
 					// podriamos registrar distintos eventos, no "chat message" para estos casos
 
 					// lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha sido eliminado de la room

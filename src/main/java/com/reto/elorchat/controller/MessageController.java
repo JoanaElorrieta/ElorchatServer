@@ -53,7 +53,8 @@ public class MessageController {
 		MessageGetResponse response = new MessageGetResponse(
 				messageDTO.getId(), 
 				messageDTO.getText(),
-				messageDTO.getDate(),
+				messageDTO.getSent(),
+				messageDTO.getSaved(),
 				messageDTO.getChatId(),
 				messageDTO.getUserId());
 		return response;

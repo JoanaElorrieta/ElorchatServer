@@ -263,7 +263,8 @@ public class ChatService implements IChatService{
 		Message response = new Message(
 				messageDTO.getId(),
 				messageDTO.getText(),
-				messageDTO.getDate()
+				messageDTO.getSent(),
+				messageDTO.getSaved()
 				);
 		return response;
 	}
