@@ -128,36 +128,18 @@ public class SocketIOConfig {
 					client.set(CLIENT_USER_NAME_PARAM, authorName);
 					//client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
 
-					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXCION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
+					//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
 					//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
+					System.out.println(userDTO.getChats().size());
 					for(ChatDTO chat: userDTO.getChats()) {			
 						System.out.println("Usuario " + authorName + " conectado a " + chat.getName());							
 						client.joinRoom(chat.getName());
 					}
 					//System.out.println(jwtUtil.getSubject(token));
 					//System.out.println(jwtUtil.getUserId(token));
+				} else {					
+					System.out.println(token);
 				}
-				//User user = (User) client;
-				//System.out.println(user.getName());
-				//String jwt = authorization.split(" ")[1];
-
-				// TODO HAY QUE VALIDAR Y CARGAR ESTOS DATOS DEL JWT! y si no no dejar conectarle o desconectarle
-				// si esta autenticado y puede, meterle en sus salas correspondientes...
-				// Esto está hardcodeado
-				// vamos a meter el userId y el userName en el socket, para futuras operaciones.
-
-				//String[] datos = jwt.split(":");
-				//				String authorId = datos[1];
-				//				String authorName = datos[2];
-
-				//client.set(CLIENT_USER_ID_PARAM, authorId);
-				//client.set(CLIENT_USER_NAME_PARAM, authorName);
-
-				// TODO ejemplo de salas
-				// ojo por que "Room1" no es la misma sala que "room1"
-				//				client.joinRoom("default-room");
-				//				client.joinRoom("Room1");
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -262,20 +244,22 @@ public class SocketIOConfig {
 
 	private DataListener<Room> onRoomJoin() {
 		return (senderClient, data, acknowledge) -> {
+			System.out.println("ROOM JOIN");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getName();
-			
+
 			senderClient.joinRoom(room);
 		};
 	}
 
 	private DataListener<Room> onRoomLeft() {
 		return (senderClient, data, acknowledge) -> {
+			System.out.println("ROOM LEFT");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getName();
-			
+
 			senderClient.leaveRoom(room);
 		};
 	}
