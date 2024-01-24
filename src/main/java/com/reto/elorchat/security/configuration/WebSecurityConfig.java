@@ -73,7 +73,7 @@ public class WebSecurityConfig {
 				
 				// para todo lo demas habra que estar autenticado
 				//.requestMatchers(HttpMethod.GET, "/api/employees").hasAuthority(RoleEnum.ADMIN.toString())
-				.requestMatchers(HttpMethod.GET, "/index.html", "/prueba1.html").permitAll()
+				.requestMatchers(HttpMethod.GET, "/index.html", "/prueba1.html", "/find/{email}").permitAll()
 				
 				//.anyRequest().authenticated()
 				.anyRequest().permitAll()

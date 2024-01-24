@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.reto.elorchat.service.EmailPort;
 
 @RestController
-@RequestMapping(value = "/email")
+@RequestMapping("api/email")
 public class EmailController {
 	
 	@Autowired
@@ -17,7 +17,7 @@ public class EmailController {
 	
 	@PostMapping(value = "/send")
 	@ResponseBody
-	public boolean SendEmail()  {
+	public boolean sendEmail()  {
 		return emailPort.sendEmail();
 	}
 	
