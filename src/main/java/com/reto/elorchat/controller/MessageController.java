@@ -50,11 +50,14 @@ public class MessageController {
 	}
 	//CONVERTS
 	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
+		Long timeInMillis = messageDTO.getSent().getTime();
+		Long timeInMillis2 = messageDTO.getSaved().getTime();
+		
 		MessageGetResponse response = new MessageGetResponse(
 				messageDTO.getId(), 
 				messageDTO.getText(),
-				messageDTO.getSent(),
-				messageDTO.getSaved(),
+				timeInMillis,
+				timeInMillis2,
 				messageDTO.getChatId(),
 				messageDTO.getUserId());
 		return response;

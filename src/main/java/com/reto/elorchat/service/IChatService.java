@@ -25,7 +25,7 @@ public interface IChatService {
 
 	boolean existsByIdAndUsers_Id(Integer idChat, Integer idUser);
 	
-	void addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat;
+	boolean addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat;
 	
 	boolean leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException;
 

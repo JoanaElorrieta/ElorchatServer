@@ -5,13 +5,15 @@ import java.util.Date;
 public class MessageGetResponse {
 	private Integer id;
 	private String text;
-	private Date sent;
-	private Date saved;
+
+	private Long sent;
+
+	private Long saved;
 	private Integer chatId;
 	private Integer userId;
 
 
-	public MessageGetResponse(Integer id, String text, Date sent, Date saved, Integer chatId,  Integer userId) {
+	public MessageGetResponse(Integer id, String text, Long sent, Long saved, Integer chatId,  Integer userId) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -20,8 +22,8 @@ public class MessageGetResponse {
 		this.chatId = chatId;
 		this.userId = userId;
 	}
-	
-	public MessageGetResponse(Integer id, String text, Date sent, Date saved) {
+
+	public MessageGetResponse(Integer id, String text, Long sent, Long saved) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -44,19 +46,19 @@ public class MessageGetResponse {
 		this.text = text;
 	}
 
-	public Date getSent() {
+	public Long getSent() {
 		return sent;
 	}
 
-	public void setSent(Date sent) {
+	public void setSent(Long sent) {
 		this.sent = sent;
 	}
 
-	public Date getSaved() {
+	public Long getSaved() {
 		return saved;
 	}
 
-	public void setSaved(Date saved) {
+	public void setSaved(Long saved) {
 		this.saved = saved;
 	}
 
@@ -66,7 +68,7 @@ public class MessageGetResponse {
 	public void setChatId(Integer chatId) {
 		this.chatId = chatId;
 	}
-	
+
 	public Integer getUserId() {
 		return userId;
 	}

@@ -1,6 +1,7 @@
 package com.reto.elorchat.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
+import com.reto.elorchat.config.socketio.SocketEvents;
+import com.reto.elorchat.config.socketio.SocketIOConfig;
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
@@ -24,6 +29,7 @@ import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.socket.Room;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.service.IChatService;
 
@@ -33,6 +39,14 @@ public class ChatController {
 
 	@Autowired
 	private IChatService chatService;
+
+	@Autowired
+	private SocketIOServer socketIoServer;
+
+	//	@Autowired
+	//	public ChatController(SocketIOServer socketIoServer) {
+	//		this.socketIoServer = socketIoServer;
+	//	}
 
 	@GetMapping
 	public ResponseEntity<List<ChatGetResponse>> getChats(){
@@ -101,27 +115,55 @@ public class ChatController {
 	}
 
 	@PostMapping("/addToGroup/{idChat}")
-	public ResponseEntity<Integer> addUserToChat(@PathVariable Integer idChat,
-			Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat{
+	public ResponseEntity<Integer> addUserToChat(@PathVariable Integer idChat, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat{
+
+		Integer response; 
 		User user = (User) authentication.getPrincipal();
-		chatService.addUserToChat(idChat, user.getId());			
+		boolean boolValue =chatService.addUserToChat(idChat, user.getId()); 
+
+		if(boolValue) {
+			response = 1;
+			SocketIOClient client = findClientByUserId(user.getId());
+			if (client != null) {
+				Room room = new Room(idChat, user.getId());
+				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
+
+				client.joinRoom(idChat.toString());				
+				return new ResponseEntity<Integer>(response, HttpStatus.OK);
+			}else {
+				return new ResponseEntity<Integer>(response, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+			}
+		} else {
+			response = 0;
+		}
 		// TODO: handle exception
-		return new ResponseEntity<Integer>(HttpStatus.OK);
+		return new ResponseEntity<Integer>(response, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
 	}
 
 	@DeleteMapping("/leaveChat/{idChat}")
-	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat,
-			Authentication authentication) throws ChatNotFoundException, CantLeaveChatException{
+	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws ChatNotFoundException, CantLeaveChatException{
+
 		Integer response; 
 		User user = (User) authentication.getPrincipal();
 		boolean boolValue =chatService.leaveChat(idChat, user.getId());
+
 		if (boolValue) {
 			response = 1;
-		}
-		else {
+			SocketIOClient client = findClientByUserId(user.getId());
+			if (client != null) {
+				Room room = new Room(idChat, user.getId());
+				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
+
+				client.leaveRoom(idChat.toString());				
+				return new ResponseEntity<Integer>(response, HttpStatus.OK);
+			}else {
+				return new ResponseEntity<Integer>(response, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+			}
+		} else {
 			response = 0;
 		}
-		return new ResponseEntity<Integer>(response,HttpStatus.OK);
+
+		return new ResponseEntity<Integer>(response,HttpStatus.NOT_EXTENDED);
 	}
 
 	//CONVERTS
@@ -135,20 +177,20 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
-//		if (chatDTO.getUsers() != null) {
-//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-//			for(UserDTO userDTO : chatDTO.getUsers()) {
-//				userList.add(convertFromUserDTOToGetResponse(userDTO));
-//			}
-//			response.setUsers(userList);
-//		}
-//		if (chatDTO.getMessages() != null) {
-//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-//			}
-//			response.setMessages(messageList);
-//		}
+		//		if (chatDTO.getUsers() != null) {
+		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+		//			for(UserDTO userDTO : chatDTO.getUsers()) {
+		//				userList.add(convertFromUserDTOToGetResponse(userDTO));
+		//			}
+		//			response.setUsers(userList);
+		//		}
+		//		if (chatDTO.getMessages() != null) {
+		//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+		//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+		//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+		//			}
+		//			response.setMessages(messageList);
+		//		}
 		return response;
 	}
 
@@ -160,20 +202,20 @@ public class ChatController {
 				chatDTO.getAdminId()
 				);
 
-//		if (chatDTO.getUsers() != null) {
-//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-//			for(UserDTO userDTO : chatDTO.getUsers()) {
-//				userList.add(convertFromUserDTOToGetResponse(userDTO));
-//			}
-//			response.setUsers(userList);
-//		}
-//		if (chatDTO.getMessages() != null) {
-//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-//			}
-//			response.setMessages(messageList);
-//		}
+		//		if (chatDTO.getUsers() != null) {
+		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
+		//			for(UserDTO userDTO : chatDTO.getUsers()) {
+		//				userList.add(convertFromUserDTOToGetResponse(userDTO));
+		//			}
+		//			response.setUsers(userList);
+		//		}
+		//		if (chatDTO.getMessages() != null) {
+		//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
+		//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
+		//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
+		//			}
+		//			response.setMessages(messageList);
+		//		}
 		return response;
 	}
 
@@ -187,27 +229,41 @@ public class ChatController {
 				);
 		return response;
 	}
-	
-//	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
-//		MessageGetResponse response = new MessageGetResponse(
-//				messageDTO.getId(),
-//				messageDTO.getText(),
-//				messageDTO.getDate()
-//				);
-//		return response;
-//	}
-//
-//
-//	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
-//		UserGetResponse response = new UserGetResponse(
-//				userDTO.getId(),
-//				userDTO.getName(),
-//				userDTO.getSurname(),
-//				userDTO.getEmail(),
-//				userDTO.getPhoneNumber1());
-//		return response;
-//	}
+
+	//	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
+	//		MessageGetResponse response = new MessageGetResponse(
+	//				messageDTO.getId(),
+	//				messageDTO.getText(),
+	//				messageDTO.getDate()
+	//				);
+	//		return response;
+	//	}
+	//
+	//
+	//	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
+	//		UserGetResponse response = new UserGetResponse(
+	//				userDTO.getId(),
+	//				userDTO.getName(),
+	//				userDTO.getSurname(),
+	//				userDTO.getEmail(),
+	//				userDTO.getPhoneNumber1());
+	//		return response;
+	//	}
 
 	/////
+
+	private SocketIOClient findClientByUserId(Integer idUser) {
+		SocketIOClient response = null;
+
+		Collection<SocketIOClient> clients = socketIoServer.getAllClients();
+		for (SocketIOClient client: clients) {
+			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
+			if (currentClientId == idUser) {
+				response = client;
+				break;
+			}
+		}
+		return response;
+	}
 }
 

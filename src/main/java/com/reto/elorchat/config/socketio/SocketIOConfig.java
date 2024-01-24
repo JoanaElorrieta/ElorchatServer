@@ -185,7 +185,6 @@ public class SocketIOConfig {
 	}
 
 	private DataListener<MessageFromClient> onSendMessage() {
-		System.out.println("LLEGO");
 		return (senderClient, data, acknowledge) -> {
 
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
@@ -226,22 +225,29 @@ public class SocketIOConfig {
 						);
 
 				//ASK PORQUE ME SUMA 1 HORA MAS¿?¿? LOL
-				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
-				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
+//				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
+//				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
 
 				ChatDTO chatDTO = chatService.findById(data.getRoom());
 				// Get the current timestamp
 				Instant currentInstant = Instant.now();
 				// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 				Timestamp savedDate = Timestamp.from(currentInstant);
-				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), data.getSent(), savedDate, chatDTO.getId() , authorId);
+				
+				Long sentValue = data.getSent();
+
+				// Convert the long value to a Timestamp
+				Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
+				
+				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId);
 				MessageDTO createdMessage = messageService.createMessage(messageDTO);
 
 				message.setMessageId(createdMessage.getId());
 
 				//ASK es mejor estar pillando los que va creando la bbdd? igual si, no?
-				message.setSaved(createdMessage.getSaved());
-
+				message.setSaved(createdMessage.getSaved().getTime());
+				System.out.println(createdMessage.getSaved().getTime());
+				message.setSaved(createdMessage.getSaved().getTime());
 
 				// enviamos a la room correspondiente:
 				System.out.printf("Mensaje enviado a la room" + message);
@@ -292,9 +298,10 @@ public class SocketIOConfig {
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getRoomId().toString();
+			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
 
+			System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " CONECTADOOOOOOOO a " + room);							
 			senderClient.joinRoom(room);
-			System.out.println("Usuario " + authorId + " conectado a " + room);							
 
 		};
 	}
@@ -305,7 +312,9 @@ public class SocketIOConfig {
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getRoomId().toString();
+			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
 
+			System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " se ha DESCONECTADOOOOOOOO de " + room);							
 			senderClient.leaveRoom(room);
 		};
 	}

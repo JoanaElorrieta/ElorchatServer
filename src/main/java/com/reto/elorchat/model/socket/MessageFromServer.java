@@ -1,8 +1,5 @@
 package com.reto.elorchat.model.socket;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.reto.elorchat.model.enums.MessageType;
 
 public class MessageFromServer {
@@ -14,18 +11,16 @@ public class MessageFromServer {
 	private String authorName;
 	private Integer authorId;
 
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private Date sent;
+	private Long sent;
 
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private Date saved;
+	private Long saved;
 
 
 	public MessageFromServer() {
 		super();
 	}
 
-	public MessageFromServer(MessageType messageType, Integer room, Integer messageId, String message, String authorName, Integer authorId, Date sent, Date saved) {
+	public MessageFromServer(MessageType messageType, Integer room, Integer messageId, String message, String authorName, Integer authorId, Long sent, Long saved) {
 		super();
 		this.messageType = messageType;
 		this.room = room;
@@ -77,19 +72,19 @@ public class MessageFromServer {
 		this.authorId = authorId;
 	}
 
-	public Date getSent() {
+	public Long getSent() {
 		return sent;
 	}
 
-	public void setSent(Date sent) {
+	public void setSent(Long sent) {
 		this.sent = sent;
 	}
 
-	public Date getSaved() {
+	public Long getSaved() {
 		return saved;
 	}
 
-	public void setSaved(Date saved) {
+	public void setSaved(Long saved) {
 		this.saved = saved;
 	}
 

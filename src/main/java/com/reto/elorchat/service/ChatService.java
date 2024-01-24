@@ -137,7 +137,7 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public void addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat{
+	public boolean addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat{
 		// TODO Auto-generated method stub
 
 		Chat chat = chatRepository.findById(idChat).orElseThrow(
@@ -149,6 +149,7 @@ public class ChatService implements IChatService{
 			}
 		}
 		chatRepository.addUserToChat(idChat, idUser);
+		return true;
 	}
 
 	@Override
@@ -159,10 +160,10 @@ public class ChatService implements IChatService{
 				);
 		if(idUser == chat.getAdminId()) {
 			throw new CantLeaveChatException("Admin Cant Leave the Group");
-		}			
+		}	
+		
 		chatRepository.leaveChat(idChat, idUser);
 		return true;
-
 	}
 
 	private boolean checkIfGroupIsPrivate(ChatDTO chatDTO) {
