@@ -70,6 +70,11 @@ public class UserService implements IUserService, UserDetailsService {
 
 		return response;	
 	}
+	
+	@Override
+	public Integer findUserByEmail(String email) {
+		return userRepository.findUserByEmail(email);
+	}
 
 	//ASK
 	//AQUI TAMBIEN HAGO? PREGUNTAR PQ ENTONCES EN AUTH CONTROLLER LO CASTEAMOS AL MODELO DE HIBERNATE Y NO AL DEL CONTROLADOR
@@ -105,4 +110,5 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 	}
 	/////
+
 }

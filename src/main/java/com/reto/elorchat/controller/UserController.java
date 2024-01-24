@@ -32,6 +32,11 @@ public class UserController {
 		}
 		return new ResponseEntity<List<UserGetResponse>>(response ,HttpStatus.OK);
 	}
+	@GetMapping("/find/{email}")
+	public ResponseEntity<Integer> getUserByEmail(@PathVariable("email") String email){
+		Integer response = userService.findUserByEmail(email);
+		return new ResponseEntity<Integer>(response, HttpStatus.OK);
+	}
 	//
 	//	@GetMapping("/users")
 	//	public ResponseEntity<Iterable<User>> getUsers(){
