@@ -5,28 +5,34 @@ public class EmailRequest {
 	private String content;
 	private String subject;
 	
+	
+	public EmailRequest() {
+	}
+	
 	public String getEmail() {
-		return email;
+		return "elorchat.noreply@gmail.com";
 	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
+	
 	public String getContent() {
-		return content;
+		return "Tu nueva contraseña es "+getPassword();
 	}
-	public void setContent(String content) {
-		this.content = content;
-	}
+	
 	public String getSubject() {
-		return subject;
+		return "Elorchat-noreply";
 	}
+	
+	public String getPassword() {
+		PasswordGenerator passwordGenerator = new PasswordGenerator();
+        return passwordGenerator.getPassword();
+	}
+	
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
+	
 	@Override
 	public String toString() {
-		return "EmailBody [email=" + email + ", content=" + content + ", subject=" + subject + "]";
+		return "EmailRequest [email=" + email + ", content=" + content + ", subject=" + subject +"]";
 	}
-	
-	
+
 }

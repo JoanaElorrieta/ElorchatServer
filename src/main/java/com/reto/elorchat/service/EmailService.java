@@ -21,7 +21,8 @@ public class EmailService implements EmailPort{
 	private JavaMailSender sender;
 
 	@Override
-	public boolean sendEmail(EmailRequest emailBody)  {
+	public boolean sendEmail()  {
+		EmailRequest emailBody = new EmailRequest();
 		LOGGER.info("EmailBody: {}", emailBody.toString());
 		return sendEmailTool(emailBody.getContent(),emailBody.getEmail(), emailBody.getSubject());
 	}
