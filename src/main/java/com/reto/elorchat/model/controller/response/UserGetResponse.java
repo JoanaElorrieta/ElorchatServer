@@ -1,11 +1,20 @@
 package com.reto.elorchat.model.controller.response;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 public class UserGetResponse {
 	private Integer id;
 	private String name;
 	private String surname;
 	private String email;
 	private Long phoneNumber1;
+	private Integer roleId;
+	@JsonInclude(Include.NON_NULL)
+	private List<Integer> chatId; 
+
 
 	public UserGetResponse(Integer id, String name, String surname, String email, Long phoneNumber1) {
 		super();
@@ -15,6 +24,7 @@ public class UserGetResponse {
 		this.email = email;
 		this.phoneNumber1 = phoneNumber1;
 	}
+	
 	public Integer getId() {
 		return id;
 	}
@@ -43,6 +53,23 @@ public class UserGetResponse {
 	public Long getPhoneNumber1() {
 		return phoneNumber1;
 	}
+	
+	public Integer getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(Integer roleId) {
+		this.roleId = roleId;
+	}
+
+	public List<Integer> getChatId() {
+		return chatId;
+	}
+
+	public void setChatId(List<Integer> chatId) {
+		this.chatId = chatId;
+	}
+
 	public void setPhoneNumber1(Long phoneNumber1) {
 		this.phoneNumber1 = phoneNumber1;
 	}

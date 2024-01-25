@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
+import com.reto.elorchat.model.persistence.Role;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.repository.ChatRepository;
@@ -38,9 +40,18 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public Iterable<User> findAll() {
-		return userRepository.findAll();
+	public List<UserDTO> findAll() {
+
+		Iterable<User> listUser = userRepository.findAll();
+
+		List<UserDTO> response = new ArrayList<UserDTO>();
+
+		for(User user: listUser) {
+			response.add(convertFromUserDAOToDTO(user));
+		}
+		return response;	
 	}
+
 
 	@Override
 	public UserDTO findById(Integer id) {
@@ -52,13 +63,13 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 
 	}
-	
+
 	@Override
 	public List<UserDTO> findAllUsersByChatId(Integer chatId) {
-		
-//		Chat chat = chatRepository.findById(chatId).orElseThrow(
-//				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-//				);
+
+		//		Chat chat = chatRepository.findById(chatId).orElseThrow(
+		//				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+		//				);
 
 		Iterable<User> listUser= userRepository.findAllUsersByChatId(chatId);
 
@@ -70,7 +81,7 @@ public class UserService implements IUserService, UserDetailsService {
 
 		return response;	
 	}
-	
+
 	@Override
 	public Integer findUserByEmail(String email) {
 		return userRepository.findUserByEmail(email);
@@ -96,7 +107,19 @@ public class UserService implements IUserService, UserDetailsService {
 			}
 			response.setChats(chatList);
 		}
-		return response;
+
+		if (user.getRoles() != null) {
+			for(Role role: user.getRoles()) {
+				if(role.getName().equalsIgnoreCase(RoleEnum.PROFESSOR.value)) {
+					response.setRoleId(role.getId());
+					return response;
+				}else if(role.getName().equalsIgnoreCase(RoleEnum.STUDENT.value)) {
+					response.setRoleId(role.getId());
+					return response;
+				}
+			}
+		}
+		return null;
 	}
 
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
@@ -110,5 +133,4 @@ public class UserService implements IUserService, UserDetailsService {
 		return response;
 	}
 	/////
-
 }

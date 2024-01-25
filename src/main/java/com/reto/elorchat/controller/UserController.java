@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.reto.elorchat.model.controller.response.UserGetResponse;
+import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.security.service.UserService;
 
@@ -20,6 +21,21 @@ import com.reto.elorchat.security.service.UserService;
 public class UserController {
 	@Autowired
 	private UserService userService;
+
+	//ASK PREGUNTA SI HAY PROBLEMA EN EL LOG DEL SERVER
+	@GetMapping
+	public ResponseEntity<List<UserGetResponse>> findAllUsers(){
+		List <UserDTO> listUserDTO = userService.findAll();
+		List<UserGetResponse> response = new ArrayList<UserGetResponse>(); 
+
+		//Transform every DTO from the list to GetResponse
+		for(UserDTO userDTO: listUserDTO) {
+			if(userDTO != null){
+				response.add(convertFromUserDTOToGetResponseWithChatIds(userDTO));
+			}
+		}
+		return new ResponseEntity<List<UserGetResponse>>(response ,HttpStatus.OK);
+	}
 
 	@GetMapping("/chat/{chatId}")
 	public ResponseEntity<List<UserGetResponse>> getUserByChatId(@PathVariable("chatId") Integer chatId){
@@ -73,7 +89,31 @@ public class UserController {
 				userDTO.getSurname(),
 				userDTO.getEmail(),
 				userDTO.getPhoneNumber1());
+
 		return response;
 	}
+
+	private UserGetResponse convertFromUserDTOToGetResponseWithChatIds(UserDTO userDTO) {
+		
+		UserGetResponse response = new UserGetResponse(
+				userDTO.getId(),
+				userDTO.getName(),
+				userDTO.getSurname(),
+				userDTO.getEmail(),
+				userDTO.getPhoneNumber1());
+
+		if(userDTO.getChats() != null) {
+			List<Integer> listChatId = new ArrayList<Integer>();
+			for(ChatDTO chatDTO : userDTO.getChats()) {
+				listChatId.add(chatDTO.getId());
+			}
+			response.setChatId(listChatId);
+		}
+		if (userDTO.getRoleId() != null) {
+			response.setRoleId(userDTO.getRoleId());
+		}
+		return response;
+	}
+
 	//////
 }
