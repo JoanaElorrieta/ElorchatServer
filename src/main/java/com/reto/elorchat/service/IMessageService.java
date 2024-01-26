@@ -9,7 +9,7 @@ public interface IMessageService {
 
 	List<MessageDTO> findAllMessagesByChatId(Integer chatId);
 
-	Iterable<Message> findAll();
+	List<MessageDTO> findAll();
 
 	MessageDTO createMessage(MessageDTO messageDTO);
 

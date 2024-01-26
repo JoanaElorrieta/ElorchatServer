@@ -30,9 +30,17 @@ public class MessageService implements IMessageService{
 	UserRepository userRepository;
 
 	@Override
-	public Iterable<Message> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<MessageDTO> findAll() {
+		
+		Iterable<Message> listMessage = messageRepository.findAll();
+
+		List<MessageDTO> response = new ArrayList<MessageDTO>();
+		
+		for(Message message: listMessage) {
+			response.add(convertFromMessageDAOToDTO(message));
+		}
+		
+		return response;
 	}
 
 	@Override

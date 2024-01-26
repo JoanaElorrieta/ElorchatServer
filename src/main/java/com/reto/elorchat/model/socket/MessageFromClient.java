@@ -2,12 +2,8 @@ package com.reto.elorchat.model.socket;
 
 public class MessageFromClient {
 	
-//	Tue Jan 23 11:12:36 CET 2024
-//	Jan 24, 2024 5:34:43 PM
-	
     private Integer room;
     private String message;
-    
     private Long sent;
 
     public MessageFromClient() {

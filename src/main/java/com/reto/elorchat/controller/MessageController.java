@@ -26,8 +26,16 @@ public class MessageController {
 	private IMessageService messageService;
 
 	@GetMapping
-	public ResponseEntity<Iterable<Message>> getMessages(){
-		return new ResponseEntity<Iterable<Message>>(messageService.findAll(),HttpStatus.OK);
+	public ResponseEntity<List<MessageGetResponse>> getMessages(){
+		
+		List <MessageDTO> listMessageDTO = messageService.findAll();
+		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
+
+		//Transform every DTO from the list to GetResponse
+		for(MessageDTO messageDTO: listMessageDTO) {
+			response.add(convertFromMessageDTOToGetResponse(messageDTO));
+		}
+		return new ResponseEntity<List<MessageGetResponse>>(response,HttpStatus.OK);
 	}
 
 	@GetMapping("/chat/{chatId}")

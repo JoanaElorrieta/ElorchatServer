@@ -47,7 +47,7 @@ public class UserService implements IUserService, UserDetailsService {
 		List<UserDTO> response = new ArrayList<UserDTO>();
 
 		for(User user: listUser) {
-			response.add(convertFromUserDAOToDTO(user));
+			response.add(convertFromUserDAOToDTOWithRoles(user));
 		}
 		return response;	
 	}
@@ -91,7 +91,7 @@ public class UserService implements IUserService, UserDetailsService {
 	//AQUI TAMBIEN HAGO? PREGUNTAR PQ ENTONCES EN AUTH CONTROLLER LO CASTEAMOS AL MODELO DE HIBERNATE Y NO AL DEL CONTROLADOR
 	//POR EL USERDETAILS? PERO EN DEPENDIENDO PARA QUE NO NECESITO QUE LO IMPLEMENTE, VERDAD?
 	//CONVERTS
-	private UserDTO convertFromUserDAOToDTO(User user) {
+	private UserDTO convertFromUserDAOToDTOWithRoles(User user) {
 		UserDTO response = new UserDTO(
 				user.getId(),
 				user.getName(),
@@ -120,6 +120,26 @@ public class UserService implements IUserService, UserDetailsService {
 			}
 		}
 		return null;
+	}
+	
+	private UserDTO convertFromUserDAOToDTO(User user) {
+		UserDTO response = new UserDTO(
+				user.getId(),
+				user.getName(),
+				user.getSurname(),
+				user.getEmail(),
+				user.getPhoneNumber1(),
+				user.getPhoto());
+
+		if (user.getChats() != null) {
+			List<ChatDTO> chatList = new ArrayList<ChatDTO>();
+			for(Chat chat: user.getChats()) {
+				chatList.add(convertFromChatDAOToDTO(chat));
+			}
+			response.setChats(chatList);
+		}
+		
+		return response;
 	}
 
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
