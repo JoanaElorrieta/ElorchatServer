@@ -6,28 +6,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import com.reto.elorchat.model.controller.request.EmailRequest;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService implements EmailPort{
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
 	@Autowired
 	private JavaMailSender sender;
 
-	@Override
-	public boolean sendEmail()  {
-		EmailRequest emailBody = new EmailRequest();
-		return sendEmailTool(emailBody.getContent(),emailBody.getEmail(), emailBody.getSubject());
-	}
-	
 
-	private boolean sendEmailTool(String textMessage, String email,String subject) {
+	@Override
+	public boolean sendEmailTool(String textMessage, String email,String subject) {
 		boolean send = false;
 		MimeMessage message = sender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);		

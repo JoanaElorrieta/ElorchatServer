@@ -9,5 +9,6 @@ public interface IUserService {
 	UserDTO findById(Integer id);
 	List<UserDTO> findAllUsersByChatId(Integer chatId);
 	Integer findUserByEmail(String email);
+	Integer resetPassword(String email);
 
 }

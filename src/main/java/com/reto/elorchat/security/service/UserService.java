@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.reto.elorchat.model.controller.request.EmailRequest;
 import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Role;
@@ -17,8 +19,11 @@ import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.repository.UserRepository;
+import com.reto.elorchat.service.EmailService;
 
+import jakarta.transaction.Transactional;
 
+@Transactional
 @Service
 public class UserService implements IUserService, UserDetailsService {
 
@@ -27,6 +32,9 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Autowired
 	ChatRepository chatRepository;
+
+	@Autowired
+	EmailService emailService;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -84,7 +92,31 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public Integer findUserByEmail(String email) {
-		return userRepository.findUserByEmail(email);
+		Integer found=userRepository.findUserByEmail(email);
+		return found;
+	}
+
+
+	@Transactional
+	@Override
+	public Integer resetPassword(String email) {
+		System.out.println("Email "+email);
+		EmailRequest emailBody = new EmailRequest();
+		String password=emailBody.getPassword();
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		String encodePassword = passwordEncoder.encode(password);
+		try {
+			Integer reset =userRepository.resetPassword(email, encodePassword);
+			String emailText=emailBody.getContent()+""+password;
+	        if ( reset == 1) {
+	            emailService.sendEmailTool(emailText, emailBody.getEmail(), emailBody.getSubject());
+	        } 
+	        return reset;
+	    } catch (Exception e) {
+	        System.out.println("Error reseteando la password");
+	        throw new RuntimeException(e);
+	    }
+
 	}
 
 	//ASK

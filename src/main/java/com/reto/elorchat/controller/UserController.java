@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,6 +52,11 @@ public class UserController {
 	@GetMapping("/find/{email}")
 	public ResponseEntity<Integer> getUserByEmail(@PathVariable("email") String email){
 		Integer response = userService.findUserByEmail(email);
+		return new ResponseEntity<Integer>(response, HttpStatus.OK);
+	}
+	@PostMapping("/reset/{email}")
+	public ResponseEntity<Integer> resetEmail(@PathVariable("email") String email){
+		Integer response = userService.resetPassword(email);
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 	//

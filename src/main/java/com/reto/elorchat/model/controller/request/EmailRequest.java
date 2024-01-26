@@ -4,17 +4,18 @@ public class EmailRequest {
 	private String email;
 	private String content;
 	private String subject;
+	private String password;
 	
 	
 	public EmailRequest() {
 	}
-	
+
 	public String getEmail() {
 		return "elorchat.noreply@gmail.com";
 	}
 	
 	public String getContent() {
-		return "Tu nueva contraseña es "+getPassword();
+		return "Tu nueva contraseña es ";
 	}
 	
 	public String getSubject() {
@@ -23,16 +24,16 @@ public class EmailRequest {
 	
 	public String getPassword() {
 		PasswordGenerator passwordGenerator = new PasswordGenerator();
-        return passwordGenerator.getPassword();
+		String password = passwordGenerator.getPassword();
+		System.out.println("Este es el getter "+password);
+        return password;
 	}
-	
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
-	
+
 	@Override
 	public String toString() {
-		return "EmailRequest [email=" + email + ", content=" + content + ", subject=" + subject +"]";
+		return "EmailRequest [email=" + email + ", content=" + content + ", subject=" + subject + ", password="
+				+ password + "]";
 	}
+	
 
 }

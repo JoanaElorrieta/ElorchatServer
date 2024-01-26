@@ -2,5 +2,6 @@ package com.reto.elorchat.service;
 
 
 public interface EmailPort {
-	public boolean sendEmail();
+
+	boolean sendEmailTool(String textMessage, String email, String subject);
 }

@@ -2,6 +2,7 @@ package com.reto.elorchat.security.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,8 @@ public interface UserRepository extends CrudRepository<User, Integer>{
 	
 	@Query("SELECT count(u) FROM User u  WHERE u.email = :email")
 	Integer findUserByEmail(@Param("email") String email);
+	
+	@Modifying
+	@Query("UPDATE User SET password =:password WHERE email =:email")
+	Integer resetPassword(String email, String password);
 }
