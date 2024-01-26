@@ -12,6 +12,7 @@ import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.enums.RoleEnum;
@@ -136,19 +137,45 @@ public class ChatService implements IChatService{
 		return chatRepository.existsByIdAndUsers_Id(idChat, idUser);
 	}
 
+	private boolean addUserToPublicChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat {
+		chatRepository.addUserToChat(idChat, idUser);
+		return true;
+	}
+
+
+	private boolean addUserToPrivateChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat{
+		chatRepository.addUserToChat(idChat, idUser);
+		return true;
+	}
+
 	@Override
-	public boolean addUserToChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat{
+	public boolean addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
 		// TODO Auto-generated method stub
 
 		Chat chat = chatRepository.findById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-				);
-		for(User user : chat.getUsers()){
-			if(user.getId() == idUser) {
-				throw new UserAlreadyExistsOnChat("User already exists on Chat");
+				);		
+		
+		if(idUser != null) {
+			System.out.println("Hay un admin que mete a un usuario al grupo");
+			for(User user : chat.getUsers()){
+				if(user.getId() == idUser) {
+					throw new UserAlreadyExistsOnChat("User already exists on Chat");
+				}
 			}
+			if(chat.getAdminId() != idAdmin) {
+				throw new IsNotTheGroupAdminException("Is not the chat Admin");
+			}
+			addUserToPrivateChat(idChat, idUser, idAdmin);
+		}else {
+			System.out.println("NO hay un admin que mete a un usuario al grupo");
+			for(User user : chat.getUsers()){
+				if(user.getId() == idAdmin) {
+					throw new UserAlreadyExistsOnChat("User already exists on Chat");
+				}
+			}
+			addUserToPublicChat(idChat, idUser);	
 		}
-		chatRepository.addUserToChat(idChat, idUser);
 		return true;
 	}
 
@@ -161,7 +188,7 @@ public class ChatService implements IChatService{
 		if(idUser == chat.getAdminId()) {
 			throw new CantLeaveChatException("Admin Cant Leave the Group");
 		}	
-		
+
 		chatRepository.leaveChat(idChat, idUser);
 		return true;
 	}

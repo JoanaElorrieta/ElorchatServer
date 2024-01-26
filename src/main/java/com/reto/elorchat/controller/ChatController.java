@@ -24,6 +24,7 @@ import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
@@ -114,13 +115,16 @@ public class ChatController {
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/addToGroup/{idChat}")
-	public ResponseEntity<Integer> addUserToChat(@PathVariable Integer idChat, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat{
-
+	@PostMapping("/addToGroup/{idChat}/{idUser}")
+	public ResponseEntity<Integer> addUserToChat(
+			@PathVariable("idChat") Integer idChat,
+			@PathVariable(name = "idUser", required = false) Integer idUser,
+			Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+		System.out.println("HAHAHAHAHAHAHA");
+		// Your existing code...
 		Integer response; 
 		User user = (User) authentication.getPrincipal();
-		boolean boolValue =chatService.addUserToChat(idChat, user.getId()); 
-
+		boolean boolValue =chatService.addUserToChat(idChat, idUser, user.getId()); 
 		if(boolValue) {
 			response = 1;
 			SocketIOClient client = findClientByUserId(user.getId());
@@ -152,7 +156,7 @@ public class ChatController {
 			SocketIOClient client = findClientByUserId(user.getId());
 			if (client != null) {
 				Room room = new Room(idChat, user.getId());
-				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
+				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value, room);
 
 				client.leaveRoom(idChat.toString());				
 				return new ResponseEntity<Integer>(response, HttpStatus.OK);
