@@ -29,9 +29,12 @@ import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
+import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.model.socket.Room;
 import com.reto.elorchat.security.persistance.User;
+import com.reto.elorchat.security.service.IUserService;
 import com.reto.elorchat.service.IChatService;
 
 @RestController
@@ -40,6 +43,9 @@ public class ChatController {
 
 	@Autowired
 	private IChatService chatService;
+
+	@Autowired
+	private IUserService userService;
 
 	@Autowired
 	private SocketIOServer socketIoServer;
@@ -115,21 +121,53 @@ public class ChatController {
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/addToGroup/{idChat}/{idUser}")
-	public ResponseEntity<Integer> addUserToChat(
-			@PathVariable("idChat") Integer idChat,
-			@PathVariable(name = "idUser", required = false) Integer idUser,
-			Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
-		System.out.println("HAHAHAHAHAHAHA");
-		// Your existing code...
+	@PostMapping("/addToPrivateGroup/{idChat}/{idUser}")
+	public ResponseEntity<Integer> addUserToPrivateChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+
 		Integer response; 
 		User user = (User) authentication.getPrincipal();
-		boolean boolValue =chatService.addUserToChat(idChat, idUser, user.getId()); 
+		boolean boolValue = chatService.addUserToChat(idChat, idUser, user.getId()); 
+
+		if(boolValue) {
+			response = 1;
+			SocketIOClient client = findClientByUserId(idUser);
+
+			if (client != null) {
+				UserDTO joiningUserDTO = userService.findById(idUser);
+				UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
+
+				Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+
+				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
+
+				client.joinRoom(idChat.toString());				
+				return new ResponseEntity<Integer>(response, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<Integer>(response, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+			}
+		} else {
+			response = 0;
+			return new ResponseEntity<Integer>(response, HttpStatus.BAD_GATEWAY);
+		}
+	}
+
+	@PostMapping("/addToPublicGroup/{idChat}")
+	public ResponseEntity<Integer> addUserToPublicChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+
+		Integer response; 
+		User user = (User) authentication.getPrincipal();
+		boolean boolValue = chatService.addUserToChat(idChat, null, user.getId()); 
+
 		if(boolValue) {
 			response = 1;
 			SocketIOClient client = findClientByUserId(user.getId());
+
 			if (client != null) {
-				Room room = new Room(idChat, user.getId());
+				UserDTO joiningUserDTO = userService.findById(user.getId());
+				UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
+
+				Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+
 				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
 
 				client.joinRoom(idChat.toString());				
@@ -139,9 +177,8 @@ public class ChatController {
 			}
 		} else {
 			response = 0;
+			return new ResponseEntity<Integer>(response, HttpStatus.BAD_GATEWAY);
 		}
-		// TODO: handle exception
-		return new ResponseEntity<Integer>(response, HttpStatus.NON_AUTHORITATIVE_INFORMATION);
 	}
 
 	@DeleteMapping("/leaveChat/{idChat}")
@@ -155,7 +192,7 @@ public class ChatController {
 			response = 1;
 			SocketIOClient client = findClientByUserId(user.getId());
 			if (client != null) {
-				Room room = new Room(idChat, user.getId());
+				Room room = new Room(idChat, user.getId(), user.getName());
 				socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value, room);
 
 				client.leaveRoom(idChat.toString());				
@@ -244,15 +281,15 @@ public class ChatController {
 	//	}
 	//
 	//
-	//	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
-	//		UserGetResponse response = new UserGetResponse(
-	//				userDTO.getId(),
-	//				userDTO.getName(),
-	//				userDTO.getSurname(),
-	//				userDTO.getEmail(),
-	//				userDTO.getPhoneNumber1());
-	//		return response;
-	//	}
+	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
+		UserGetResponse response = new UserGetResponse(
+				userDTO.getId(),
+				userDTO.getName(),
+				userDTO.getSurname(),
+				userDTO.getEmail(),
+				userDTO.getPhoneNumber1());
+		return response;
+	}
 
 	/////
 

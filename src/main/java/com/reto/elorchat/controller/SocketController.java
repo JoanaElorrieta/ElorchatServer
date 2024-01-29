@@ -75,37 +75,37 @@ public class SocketController {
 
 	// deberia ser un POST y con body, pero para probar desde el navegador...
 	@PostMapping("/leave-room")
-			public String leaveRoom(@RequestBody Room room) {
+	public String leaveRoom(@RequestBody Room room) {
 
-				SocketIOClient client = findClientByUserId(room.getUserId());
-				if (client != null) {
-					System.out.println(client.getAllRooms().size());
-					client.leaveRoom(room.getRoomId().toString());
-					System.out.println(client.getAllRooms().size());
-					// se podria notificar a aquellos que estan en la room
-					socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value);
-					socketIoServer.getRoomOperations(room.getRoomId().toString()).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
-					// podriamos registrar distintos eventos, no "chat message" para estos casos
+		SocketIOClient client = findClientByUserId(room.getUserId());
+		if (client != null) {
+			System.out.println(client.getAllRooms().size());
+			client.leaveRoom(room.getRoomId().toString());
+			System.out.println(client.getAllRooms().size());
+			// se podria notificar a aquellos que estan en la room
+			socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value);
+			socketIoServer.getRoomOperations(room.getRoomId().toString()).sendEvent("chat message", "el usuario XXXXXX se ha ido de la sala " + room);
+			// podriamos registrar distintos eventos, no "chat message" para estos casos
 
-					// lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha sido eliminado de la room
-					return "Usuario expulsado de la sala";
-				} else {
-					return "Ese usuario no estaba conectado";
-				}
+			// lo interesante y lo que habra que hacer es notificarle a dicho cliente que ha sido eliminado de la room
+			return "Usuario expulsado de la sala";
+		} else {
+			return "Ese usuario no estaba conectado";
+		}
+	}
+
+
+	private SocketIOClient findClientByUserId(Integer idUser) {
+		SocketIOClient response = null;
+
+		Collection<SocketIOClient> clients = socketIoServer.getAllClients();
+		for (SocketIOClient client: clients) {
+			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
+			if (currentClientId == idUser) {
+				response = client;
+				break;
 			}
-
-
-			private SocketIOClient findClientByUserId(Integer idUser) {
-				SocketIOClient response = null;
-
-				Collection<SocketIOClient> clients = socketIoServer.getAllClients();
-				for (SocketIOClient client: clients) {
-					Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
-					if (currentClientId == idUser) {
-						response = client;
-						break;
-					}
-				}
-				return response;
-			}
+		}
+		return response;
+	}
 }

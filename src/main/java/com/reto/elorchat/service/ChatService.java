@@ -137,17 +137,6 @@ public class ChatService implements IChatService{
 		return chatRepository.existsByIdAndUsers_Id(idChat, idUser);
 	}
 
-	private boolean addUserToPublicChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat {
-		chatRepository.addUserToChat(idChat, idUser);
-		return true;
-	}
-
-
-	private boolean addUserToPrivateChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat{
-		chatRepository.addUserToChat(idChat, idUser);
-		return true;
-	}
-
 	@Override
 	public boolean addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
 		// TODO Auto-generated method stub
@@ -155,26 +144,19 @@ public class ChatService implements IChatService{
 		Chat chat = chatRepository.findById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);		
-		
+
 		if(idUser != null) {
 			System.out.println("Hay un admin que mete a un usuario al grupo");
-			for(User user : chat.getUsers()){
-				if(user.getId() == idUser) {
-					throw new UserAlreadyExistsOnChat("User already exists on Chat");
-				}
-			}
+			userExistsOnChat(chat, idUser);
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
-			addUserToPrivateChat(idChat, idUser, idAdmin);
-		}else {
+			chatRepository.addUserToChat(idChat, idUser);
+			return true;
+		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
-			for(User user : chat.getUsers()){
-				if(user.getId() == idAdmin) {
-					throw new UserAlreadyExistsOnChat("User already exists on Chat");
-				}
-			}
-			addUserToPublicChat(idChat, idUser);	
+			userExistsOnChat(chat, idAdmin);
+			chatRepository.addUserToChat(idChat, idAdmin);
 		}
 		return true;
 	}
@@ -310,4 +292,11 @@ public class ChatService implements IChatService{
 	}
 	//---------------------------------------
 
+	private void userExistsOnChat(Chat chat, Integer idUser) throws UserAlreadyExistsOnChat {
+		for(User user : chat.getUsers()){
+			if(user.getId() == idUser) {
+				throw new UserAlreadyExistsOnChat("User already exists on Chat");
+			}
+		}
+	}
 }

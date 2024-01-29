@@ -210,4 +210,11 @@ public class User implements UserDetails {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", name=" + name + ", surname=" + surname + ", email=" + email + ", password="
+				+ password + ", phoneNumber1=" + phoneNumber1 + ", photo=" + photo + ", chats=" + chats + ", messages="
+				+ messages + ", roles=" + roles + "]";
+	}
+
 }

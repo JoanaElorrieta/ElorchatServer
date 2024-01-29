@@ -28,12 +28,11 @@ public interface IChatService {
 
 	boolean addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException;
 
-	//boolean addUserToPublicChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat;
+//	boolean addUserToPrivateChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat;
 
-	//boolean addUserToPrivateChat(Integer idChat, Integer idUser, Integer id) throws UserAlreadyExistsOnChat;
+//	boolean addUserToPublicChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat;
 
 	boolean leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException;
 
 	void deleteChat(Integer id) throws ChatNotFoundException;
-
 }
