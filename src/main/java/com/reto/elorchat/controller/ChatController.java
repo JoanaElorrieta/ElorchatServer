@@ -132,7 +132,11 @@ public class ChatController {
 		UserDTO joiningUserDTO = userService.findById(idUser);
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-		Room room = new Room(idChat, joiningUserGetResponse.getId(), admin.getId(), joiningUserGetResponse.getName(), admin.getName());
+		//TENGO QUE HACER ESTO SINO NO ME APARECE EL NUMERO DEL ADMIN
+		UserDTO joiningAdminDTO = userService.findById(admin.getId());
+		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
+
+		Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
 
 		socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
 
@@ -170,8 +174,8 @@ public class ChatController {
 		chatService.leaveChat(idChat, null , user.getId());
 
 		SocketIOClient client = findClientByUserId(user.getId());
-		if (client != null) {
 
+		if (client != null) {
 			UserDTO joiningUserDTO = userService.findById(user.getId());
 			UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
@@ -192,10 +196,13 @@ public class ChatController {
 		chatService.leaveChat(idChat, idUser, admin.getId());
 
 		UserDTO joiningUserDTO = userService.findById(idUser);
-
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-		Room room = new Room(idChat, joiningUserGetResponse.getId(), admin.getId(), joiningUserGetResponse.getName() , admin.getName());
+		//TENGO QUE HACER ESTO SINO NO ME APARECE EL NUMERO DEL ADMIN
+		UserDTO joiningAdminDTO = userService.findById(admin.getId());
+		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
+
+		Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
 		socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, room);
 
 		return new ResponseEntity<Integer>( HttpStatus.OK);
