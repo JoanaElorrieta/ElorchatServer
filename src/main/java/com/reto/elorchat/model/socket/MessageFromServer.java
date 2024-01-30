@@ -6,6 +6,7 @@ public class MessageFromServer {
 
 	private MessageType messageType;
 	private Integer room;
+	private Integer localId;
 	private Integer messageId;
 	private String message;
 	private String authorName;
@@ -20,7 +21,7 @@ public class MessageFromServer {
 		super();
 	}
 
-	public MessageFromServer(MessageType messageType, Integer room, Integer messageId, String message, String authorName, Integer authorId, Long sent, Long saved) {
+	public MessageFromServer(MessageType messageType, Integer room, Integer localId, Integer messageId, String message, String authorName, Integer authorId, Long sent, Long saved) {
 		super();
 		this.messageType = messageType;
 		this.room = room;
@@ -38,6 +39,14 @@ public class MessageFromServer {
 
 	public void setRoom(Integer room) {
 		this.room = room;
+	}
+
+	public Integer getLocalId() {
+		return localId;
+	}
+
+	public void setLocalId(Integer localId) {
+		this.localId = localId;
 	}
 
 	public Integer getMessageId() {

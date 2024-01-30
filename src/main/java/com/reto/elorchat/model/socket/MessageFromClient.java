@@ -3,26 +3,19 @@ package com.reto.elorchat.model.socket;
 public class MessageFromClient {
 	
     private Integer room;
+    private Integer localId;
     private String message;
     private Long sent;
 
     public MessageFromClient() {
         super();
     }
-    public MessageFromClient(Integer room, String message, Long sent) {
+    public MessageFromClient(Integer room, Integer localId, String message, Long sent) {
     	super();
         this.message = message;
         this.room = room;
         this.sent = sent;
     }
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
 
 	public Integer getRoom() {
 		return room;
@@ -30,6 +23,20 @@ public class MessageFromClient {
 
 	public void setRoom(Integer room) {
 		this.room = room;
+	}
+
+	public Integer getLocalId() {
+		return localId;
+	}
+	public void setLocalId(Integer localId) {
+		this.localId = localId;
+	}
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public Long getSent() {

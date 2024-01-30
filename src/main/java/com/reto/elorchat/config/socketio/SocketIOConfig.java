@@ -76,6 +76,8 @@ public class SocketIOConfig {
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
 		server.addEventListener(SocketEvents.ON_ROOM_JOIN.value, Room.class, onRoomJoin());
 		server.addEventListener(SocketEvents.ON_ROOM_LEFT.value, Room.class, onRoomLeft());
+		server.addEventListener(SocketEvents.ON_CHAT_ADDED.value, Room.class, onChatAdded());
+		server.addEventListener(SocketEvents.ON_CHAT_THROW_OUT.value, Room.class, onChatThrowOut());
 		server.start();
 
 		return server;
@@ -174,6 +176,7 @@ public class SocketIOConfig {
 					MessageType.SERVER, 
 					room, 
 					null,
+					null,
 					message, 
 					authorName, 
 					authorId,
@@ -202,12 +205,14 @@ public class SocketIOConfig {
 							MessageType.SERVER, 
 							data.getRoom(), 
 							null,
+							null,
 							"No puedes enviar un mensaje vacio", 
 							"Server", 
 							0,
 							null,
 							null
 							);
+
 					System.out.printf("Mensaje reenviado al usuario" + errorMessage);
 					senderClient.sendEvent(SocketEvents.ON_MESSAGE_NOT_SENT.value, errorMessage);
 					return;
@@ -216,6 +221,7 @@ public class SocketIOConfig {
 				MessageFromServer message = new MessageFromServer(
 						MessageType.CLIENT,
 						data.getRoom(), 
+						data.getLocalId(),
 						null,
 						data.getMessage(), 
 						authorName, 
@@ -225,25 +231,25 @@ public class SocketIOConfig {
 						);
 
 				//ASK PORQUE ME SUMA 1 HORA MAS¿?¿? LOL
-//				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
-//				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
+				//				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
+				//				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
 
 				ChatDTO chatDTO = chatService.findById(data.getRoom());
 				// Get the current timestamp
 				Instant currentInstant = Instant.now();
 				// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 				Timestamp savedDate = Timestamp.from(currentInstant);
-				
+
 				Long sentValue = data.getSent();
 
 				// Convert the long value to a Timestamp
 				Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
-				
+
 				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId);
 				MessageDTO createdMessage = messageService.createMessage(messageDTO);
 
-				message.setMessageId(createdMessage.getId());
-
+				//message.setMessageId(createdMessage.getId());
+				message.setMessageId(data.getLocalId());
 				//ASK es mejor estar pillando los que va creando la bbdd? igual si, no?
 				message.setSaved(createdMessage.getSaved().getTime());
 				System.out.println(createdMessage.getSaved().getTime());
@@ -269,6 +275,7 @@ public class SocketIOConfig {
 				MessageFromServer errorMessage  = new MessageFromServer(
 						MessageType.SERVER, 
 						data.getRoom(), 
+						null,
 						null,
 						"No puedes enviar a este grupo", 
 						"Server", 
@@ -316,6 +323,16 @@ public class SocketIOConfig {
 
 			System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " se ha DESCONECTADOOOOOOOO de " + room);							
 			senderClient.leaveRoom(room);
+		};
+	}
+
+	private DataListener<Room> onChatThrowOut() {
+		return (senderClient, data, acknowledge) -> {
+		};
+	}
+
+	private DataListener<Room> onChatAdded() {
+		return (senderClient, data, acknowledge) -> {
 		};
 	}
 
