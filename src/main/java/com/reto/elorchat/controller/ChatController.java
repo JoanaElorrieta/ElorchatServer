@@ -33,7 +33,7 @@ import com.reto.elorchat.model.controller.response.ChatPostResponse;
 import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserDTO;
-import com.reto.elorchat.model.socket.Room;
+import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.service.IUserService;
 import com.reto.elorchat.service.IChatService;
@@ -122,8 +122,8 @@ public class ChatController {
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/addToPrivateGroup/{idChat}/{idUser}")
-	public ResponseEntity<Integer> addUserToPrivateChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	@PostMapping("/addUserToChat/{idChat}/{idUser}")
+	public ResponseEntity<Integer> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
 
 		User admin = (User) authentication.getPrincipal();
 		chatService.addUserToChat(idChat, idUser, admin.getId()); 
@@ -136,16 +136,20 @@ public class ChatController {
 		UserDTO joiningAdminDTO = userService.findById(admin.getId());
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
-		Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
 
-		socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
+		//TODO ANNADIR A LA ROOM SI ESTA CONECTADO
+		
+		//PARA ENVIAR SOLO A LA ROOM
+		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
+		//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
 
 		return new ResponseEntity<Integer>(HttpStatus.OK);
 
 	}
 
-	@PostMapping("/addToPublicGroup/{idChat}")
-	public ResponseEntity<Integer> addUserToPublicChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	@PostMapping("/joinToChat/{idChat}")
+	public ResponseEntity<Integer> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
 
 		User user = (User) authentication.getPrincipal();
 		chatService.addUserToChat(idChat, null, user.getId()); 
@@ -156,9 +160,11 @@ public class ChatController {
 			UserDTO joiningUserDTO = userService.findById(user.getId());
 			UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-			Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
 
-			socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_JOIN.value, room);
+			//PARA ENVIAR SOLO A LA ROOM
+			socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
+			//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_JOIN.value, room);
 
 			client.joinRoom(idChat.toString());				
 			return new ResponseEntity<Integer>(HttpStatus.OK);
@@ -168,7 +174,7 @@ public class ChatController {
 	}
 
 	@DeleteMapping("/leaveChat/{idChat}")
-	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws ChatNotFoundException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		User user = (User) authentication.getPrincipal();
 		chatService.leaveChat(idChat, null , user.getId());
@@ -179,9 +185,10 @@ public class ChatController {
 			UserDTO joiningUserDTO = userService.findById(user.getId());
 			UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-			Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
-			socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_ROOM_LEFT.value, room);
-
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+			//PARA ENVIAR SOLO A LA ROOM
+			socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
+			//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_JOIN.value, room);
 			client.leaveRoom(idChat.toString());				
 			return new ResponseEntity<Integer>(HttpStatus.OK);
 		}else {
@@ -190,7 +197,7 @@ public class ChatController {
 	}
 
 	@DeleteMapping("/throwFromChat/{idChat}/{idUser}")
-	public ResponseEntity<Integer> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<Integer> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		User admin = (User) authentication.getPrincipal();
 		chatService.leaveChat(idChat, idUser, admin.getId());
@@ -202,9 +209,12 @@ public class ChatController {
 		UserDTO joiningAdminDTO = userService.findById(admin.getId());
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
-		Room room = new Room(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
-		socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, room);
-
+		//TODO QUITAR DE LA ROOM SI ESTA CONECTADO
+		
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
+		
+		//PARA ENVIAR SOLO A LA ROOM
+		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 		return new ResponseEntity<Integer>( HttpStatus.OK);
 	}
 

@@ -6,8 +6,8 @@ public class MessageFromServer {
 
 	private MessageType messageType;
 	private Integer room;
+	private Integer messageServerId;
 	private Integer localId;
-	private Integer messageId;
 	private String message;
 	private String authorName;
 	private Integer authorId;
@@ -21,11 +21,12 @@ public class MessageFromServer {
 		super();
 	}
 
-	public MessageFromServer(MessageType messageType, Integer room, Integer localId, Integer messageId, String message, String authorName, Integer authorId, Long sent, Long saved) {
+	public MessageFromServer(MessageType messageType, Integer room, Integer messageServerId, Integer localId, String message, String authorName, Integer authorId, Long sent, Long saved) {
 		super();
 		this.messageType = messageType;
 		this.room = room;
-		this.messageId = messageId;
+		this.messageServerId = messageServerId;
+		this.localId = localId;
 		this.message = message;
 		this.authorName = authorName;
 		this.authorId = authorId;
@@ -49,12 +50,12 @@ public class MessageFromServer {
 		this.localId = localId;
 	}
 
-	public Integer getMessageId() {
-		return messageId;
+	public Integer getMessageServerId() {
+		return messageServerId;
 	}
 
-	public void setMessageId(Integer messageId) {
-		this.messageId = messageId;
+	public void setMessageServerId(Integer messageServerId) {
+		this.messageServerId = messageServerId;
 	}
 
 	public String getMessage() {

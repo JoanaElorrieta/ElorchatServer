@@ -1,11 +1,10 @@
 package com.reto.elorchat.model.controller.response;
 
 public class MessageGetResponse {
+	
 	private Integer id;
 	private String text;
-
 	private Long sent;
-
 	private Long saved;
 	private Integer chatId;
 	private Integer userId;

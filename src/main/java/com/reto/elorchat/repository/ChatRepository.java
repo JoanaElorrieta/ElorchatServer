@@ -48,4 +48,6 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	//FIND BY NAME
 	Optional<Chat> findByName(String name);
 
+	@Query("SELECT c FROM Chat c LEFT JOIN FETCH c.users WHERE c.id = :chatId")
+    Optional<Chat> findChatWithUsersById(@Param("chatId") Integer chatId);
 }

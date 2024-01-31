@@ -80,7 +80,7 @@ public class ChatService implements IChatService{
 	//@Transactional
 	public ChatDTO createChat(ChatDTO chatDTO) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException {
 
-		User admin = userRepository.findById(chatDTO.getAdminId()).orElseThrow(
+		User admin = userRepository.findByIdWithRoles(chatDTO.getAdminId()).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Administrador no encontrado")
 				);
 
@@ -142,7 +142,7 @@ public class ChatService implements IChatService{
 	public void addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
 		// TODO Auto-generated method stub
 
-		Chat chat = chatRepository.findById(idChat).orElseThrow(
+		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);		
 
@@ -163,7 +163,7 @@ public class ChatService implements IChatService{
 	@Override
 	public void leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
-		Chat chat = chatRepository.findById(idChat).orElseThrow(
+		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);
 
@@ -177,6 +177,10 @@ public class ChatService implements IChatService{
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
 			userDoesNotExistOnChat(chat, idAdmin);
+			boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
+			if(isPrivate) {
+				throw new CantLeaveChatException("Cant Leave a Private Group");
+			}
 			chatRepository.leaveChat(idChat, idAdmin);
 		}
 

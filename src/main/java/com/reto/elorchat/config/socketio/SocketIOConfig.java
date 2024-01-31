@@ -2,6 +2,7 @@ package com.reto.elorchat.config.socketio;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,13 +14,20 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
+import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
+import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
+import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
 import com.reto.elorchat.model.service.UserDTO;
+import com.reto.elorchat.model.socket.ChatFromClient;
+import com.reto.elorchat.model.socket.ChatFromServer;
+import com.reto.elorchat.model.socket.ChatUserFromClient;
+import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
-import com.reto.elorchat.model.socket.Room;
 import com.reto.elorchat.security.configuration.JwtTokenUtil;
 import com.reto.elorchat.security.service.UserService;
 import com.reto.elorchat.service.ChatService;
@@ -74,10 +82,11 @@ public class SocketIOConfig {
 		server.addConnectListener(new MyConnectListener(server));
 		server.addDisconnectListener(new MyDisconnectListener());
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
-		server.addEventListener(SocketEvents.ON_ROOM_JOIN.value, Room.class, onRoomJoin());
-		server.addEventListener(SocketEvents.ON_ROOM_LEFT.value, Room.class, onRoomLeft());
-		server.addEventListener(SocketEvents.ON_CHAT_ADDED.value, Room.class, onChatAdded());
-		server.addEventListener(SocketEvents.ON_CHAT_THROW_OUT.value, Room.class, onChatThrowOut());
+		server.addEventListener(SocketEvents.ON_CHAT_RECEIVED.value, ChatFromClient.class, onChatSend());
+		server.addEventListener(SocketEvents.ON_CHAT_JOIN_RECEIVED.value, ChatUserFromClient.class, onChatJoin());
+		server.addEventListener(SocketEvents.ON_CHAT_LEAVE_RECEIVED.value, ChatUserFromClient.class, onChatLeave());
+		server.addEventListener(SocketEvents.ON_CHAT_ADD_RECEIVED.value, ChatUserFromClient.class, onChatAdded());
+		server.addEventListener(SocketEvents.ON_CHAT_THROW_OUT_RECEIVED.value, ChatUserFromClient.class, onChatThrowOut());
 		server.start();
 
 		return server;
@@ -218,21 +227,19 @@ public class SocketIOConfig {
 					return;
 				}
 
+				//	public MessageFromServer(MessageType messageType, Integer room, Integer messageServerId, Integer localId, String message, String authorName, Integer authorId, Long sent, Long saved) {
+
 				MessageFromServer message = new MessageFromServer(
 						MessageType.CLIENT,
 						data.getRoom(), 
-						data.getLocalId(),
 						null,
+						data.getLocalId(),
 						data.getMessage(), 
 						authorName, 
 						authorId,
 						data.getSent(),	
 						null
 						);
-
-				//ASK PORQUE ME SUMA 1 HORA MAS¿?¿? LOL
-				//				System.out.println("HORA DEL OBJETO DE POSTMAN" + data.getSent());
-				//				System.out.println("HORA DEL OBJETO CREADO PARA VOLVER A MANDAR A LOS DEMÁS" + message.getSent());
 
 				ChatDTO chatDTO = chatService.findById(data.getRoom());
 				// Get the current timestamp
@@ -249,7 +256,7 @@ public class SocketIOConfig {
 				MessageDTO createdMessage = messageService.createMessage(messageDTO);
 
 				//message.setMessageId(createdMessage.getId());
-				message.setMessageId(data.getLocalId());
+				message.setMessageServerId(createdMessage.getId());
 				//ASK es mejor estar pillando los que va creando la bbdd? igual si, no?
 				message.setSaved(createdMessage.getSaved().getTime());
 				System.out.println(createdMessage.getSaved().getTime());
@@ -299,40 +306,165 @@ public class SocketIOConfig {
 		}
 	}
 
-	private DataListener<Room> onRoomJoin() {
+
+	private DataListener<ChatFromClient> onChatSend() {
 		return (senderClient, data, acknowledge) -> {
-			System.out.println("ROOM JOIN");
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+
+			ChatFromServer chatFromServer = new ChatFromServer(
+					data.getId(),
+					data.getName(), 
+					data.getType(),
+					authorId
+					);
+
+			ChatDTO chatDTO = new ChatDTO(data.getId(), data.getName(), data.getType(), authorId);
+			try {				
+				ChatDTO createdChat = chatService.createChat(chatDTO);
+				chatFromServer.setId(createdChat.getId());
+				senderClient.sendEvent(SocketEvents.ON_SEND_CHAT.value, chatFromServer);
+			} catch (ChatNameAlreadyExists e) {
+				// Handle ChatNameAlreadyExistsException
+				System.out.println("Chat name already exists: " + e.getMessage());
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_SENT.value, chatFromServer);
+			} catch (HasNoRightToCreatePrivateException e) {
+				// Handle HasNoRightToCreatePrivateException
+				System.out.println("User has no right to create a private chat: " + e.getMessage());
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_SENT.value, chatFromServer);
+			}
+
+		};
+	}
+
+	private DataListener<ChatUserFromClient> onChatJoin() {
+		return (senderClient, data, acknowledge) -> {
+			System.out.println("CHAT JOIN");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getRoomId().toString();
 			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
 
-			System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " CONECTADOOOOOOOO a " + room);							
-			senderClient.joinRoom(room);
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(
+					data.getRoomId(),
+					authorId,
+					authorName
+					);
+
+			// Los catch posibles UserAlreadyExistsOnChat, IsNotTheGroupAdminException
+			try {
+				System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " CONECTADOOOOOOOO a " + room);							
+				chatService.addUserToChat(data.getRoomId(), null, authorId);
+				senderClient.joinRoom(room);			
+				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
+			}catch (UserAlreadyExistsOnChat e) {
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_JOIN.value, chatUserFromServer);
+			}catch (IsNotTheGroupAdminException e) {
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_JOIN.value, chatUserFromServer);
+			}
 
 		};
 	}
 
-	private DataListener<Room> onRoomLeft() {
+	private DataListener<ChatUserFromClient> onChatLeave() {
 		return (senderClient, data, acknowledge) -> {
-			System.out.println("ROOM LEFT");
+			System.out.println("CHAT LEFT");
 			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
 			Integer authorId = Integer.valueOf(authorIdS);
 			String room = data.getRoomId().toString();
 			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
 
-			System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " se ha DESCONECTADOOOOOOOO de " + room);							
-			senderClient.leaveRoom(room);
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(
+					data.getRoomId(),
+					authorId,
+					authorName
+					);
+
+			// Los catch posibles CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat
+			try {
+				System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " se ha DESCONECTADOOOOOOOO de " + room);							
+				chatService.leaveChat(data.getRoomId(), null, authorId);
+				senderClient.leaveRoom(room);
+				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
+				senderClient.sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
+			}catch (Exception e) {
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_LEAVE.value, chatUserFromServer);
+			}
 		};
 	}
 
-	private DataListener<Room> onChatThrowOut() {
+	private DataListener<ChatUserFromClient> onChatThrowOut() {
 		return (senderClient, data, acknowledge) -> {
+			System.out.println("THROWING OUT FROM CHAT");
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+			String room = data.getRoomId().toString();
+			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
+
+			UserDTO joiningUserDTO = userService.findById(data.getUserId());
+
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(
+					data.getRoomId(),
+					joiningUserDTO.getId(),
+					authorId,
+					joiningUserDTO.getName(),
+					authorName
+					);
+
+			// Los catch posibles CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat
+			try {
+				System.out.println("USUARIOOOOOOOOO " + authorName + " le ha ECHADO de " + room + " el admin: " + joiningUserDTO.getName());							
+				chatService.leaveChat(data.getRoomId(), joiningUserDTO.getId(), authorId);
+
+				//senderClient.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
+				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
+
+				SocketIOClient kickedOutUserConnection  = findClientByUserId(joiningUserDTO.getId());
+
+				if(kickedOutUserConnection != null) {
+					senderClient.leaveRoom(room);
+					kickedOutUserConnection.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
+				}
+			}catch (Exception e) {
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_THROW_OUT.value, chatUserFromServer);
+			}
 		};
 	}
 
-	private DataListener<Room> onChatAdded() {
+	private DataListener<ChatUserFromClient> onChatAdded() {
 		return (senderClient, data, acknowledge) -> {
+			System.out.println("ADDING TO CHAT");
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+			String room = data.getRoomId().toString();
+			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
+
+			UserDTO joiningUserDTO = userService.findById(data.getUserId());
+
+			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(
+					data.getRoomId(),
+					joiningUserDTO.getId(),
+					authorId,
+					joiningUserDTO.getName(),
+					authorName
+					);
+
+			// Los catch posibles UserAlreadyExistsOnChat, IsNotTheGroupAdminException
+			try {
+				System.out.println("USUARIOOOOOOOOOO " + authorName + " le ha ANNADIDO de " + room + " el admin: " + joiningUserDTO.getName());							
+				chatService.addUserToChat(data.getRoomId(), joiningUserDTO.getId(), authorId);
+				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
+
+				SocketIOClient addedUserConnection  = findClientByUserId(joiningUserDTO.getId());
+
+				if(addedUserConnection != null) {
+					senderClient.joinRoom(room);
+					addedUserConnection.sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
+				}
+				
+			}catch (Exception e) {
+				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_ADD.value, chatUserFromServer);
+			}
 		};
 	}
 
@@ -342,4 +474,17 @@ public class SocketIOConfig {
 		this.server.stop();
 	}
 
+	private SocketIOClient findClientByUserId(Integer idUser) {
+		SocketIOClient response = null;
+
+		Collection<SocketIOClient> clients = server.getAllClients();
+		for (SocketIOClient client: clients) {
+			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
+			if (currentClientId == idUser) {
+				response = client;
+				break;
+			}
+		}
+		return response;
+	}
 }

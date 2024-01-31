@@ -1,6 +1,6 @@
 package com.reto.elorchat.model.socket;
 
-public class Room {
+public class ChatUserFromServer {
 	
 	private Integer roomId;
 	private Integer userId;
@@ -8,16 +8,16 @@ public class Room {
 	private String userName;
 	private String adminName;
 	
-	public Room() {}
+	public ChatUserFromServer() {}
 	
-	public Room(Integer roomId, Integer userId, String userName) {
+	public ChatUserFromServer(Integer roomId, Integer userId, String userName) {
 		super();
 		this.roomId = roomId;
 		this.userId = userId;
 		this.userName = userName;
 	}
 
-	public Room(Integer roomId, Integer userId, Integer adminId, String userName, String adminName) {
+	public ChatUserFromServer(Integer roomId, Integer userId, Integer adminId, String userName, String adminName) {
 		super();
 		this.roomId = roomId;
 		this.userId = userId;

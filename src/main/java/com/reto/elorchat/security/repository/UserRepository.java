@@ -25,4 +25,7 @@ public interface UserRepository extends CrudRepository<User, Integer>{
 	@Modifying
 	@Query("UPDATE User SET password =:password WHERE email =:email")
 	Integer resetPassword(String email, String password);
+	
+	@Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.id = :userId")
+	Optional<User> findByIdWithRoles(@Param("userId") Integer userId);
 }
