@@ -29,9 +29,9 @@ import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.model.socket.MessageFromClient;
 import com.reto.elorchat.model.socket.MessageFromServer;
 import com.reto.elorchat.security.configuration.JwtTokenUtil;
-import com.reto.elorchat.security.service.UserService;
-import com.reto.elorchat.service.ChatService;
-import com.reto.elorchat.service.MessageService;
+import com.reto.elorchat.security.service.IUserService;
+import com.reto.elorchat.service.IChatService;
+import com.reto.elorchat.service.IMessageService;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
@@ -43,14 +43,13 @@ public class SocketIOConfig {
 	JwtTokenUtil jwtUtil;
 
 	@Autowired
-	UserService userService;
+	IUserService userService;
 
 	@Autowired
-	ChatService chatService;
-
+	IChatService chatService;
 
 	@Autowired
-	MessageService messageService;
+	IMessageService messageService;
 
 	@Value("${socket-server.host}")
 	private String host;
@@ -82,6 +81,7 @@ public class SocketIOConfig {
 		server.addConnectListener(new MyConnectListener(server));
 		server.addDisconnectListener(new MyDisconnectListener());
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
+		server.addEventListener(SocketEvents.ON_FILE_RECEIVED.value, MessageFromClient.class, onSendFile());
 		server.addEventListener(SocketEvents.ON_CHAT_RECEIVED.value, ChatFromClient.class, onChatSend());
 		server.addEventListener(SocketEvents.ON_CHAT_JOIN_RECEIVED.value, ChatUserFromClient.class, onChatJoin());
 		server.addEventListener(SocketEvents.ON_CHAT_LEAVE_RECEIVED.value, ChatUserFromClient.class, onChatLeave());
@@ -91,6 +91,7 @@ public class SocketIOConfig {
 
 		return server;
 	}
+
 
 	//SINO QUITO EL STATIC ME DICE QUE JWT ES NULO
 	private class MyConnectListener implements ConnectListener {
@@ -227,8 +228,6 @@ public class SocketIOConfig {
 					return;
 				}
 
-				//	public MessageFromServer(MessageType messageType, Integer room, Integer messageServerId, Integer localId, String message, String authorName, Integer authorId, Long sent, Long saved) {
-
 				MessageFromServer message = new MessageFromServer(
 						MessageType.CLIENT,
 						data.getRoom(), 
@@ -242,6 +241,7 @@ public class SocketIOConfig {
 						);
 
 				ChatDTO chatDTO = chatService.findById(data.getRoom());
+
 				// Get the current timestamp
 				Instant currentInstant = Instant.now();
 				// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -319,10 +319,11 @@ public class SocketIOConfig {
 					authorId
 					);
 
-			ChatDTO chatDTO = new ChatDTO(data.getId(), data.getName(), data.getType(), authorId);
+			ChatDTO chatDTO = new ChatDTO(data.getId(), data.getName(), data.getType(), authorId, null, null);
 			try {				
 				ChatDTO createdChat = chatService.createChat(chatDTO);
 				chatFromServer.setId(createdChat.getId());
+				chatFromServer.setCreated(createdChat.getCreated().getTime());
 				senderClient.sendEvent(SocketEvents.ON_SEND_CHAT.value, chatFromServer);
 			} catch (ChatNameAlreadyExists e) {
 				// Handle ChatNameAlreadyExistsException
@@ -461,10 +462,35 @@ public class SocketIOConfig {
 					senderClient.joinRoom(room);
 					addedUserConnection.sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
 				}
-				
+
 			}catch (Exception e) {
 				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_ADD.value, chatUserFromServer);
 			}
+		};
+	}
+
+	private DataListener<MessageFromClient> onSendFile() {
+		return (senderClient, data, acknowledge) -> {
+			System.out.println("SENDING A FILE");
+			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+			Integer authorId = Integer.valueOf(authorIdS);
+			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
+			//String room = data.getRoom().toString();
+
+			ChatDTO chatDTO = chatService.findById(data.getRoom());
+
+			// Get the current timestamp
+			Instant currentInstant = Instant.now();
+			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+			Timestamp savedDate = Timestamp.from(currentInstant);
+
+			Long sentValue = data.getSent();
+
+			// Convert the long value to a Timestamp
+			Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
+
+			MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId);
+			MessageDTO createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);
 		};
 	}
 

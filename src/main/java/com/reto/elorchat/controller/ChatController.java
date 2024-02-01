@@ -56,9 +56,9 @@ public class ChatController {
 	//		this.socketIoServer = socketIoServer;
 	//	}
 
-	@GetMapping
-	public ResponseEntity<List<ChatGetResponse>> getChats(){
-		List<ChatDTO> listChatDTO = chatService.findAll();
+	@GetMapping("findAll/{id}")
+	public ResponseEntity<List<ChatGetResponse>> getChats(@PathVariable("id") Integer id){
+		List<ChatDTO> listChatDTO = chatService.findAll(id);
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
 		//Transform every DTO from the list to GetResponse
 		for(ChatDTO chatDTO: listChatDTO) {
@@ -139,7 +139,7 @@ public class ChatController {
 		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
 
 		//TODO ANNADIR A LA ROOM SI ESTA CONECTADO
-		
+
 		//PARA ENVIAR SOLO A LA ROOM
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
 		//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
@@ -210,9 +210,9 @@ public class ChatController {
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
 		//TODO QUITAR DE LA ROOM SI ESTA CONECTADO
-		
+
 		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
-		
+
 		//PARA ENVIAR SOLO A LA ROOM
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 		return new ResponseEntity<Integer>( HttpStatus.OK);
@@ -221,13 +221,22 @@ public class ChatController {
 	//CONVERTS
 	//---------------------------------------
 	private ChatGetResponse convertFromChatDTOToGetResponse(ChatDTO chatDTO) {
+		Long createdToMillis = chatDTO.getCreated().getTime();
 
 		ChatGetResponse response = new ChatGetResponse(
 				chatDTO.getId(),
 				chatDTO.getName(),
 				chatDTO.getType(),
-				chatDTO.getAdminId()
+				chatDTO.getAdminId(),
+				createdToMillis
 				);
+
+		if(chatDTO.getDeleted() != null) {			
+			Long deletedToMillis = chatDTO.getDeleted().getTime();
+			response.setDeleted(deletedToMillis);
+		}
+
+
 
 		//		if (chatDTO.getUsers() != null) {
 		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
@@ -247,12 +256,21 @@ public class ChatController {
 	}
 
 	private ChatPostResponse convertFromChatDTOToPostResponse(ChatDTO chatDTO) {
+		Long createdToMillis = chatDTO.getCreated().getTime();
+
 		ChatPostResponse response = new ChatPostResponse(
 				chatDTO.getId(),
 				chatDTO.getName(),
 				chatDTO.getType(),
-				chatDTO.getAdminId()
+				chatDTO.getAdminId(),
+				createdToMillis
 				);
+
+		if(chatDTO.getDeleted() != null) {			
+			Long deletedToMillis = chatDTO.getDeleted().getTime();
+			response.setDeleted(deletedToMillis);
+		}
+
 
 		//		if (chatDTO.getUsers() != null) {
 		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
@@ -277,8 +295,11 @@ public class ChatController {
 				chatPostRequest.getId(),
 				chatPostRequest.getName(),
 				chatPostRequest.getType(),
-				adminId
+				adminId,
+				null,
+				null
 				);
+
 		return response;
 	}
 

@@ -1,6 +1,7 @@
 package com.reto.elorchat.model.persistence;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -28,10 +29,10 @@ public class Chat{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
+
 	@Column(length=60)
 	private String name;
-	
+
 	@Column
 	private ChatTypeEnum type;
 
@@ -52,25 +53,36 @@ public class Chat{
 	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private List<Message> messages;
 
+	@Column
+	private Date created;
+
+	@Column
+	private Date deleted;
+
+
 	public Chat() {}
 
-	public Chat(String name, ChatTypeEnum type, Integer adminId) {
+	public Chat(String name, ChatTypeEnum type, Integer adminId, Date created, Date deleted) {
 		super();
 		this.name = name;
 		this.type = type;
 		this.adminId = adminId;
+		this.created = created;
+		this.deleted = deleted;
 	}
 
-	public Chat(Integer id, String name, ChatTypeEnum type, Integer adminId) {
+	public Chat(Integer id, String name, ChatTypeEnum type, Integer adminId, Date created, Date deleted) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.adminId = adminId;
+		this.created = created;
+		this.deleted = deleted;
 	}
 
 	public Chat(Integer id, String name, ChatTypeEnum type, List<User> users, User admin, Integer adminId,
-			List<Message> messages) {
+			List<Message> messages,  Date created, Date deleted) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -79,6 +91,8 @@ public class Chat{
 		this.admin = admin;
 		this.adminId = adminId;
 		this.messages = messages;
+		this.created = created;
+		this.deleted = deleted;
 	}
 
 	public Integer getId() {
@@ -137,5 +151,20 @@ public class Chat{
 		this.messages = messages;
 	}
 
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public Date getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Date deleted) {
+		this.deleted = deleted;
+	}
 
 }

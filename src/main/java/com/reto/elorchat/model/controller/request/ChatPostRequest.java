@@ -8,6 +8,7 @@ public class ChatPostRequest {
 	private String name;
 	private ChatTypeEnum type;
 	private Integer adminId;
+
 	
 	public ChatPostRequest() {}
 
@@ -51,6 +52,4 @@ public class ChatPostRequest {
 	public void setAdminId(Integer adminId) {
 		this.adminId = adminId;
 	}
-	
-	
 }

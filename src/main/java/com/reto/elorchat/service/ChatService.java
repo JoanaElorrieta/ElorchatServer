@@ -1,5 +1,7 @@
 package com.reto.elorchat.service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,15 +41,21 @@ public class ChatService implements IChatService{
 	private UserRepository userRepository;
 
 	@Override
-	public List<ChatDTO> findAll() {
-		Iterable<Chat> listChat = chatRepository.findAll();
-
+	public List<ChatDTO> findAll(Integer id) {
+		
 		List<ChatDTO> response = new ArrayList<ChatDTO>();
 
-		for(Chat chat: listChat) {
-			response.add(convertFromChatDAOToDTO(chat));
+		if(id == 0) {
+			Iterable<Chat> listChat = chatRepository.findAll();
+			for(Chat actualChat: listChat) {
+				response.add(convertFromChatDAOToDTO(actualChat));
+			}
+		}else {
+			Iterable<Chat> listChat = chatRepository.findAllChatsCreatedAfterId(id);
+			for(Chat actualChat: listChat) {
+				response.add(convertFromChatDAOToDTO(actualChat));
+			}
 		}
-
 		return response;
 	}
 
@@ -84,6 +92,16 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Administrador no encontrado")
 				);
 
+		// Get the current timestamp
+		Instant currentInstant = Instant.now();
+		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+		Timestamp joinDate = Timestamp.from(currentInstant);
+
+		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+		Timestamp createdDate = Timestamp.from(currentInstant);
+
+		//Timestamp deletedDate = Timestamp.from(Instant.ofEpochMilli(chatPostRequest.getDeleted()));
+
 		if(chatRepository.existsByName(chatDTO.getName())) {			
 			throw new ChatNameAlreadyExists("El chat con ese nombre ya existe");
 		}else {
@@ -91,9 +109,10 @@ public class ChatService implements IChatService{
 			if(isPrivate) {
 				boolean isProfessor = checkIfIsProfessor(admin);
 				if(isProfessor) {
+					chatDTO.setCreated(createdDate);
 					Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
 					if(chat != null){
-						chatRepository.addUserToChat(chat.getId(), admin.getId());
+						chatRepository.addUserToChat(chat.getId(), admin.getId(), joinDate);
 					}
 					ChatDTO response = convertFromChatDAOToDTO(chat);
 					return response;	
@@ -101,20 +120,27 @@ public class ChatService implements IChatService{
 					throw new HasNoRightToCreatePrivateException("Has no right to create a private");
 				}
 			}else{
+				chatDTO.setCreated(createdDate);
 				Chat chat = chatRepository.save(convertFromChatDTOToDAO(chatDTO, admin));
 				if(chat != null){
-					chatRepository.addUserToChat(chat.getId(), admin.getId());
+					chatRepository.addUserToChat(chat.getId(), admin.getId(),joinDate);
 				}
 				ChatDTO response = convertFromChatDAOToDTO(chat);
 				return response;
 			}
 		}
 	}
-
+	
+	//TODO CORREGIR Check if chat has been deleted
 	@Override
 	public void deleteChat(Integer id) throws ChatNotFoundException{
-		if(chatRepository.existsById(id)) {
-			chatRepository.deleteById(id);
+		
+		if(chatRepository.isChatDeleted(id)) {
+			// Get the current timestamp
+			Instant currentInstant = Instant.now();
+			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+			Timestamp deleteDate = Timestamp.from(currentInstant);
+			chatRepository.updateDeleteById(id, deleteDate);
 		}else {
 			throw new ChatNotFoundException("El chat no existe");
 		}
@@ -146,17 +172,22 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);		
 
+		// Get the current timestamp
+		Instant currentInstant = Instant.now();
+		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+		Timestamp joinDate = Timestamp.from(currentInstant);
+
 		if(idUser != null) {
 			System.out.println("Hay un admin que mete a un usuario al grupo");
 			userExistsOnChat(chat, idUser);
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
-			chatRepository.addUserToChat(idChat, idUser);
+			chatRepository.addUserToChat(idChat, idUser, joinDate);
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
 			userExistsOnChat(chat, idAdmin);
-			chatRepository.addUserToChat(idChat, idAdmin);
+			chatRepository.addUserToChat(idChat, idAdmin, joinDate);
 		}
 	}
 
@@ -167,13 +198,18 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);
 
+		// Get the current timestamp
+		Instant currentInstant = Instant.now();
+		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+		Timestamp deleteDate = Timestamp.from(currentInstant);
+
 		if(idUser != null) {
 			System.out.println("Hay un admin que echa a un usuario del grupo");
 			userDoesNotExistOnChat(chat, idUser);
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
-			chatRepository.leaveChat(idChat, idUser);
+			chatRepository.leaveChat(idChat, idUser, deleteDate);
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
 			userDoesNotExistOnChat(chat, idAdmin);
@@ -181,7 +217,7 @@ public class ChatService implements IChatService{
 			if(isPrivate) {
 				throw new CantLeaveChatException("Cant Leave a Private Group");
 			}
-			chatRepository.leaveChat(idChat, idAdmin);
+			chatRepository.leaveChat(idChat, idAdmin, deleteDate);
 		}
 
 		if(idUser == chat.getAdminId()) {
@@ -215,7 +251,9 @@ public class ChatService implements IChatService{
 				chat.getId(),
 				chat.getName(),
 				chat.getType(),
-				chat.getAdminId()
+				chat.getAdminId(),
+				chat.getCreated(),
+				chat.getDeleted()
 				);
 		//
 		//		if (chat.getUsers() != null) {
@@ -264,8 +302,11 @@ public class ChatService implements IChatService{
 				chatDTO.getId(),
 				chatDTO.getName(),
 				chatDTO.getType(),
-				chatDTO.getAdminId()
+				chatDTO.getAdminId(),
+				chatDTO.getCreated(),
+				chatDTO.getDeleted()
 				);
+
 		if (chatDTO.getUsers() != null) {
 			List<User> userList = new ArrayList<User>();
 			for(UserDTO userDTO : chatDTO.getUsers()) {

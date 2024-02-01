@@ -1,6 +1,7 @@
 package com.reto.elorchat.model.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.reto.elorchat.model.enums.ChatTypeEnum;
@@ -14,13 +15,17 @@ public class ChatDTO {
 	private Integer adminId;
 	//FIXME NECESITO ESTO?
 	private List<MessageDTO> messages = new ArrayList<>();
-
-	public ChatDTO(Integer id, String name, ChatTypeEnum type, Integer adminId) {
+	private Date created;
+	private Date deleted;
+	
+	public ChatDTO(Integer id, String name, ChatTypeEnum type, Integer adminId, Date created, Date deleted) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.type = type;
 		this.adminId = adminId;
+		this.created = created;
+		this.deleted = deleted;
 	}
 	public Integer getId() {
 		return id;
@@ -63,6 +68,19 @@ public class ChatDTO {
 	}
 	public void setMessages(List<MessageDTO> messages) {
 		this.messages = messages;
+	}
+	
+	public Date getCreated() {
+		return created;
+	}
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+	public Date getDeleted() {
+		return deleted;
+	}
+	public void setDeleted(Date deleted) {
+		this.deleted = deleted;
 	}
 	@Override
 	public String toString() {

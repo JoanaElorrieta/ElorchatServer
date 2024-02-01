@@ -13,7 +13,7 @@ import com.reto.elorchat.model.service.ChatDTO;
 
 public interface IChatService {
 
-	List<ChatDTO> findAll();
+	List<ChatDTO> findAll(Integer id);
 
 	ChatDTO findById(Integer id);
 

@@ -11,4 +11,6 @@ public interface MessageRepository extends CrudRepository<Message,Integer>{
 	@Query("SELECT m FROM Message m WHERE m.chatId = :chatId")
     Iterable<Message> findAllMessagesByChatId(@Param("chatId") Integer chatId);
 
+	@Query("SELECT m FROM Message m WHERE m.id > :givenId")
+	Iterable<Message> findAllMessagesCreatedAfterId(@Param("givenId") Integer givenId);
 }

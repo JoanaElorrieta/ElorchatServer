@@ -25,7 +25,11 @@ public enum SocketEvents {
 	
 	ON_CHAT_THROW_OUT_RECEIVED("throw out from chat"),
 	ON_CHAT_THROW_OUT("receive throw out from chat"),
-	ON_CHAT_NOT_THROW_OUT("not throw out from chat");
+	ON_CHAT_NOT_THROW_OUT("not throw out from chat"), 
+	
+	ON_FILE_RECEIVED ("send file"),
+	ON_SEND_FILE("receive file"),
+	ON_FILE__NOT_SENT("not send file");;
 	
 
 

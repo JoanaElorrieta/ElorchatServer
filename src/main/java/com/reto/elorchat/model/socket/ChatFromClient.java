@@ -19,7 +19,7 @@ public class ChatFromClient {
 		this.type = type;
 		this.adminId = adminId;
 	}
-	
+
 	public Integer getId() {
 		return id;
 	}
@@ -44,5 +44,4 @@ public class ChatFromClient {
 	public void setAdminId(Integer adminId) {
 		this.adminId = adminId;
 	}
-
 }

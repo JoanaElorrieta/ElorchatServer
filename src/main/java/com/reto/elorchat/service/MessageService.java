@@ -1,7 +1,12 @@
 package com.reto.elorchat.service;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,16 +35,21 @@ public class MessageService implements IMessageService{
 	UserRepository userRepository;
 
 	@Override
-	public List<MessageDTO> findAll() {
-		
-		Iterable<Message> listMessage = messageRepository.findAll();
+	public List<MessageDTO> findAll(Integer id) {
 
-		List<MessageDTO> response = new ArrayList<MessageDTO>();
-		
-		for(Message message: listMessage) {
-			response.add(convertFromMessageDAOToDTO(message));
+		List<MessageDTO> response = new ArrayList<MessageDTO>();		
+
+		if(id == 0) {
+			Iterable<Message> listMessage = messageRepository.findAll();
+			for(Message actualMessage: listMessage) {
+				response.add(convertFromMessageDAOToDTO(actualMessage));
+			}
+		} else {
+			Iterable<Message> listMessage = messageRepository.findAllMessagesCreatedAfterId(id);
+			for(Message actualMessage: listMessage) {
+				response.add(convertFromMessageDAOToDTO(actualMessage));
+			}
 		}
-		
 		return response;
 	}
 
@@ -74,11 +84,45 @@ public class MessageService implements IMessageService{
 
 		Message message = messageRepository.save(convertFromMessageDTOToDAO(messageDTO, user, chat));
 		MessageDTO response = convertFromMessageDAOToDTO(message);
-		
+
 		return response;
 	}
 
 
+	public MessageDTO createBase64FileOnResourceFile(MessageDTO messageDTO) {
+
+		String imageString = messageDTO.getText();
+		String fileExtension = detectMimeType(imageString);
+		String fileName = messageDTO.getId() + fileExtension;
+		String outputFile = "src/main/resources/static/images/" + fileName; 
+
+		byte[] decodedImg = Base64.getDecoder().decode(imageString.getBytes(StandardCharsets.UTF_8));
+		//Path destinationFile = Paths.
+		MessageDTO response = createMessage(messageDTO);
+
+		return response;
+	}
+
+	private String detectMimeType(String base64Content) {
+
+		HashMap<String, String> signatures = new HashMap<String, String>();
+		signatures.put("JVBERi0", ".pdf");
+		signatures.put("R0lGODdh", ".gif");
+		signatures.put("iVBORw0KGgo", ".png");
+		signatures.put("/9j/", ".jpg");
+		String response = "";
+
+		for(Map.Entry<String, String> entry : signatures.entrySet()) {
+			String key = entry.getKey();
+			if(base64Content.indexOf(0) == 0) {
+				response = entry.getValue();
+			}
+		}
+
+		return response;
+	}
+
+	//CONVERTS
 	private Message convertFromMessageDTOToDAO(MessageDTO messageDTO, User user, Chat chat) {
 
 		Message response = new Message(
@@ -95,7 +139,6 @@ public class MessageService implements IMessageService{
 		return response;
 	}
 
-	//CONVERTS
 	private MessageDTO convertFromMessageDAOToDTO(Message message) {
 		// TODO Auto-generated method stub
 		MessageDTO response = new MessageDTO(
@@ -108,5 +151,4 @@ public class MessageService implements IMessageService{
 		return response;
 	}
 	////
-
 }

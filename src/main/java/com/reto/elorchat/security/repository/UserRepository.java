@@ -28,4 +28,7 @@ public interface UserRepository extends CrudRepository<User, Integer>{
 	
 	@Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.id = :userId")
 	Optional<User> findByIdWithRoles(@Param("userId") Integer userId);
+	
+	@Query("SELECT u FROM User u WHERE u.id > :givenId")
+	Iterable<User> findAllUsersCreatedAfterId(@Param("givenId") Integer givenId);
 }

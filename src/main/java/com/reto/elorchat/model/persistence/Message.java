@@ -28,6 +28,7 @@ public class Message {
 	private Date sent;
 	@Column
 	private Date saved;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chat_id", foreignKey = @ForeignKey(name = "Fk_chat_id" ))
 	@JsonManagedReference

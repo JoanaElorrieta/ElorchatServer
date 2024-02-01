@@ -24,9 +24,9 @@ public class UserController {
 	private UserService userService;
 
 	//ASK PREGUNTA SI HAY PROBLEMA EN EL LOG DEL SERVER
-	@GetMapping
-	public ResponseEntity<List<UserGetResponse>> findAllUsers(){
-		List <UserDTO> listUserDTO = userService.findAll();
+	@GetMapping("/findAll/{id}")
+	public ResponseEntity<List<UserGetResponse>> findAllUsers(@PathVariable("id") Integer id){
+		List <UserDTO> listUserDTO = userService.findAll(id);
 		List<UserGetResponse> response = new ArrayList<UserGetResponse>(); 
 
 		//Transform every DTO from the list to GetResponse

@@ -35,11 +35,11 @@ public class AuthController {
 	@Autowired
 	IUserService userService;
 	
-	@GetMapping("/users")
-	public ResponseEntity<?> users() {
-		return ResponseEntity.ok().body(userService.findAll());
-	}
-	
+//	@GetMapping("/users")
+//	public ResponseEntity<?> users() {
+//		return ResponseEntity.ok().body(userService.findAll());
+//	}
+//	
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
 		try {

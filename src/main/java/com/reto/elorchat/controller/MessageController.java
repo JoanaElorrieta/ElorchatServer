@@ -25,10 +25,10 @@ public class MessageController {
 	@Autowired
 	private IMessageService messageService;
 
-	@GetMapping
-	public ResponseEntity<List<MessageGetResponse>> getMessages(){
+	@GetMapping("findAll/{id}")
+	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id){
 		
-		List <MessageDTO> listMessageDTO = messageService.findAll();
+		List <MessageDTO> listMessageDTO = messageService.findAll(id);
 		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
 
 		//Transform every DTO from the list to GetResponse
@@ -58,14 +58,14 @@ public class MessageController {
 	}
 	//CONVERTS
 	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
-		Long timeInMillis = messageDTO.getSent().getTime();
-		Long timeInMillis2 = messageDTO.getSaved().getTime();
+		Long sentInMillis = messageDTO.getSent().getTime();
+		Long savedInMillis2 = messageDTO.getSaved().getTime();
 		
 		MessageGetResponse response = new MessageGetResponse(
 				messageDTO.getId(), 
 				messageDTO.getText(),
-				timeInMillis,
-				timeInMillis2,
+				sentInMillis,
+				savedInMillis2,
 				messageDTO.getChatId(),
 				messageDTO.getUserId());
 		return response;

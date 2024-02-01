@@ -7,11 +7,22 @@ public class ChatFromServer {
 	private String name;
 	private ChatTypeEnum type;
 	private Integer adminId;
+	private Long created;
+	private Long deleted;
 	
-
     public ChatFromServer() {
         super();
     }
+	public ChatFromServer(Integer id, String name, ChatTypeEnum type, Integer adminId, Long created, Long deleted) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.type = type;
+		this.adminId = adminId;
+		this.created = created;
+		this.deleted = deleted;
+	}
+	
 	public ChatFromServer(Integer id, String name, ChatTypeEnum type, Integer adminId) {
 		super();
 		this.id = id;
@@ -19,6 +30,7 @@ public class ChatFromServer {
 		this.type = type;
 		this.adminId = adminId;
 	}
+	
 	public Integer getId() {
 		return id;
 	}
@@ -43,4 +55,17 @@ public class ChatFromServer {
 	public void setAdminId(Integer adminId) {
 		this.adminId = adminId;
 	}
+	public Long getCreated() {
+		return created;
+	}
+	public void setCreated(Long created) {
+		this.created = created;
+	}
+	public Long getDeleted() {
+		return deleted;
+	}
+	public void setDeleted(Long deleted) {
+		this.deleted = deleted;
+	}
+	
 }

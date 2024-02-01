@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.model.controller.request.EmailRequest;
 import com.reto.elorchat.model.enums.RoleEnum;
@@ -48,14 +50,21 @@ public class UserService implements IUserService, UserDetailsService {
 	}
 
 	@Override
-	public List<UserDTO> findAll() {
-
-		Iterable<User> listUser = userRepository.findAll();
-
+	public List<UserDTO> findAll(Integer id) {
+		
 		List<UserDTO> response = new ArrayList<UserDTO>();
 
-		for(User user: listUser) {
-			response.add(convertFromUserDAOToDTOWithRoles(user));
+
+		if(id == 0) {
+			Iterable<User> listUser = userRepository.findAll();
+			for(User actualUser: listUser) {
+				response.add(convertFromUserDAOToDTOWithRoles(actualUser));
+			}
+		}else {
+			Iterable<User> listUser = userRepository.findAllUsersCreatedAfterId(id);
+			for(User actualUser: listUser) {
+				response.add(convertFromUserDAOToDTOWithRoles(actualUser));
+			}
 		}
 		return response;	
 	}
@@ -108,14 +117,14 @@ public class UserService implements IUserService, UserDetailsService {
 		try {
 			Integer reset =userRepository.resetPassword(email, encodePassword);
 			String emailText=emailBody.getContent()+""+password;
-	        if ( reset == 1) {
-	            emailService.sendEmailTool(emailText, emailBody.getEmail(), emailBody.getSubject());
-	        } 
-	        return reset;
-	    } catch (Exception e) {
-	        System.out.println("Error reseteando la password");
-	        throw new RuntimeException(e);
-	    }
+			if ( reset == 1) {
+				emailService.sendEmailTool(emailText, emailBody.getEmail(), emailBody.getSubject());
+			} 
+			return reset;
+		} catch (Exception e) {
+			System.out.println("Error reseteando la password");
+			throw new RuntimeException(e);
+		}
 
 	}
 
@@ -153,7 +162,7 @@ public class UserService implements IUserService, UserDetailsService {
 		}
 		return null;
 	}
-	
+
 	private UserDTO convertFromUserDAOToDTO(User user) {
 		UserDTO response = new UserDTO(
 				user.getId(),
@@ -170,7 +179,7 @@ public class UserService implements IUserService, UserDetailsService {
 			}
 			response.setChats(chatList);
 		}
-		
+
 		return response;
 	}
 
@@ -179,7 +188,9 @@ public class UserService implements IUserService, UserDetailsService {
 				chat.getId(),
 				chat.getName(),
 				chat.getType(),
-				chat.getAdminId()
+				chat.getAdminId(),
+				chat.getCreated(),
+				chat.getDeleted()
 				);
 
 		return response;
