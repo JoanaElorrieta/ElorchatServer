@@ -42,7 +42,7 @@ public class ChatService implements IChatService{
 
 	@Override
 	public List<ChatDTO> findAll(Integer id) {
-		
+
 		List<ChatDTO> response = new ArrayList<ChatDTO>();
 
 		if(id == 0) {
@@ -130,12 +130,12 @@ public class ChatService implements IChatService{
 			}
 		}
 	}
-	
+
 	//TODO CORREGIR Check if chat has been deleted
 	@Override
 	public void deleteChat(Integer id) throws ChatNotFoundException{
-		
-		if(chatRepository.isChatDeleted(id)) {
+
+		if(!chatRepository.isChatDeleted(id)) {
 			// Get the current timestamp
 			Instant currentInstant = Instant.now();
 			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -159,9 +159,12 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public boolean existsByIdAndUsers_Id(Integer idChat, Integer idUser) {
+	public boolean existsOnChat(Integer idChat, Integer idUser) {
 		// TODO Auto-generated method stub
-		return chatRepository.existsByIdAndUsers_Id(idChat, idUser);
+		if(chatRepository.existsOnChat(idChat, idUser) > 0 ) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -179,15 +182,36 @@ public class ChatService implements IChatService{
 
 		if(idUser != null) {
 			System.out.println("Hay un admin que mete a un usuario al grupo");
-			userExistsOnChat(chat, idUser);
+
+			//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
+			userExistsOnChat(idChat, idUser);
+
+			//VERIFICA SI EL USUARIO ES EL ADMIN DEL CHAT
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
-			chatRepository.addUserToChat(idChat, idUser, joinDate);
+			//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
+			if(chatRepository.existsUserChatRelation(idChat, idUser) > 0) {
+				//Simplemente borramos seteamos el deleted a null
+				chatRepository.updateJoinDateInUserChat(idChat, idUser, joinDate);
+			} else {				
+				//Añadimos el usuario a tabla de la relación
+				chatRepository.addUserToChat(idChat, idUser, joinDate);
+			}
+
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
-			userExistsOnChat(chat, idAdmin);
-			chatRepository.addUserToChat(idChat, idAdmin, joinDate);
+
+			//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
+			userExistsOnChat(idChat, idAdmin);
+
+			//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
+			if(chatRepository.existsUserChatRelation(idChat, idUser) > 0) {
+				//Simplemente borramos seteamos el deleted a null
+				chatRepository.updateJoinDateInUserChat(idChat, idAdmin, joinDate);
+			}else {				
+				chatRepository.addUserToChat(idChat, idAdmin, joinDate);
+			}
 		}
 	}
 
@@ -205,24 +229,23 @@ public class ChatService implements IChatService{
 
 		if(idUser != null) {
 			System.out.println("Hay un admin que echa a un usuario del grupo");
-			userDoesNotExistOnChat(chat, idUser);
+			userDoesNotExistOnChat(idChat, idUser);
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
 			chatRepository.leaveChat(idChat, idUser, deleteDate);
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
-			userDoesNotExistOnChat(chat, idAdmin);
+			userDoesNotExistOnChat(idChat, idAdmin);
 			boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
 			if(isPrivate) {
 				throw new CantLeaveChatException("Cant Leave a Private Group");
 			}
+			if(idUser == chat.getAdminId()) {
+				throw new CantLeaveChatException("Admin Cant Leave the Group");
+			}	
 			chatRepository.leaveChat(idChat, idAdmin, deleteDate);
 		}
-
-		if(idUser == chat.getAdminId()) {
-			throw new CantLeaveChatException("Admin Cant Leave the Group");
-		}	
 	}
 
 	private boolean checkIfGroupIsPrivate(ChatDTO chatDTO) {
@@ -329,7 +352,8 @@ public class ChatService implements IChatService{
 				messageDTO.getId(),
 				messageDTO.getText(),
 				messageDTO.getSent(),
-				messageDTO.getSaved()
+				messageDTO.getSaved(),
+				messageDTO.getTextType()
 				);
 		return response;
 	}
@@ -347,24 +371,15 @@ public class ChatService implements IChatService{
 	}
 	//---------------------------------------
 
-	private void userExistsOnChat(Chat chat, Integer idUser) throws UserAlreadyExistsOnChat {
-		for(User user : chat.getUsers()){
-			if(user.getId() == idUser) {
-				throw new UserAlreadyExistsOnChat("User already exists on Chat");
-			}
+	private void userExistsOnChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat {
+		if(chatRepository.isDeletedUserChat(idChat, idUser) == 0) {	
+			throw new UserAlreadyExistsOnChat("User already exists on Chat");
 		}
 	}
 
-	private void userDoesNotExistOnChat(Chat chat, Integer idUser) throws UserDoesNotExistOnChat {
-		boolean found = false;
-		for(User user : chat.getUsers()){
-			if(user.getId() == idUser) {
-				found = true;
-			}
-		}
-		if(!found) {
+	private void userDoesNotExistOnChat(Integer idChat, Integer idUser) throws UserDoesNotExistOnChat {
+		if(chatRepository.isDeletedUserChat(idChat, idUser) > 0) {				
 			throw new UserDoesNotExistOnChat("User does not exist on Chat");
 		}
-
 	}
 }

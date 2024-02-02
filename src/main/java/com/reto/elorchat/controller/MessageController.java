@@ -1,5 +1,6 @@
 package com.reto.elorchat.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class MessageController {
 	private IMessageService messageService;
 
 	@GetMapping("findAll/{id}")
-	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id){
+	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id) throws IOException{
 		
 		List <MessageDTO> listMessageDTO = messageService.findAll(id);
 		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
@@ -39,7 +40,7 @@ public class MessageController {
 	}
 
 	@GetMapping("/chat/{chatId}")
-	public ResponseEntity<List<MessageGetResponse>> getMessagesByChatId(@PathVariable("chatId") Integer chatId){
+	public ResponseEntity<List<MessageGetResponse>> getMessagesByChatId(@PathVariable("chatId") Integer chatId) throws IOException{
 		List <MessageDTO> listMessageDTO = messageService.findAllMessagesByChatId(chatId);
 		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
 
@@ -67,7 +68,8 @@ public class MessageController {
 				sentInMillis,
 				savedInMillis2,
 				messageDTO.getChatId(),
-				messageDTO.getUserId());
+				messageDTO.getUserId(),
+				messageDTO.getTextType());
 		return response;
 	}
 	//////

@@ -1,20 +1,24 @@
 package com.reto.elorchat.model.socket;
 
+import com.reto.elorchat.model.enums.TextTypeEnum;
+
 public class MessageFromClient {
 	
     private Integer room;
     private Integer localId;
     private String message;
     private Long sent;
+    private TextTypeEnum type;
 
     public MessageFromClient() {
         super();
     }
-    public MessageFromClient(Integer room, Integer localId, String message, Long sent) {
+    public MessageFromClient(Integer room, Integer localId, String message, Long sent, TextTypeEnum type) {
     	super();
         this.message = message;
         this.room = room;
         this.sent = sent;
+        this.type = type;
     }
 
 	public Integer getRoom() {
@@ -44,6 +48,13 @@ public class MessageFromClient {
 	}
 	public void setSent(Long sent) {
 		this.sent = sent;
+	}
+	
+	public TextTypeEnum getType() {
+		return type;
+	}
+	public void setType(TextTypeEnum type) {
+		this.type = type;
 	}
 	@Override
 	public String toString() {

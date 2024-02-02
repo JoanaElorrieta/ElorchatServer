@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.security.persistance.User;
 
 
@@ -31,4 +32,7 @@ public interface UserRepository extends CrudRepository<User, Integer>{
 	
 	@Query("SELECT u FROM User u WHERE u.id > :givenId")
 	Iterable<User> findAllUsersCreatedAfterId(@Param("givenId") Integer givenId);
+	
+	@Query(nativeQuery = true)
+	Optional<UserChatInfoDTO> findUsersJoinedAndDeletedFromChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
 }

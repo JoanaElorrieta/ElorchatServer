@@ -1,5 +1,7 @@
 package com.reto.elorchat.model.controller.response;
 
+import com.reto.elorchat.model.enums.TextTypeEnum;
+
 public class MessageGetResponse {
 	
 	private Integer id;
@@ -8,9 +10,10 @@ public class MessageGetResponse {
 	private Long saved;
 	private Integer chatId;
 	private Integer userId;
+	private TextTypeEnum type;
 
 
-	public MessageGetResponse(Integer id, String text, Long sent, Long saved, Integer chatId,  Integer userId) {
+	public MessageGetResponse(Integer id, String text, Long sent, Long saved, Integer chatId,  Integer userId, TextTypeEnum type) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -18,14 +21,16 @@ public class MessageGetResponse {
 		this.saved = saved;
 		this.chatId = chatId;
 		this.userId = userId;
+		this.type = type;
 	}
 
-	public MessageGetResponse(Integer id, String text, Long sent, Long saved) {
+	public MessageGetResponse(Integer id, String text, Long sent, Long saved, TextTypeEnum type) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.sent = sent;
 		this.saved = saved;
+		this.type = type;
 	}
 	public Integer getId() {
 		return id;
@@ -72,4 +77,13 @@ public class MessageGetResponse {
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
+
+	public TextTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(TextTypeEnum type) {
+		this.type = type;
+	}
+	
 }

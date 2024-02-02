@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collection;
 
+import org.hibernate.dialect.Database;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -81,7 +82,7 @@ public class SocketIOConfig {
 		server.addConnectListener(new MyConnectListener(server));
 		server.addDisconnectListener(new MyDisconnectListener());
 		server.addEventListener(SocketEvents.ON_MESSAGE_RECEIVED.value, MessageFromClient.class, onSendMessage());
-		server.addEventListener(SocketEvents.ON_FILE_RECEIVED.value, MessageFromClient.class, onSendFile());
+		//	server.addEventListener(SocketEvents.ON_FILE_RECEIVED.value, MessageFromClient.class, onSendFile());
 		server.addEventListener(SocketEvents.ON_CHAT_RECEIVED.value, ChatFromClient.class, onChatSend());
 		server.addEventListener(SocketEvents.ON_CHAT_JOIN_RECEIVED.value, ChatUserFromClient.class, onChatJoin());
 		server.addEventListener(SocketEvents.ON_CHAT_LEAVE_RECEIVED.value, ChatUserFromClient.class, onChatLeave());
@@ -191,6 +192,7 @@ public class SocketIOConfig {
 					authorName, 
 					authorId,
 					null,
+					null,
 					null
 					);
 			client.getNamespace().getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_MESSAGE.value, messageFromServer);
@@ -220,6 +222,7 @@ public class SocketIOConfig {
 							"Server", 
 							0,
 							null,
+							null,
 							null
 							);
 
@@ -237,7 +240,8 @@ public class SocketIOConfig {
 						authorName, 
 						authorId,
 						data.getSent(),	
-						null
+						null,
+						data.getType()
 						);
 
 				ChatDTO chatDTO = chatService.findById(data.getRoom());
@@ -252,15 +256,22 @@ public class SocketIOConfig {
 				// Convert the long value to a Timestamp
 				Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
 
-				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId);
-				MessageDTO createdMessage = messageService.createMessage(messageDTO);
+				MessageDTO createdMessage;
 
-				//message.setMessageId(createdMessage.getId());
-				message.setMessageServerId(createdMessage.getId());
-				//ASK es mejor estar pillando los que va creando la bbdd? igual si, no?
-				message.setSaved(createdMessage.getSaved().getTime());
-				System.out.println(createdMessage.getSaved().getTime());
-				message.setSaved(createdMessage.getSaved().getTime());
+				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId(), authorId, data.getType());
+
+				if (messageDTO.getTextType().value.equals("TEXT")) {
+					createdMessage = messageService.createMessage(messageDTO);
+				} else {
+					createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);
+				}
+
+				if (createdMessage != null) {
+					message.setMessageServerId(createdMessage.getId());
+					message.setSaved(createdMessage.getSaved().getTime());
+					System.out.println(createdMessage.getSaved().getTime());
+					message.setSaved(createdMessage.getSaved().getTime());
+				}
 
 				// enviamos a la room correspondiente:
 				System.out.printf("Mensaje enviado a la room" + message);
@@ -287,6 +298,7 @@ public class SocketIOConfig {
 						"No puedes enviar a este grupo", 
 						"Server", 
 						0,
+						null,
 						null,
 						null
 						);
@@ -469,30 +481,30 @@ public class SocketIOConfig {
 		};
 	}
 
-	private DataListener<MessageFromClient> onSendFile() {
-		return (senderClient, data, acknowledge) -> {
-			System.out.println("SENDING A FILE");
-			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
-			Integer authorId = Integer.valueOf(authorIdS);
-			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
-			//String room = data.getRoom().toString();
-
-			ChatDTO chatDTO = chatService.findById(data.getRoom());
-
-			// Get the current timestamp
-			Instant currentInstant = Instant.now();
-			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
-			Timestamp savedDate = Timestamp.from(currentInstant);
-
-			Long sentValue = data.getSent();
-
-			// Convert the long value to a Timestamp
-			Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
-
-			MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId);
-			MessageDTO createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);
-		};
-	}
+	//	private DataListener<MessageFromClient> onSendFile() {
+	//		return (senderClient, data, acknowledge) -> {
+	//			System.out.println("SENDING A FILE");
+	//			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+	//			Integer authorId = Integer.valueOf(authorIdS);
+	//			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
+	//			//String room = data.getRoom().toString();
+	//
+	//			ChatDTO chatDTO = chatService.findById(data.getRoom());
+	//
+	//			// Get the current timestamp
+	//			Instant currentInstant = Instant.now();
+	//			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
+	//			Timestamp savedDate = Timestamp.from(currentInstant);
+	//
+	//			Long sentValue = data.getSent();
+	//
+	//			// Convert the long value to a Timestamp
+	//			Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
+	//
+	//			MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId, data.getTextType());
+	//			MessageDTO createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);
+	//		};
+	//	}
 
 
 	@PreDestroy

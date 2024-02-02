@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.reto.elorchat.model.controller.response.UserChatInfoGetResponse;
 import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.security.service.UserService;
 
@@ -32,7 +34,7 @@ public class UserController {
 		//Transform every DTO from the list to GetResponse
 		for(UserDTO userDTO: listUserDTO) {
 			if(userDTO != null){
-				response.add(convertFromUserDTOToGetResponseWithChatIds(userDTO));
+				response.add(convertFromUserDTOToGetResponseWithRolesAndChatInfo(userDTO));
 			}
 		}
 		return new ResponseEntity<List<UserGetResponse>>(response ,HttpStatus.OK);
@@ -49,7 +51,7 @@ public class UserController {
 		}
 		return new ResponseEntity<List<UserGetResponse>>(response ,HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/find/{email}")
 	public ResponseEntity<Integer> getUserByEmail(@PathVariable("email") String email){
 		Integer response = userService.findUserByEmail(email);
@@ -60,9 +62,9 @@ public class UserController {
 		Integer response = userService.resetPassword(email);
 		return new ResponseEntity<Integer>(response, HttpStatus.OK);
 	}
-	
-	
-	
+
+
+
 	//
 	//	@GetMapping("/users")
 	//	public ResponseEntity<Iterable<User>> getUsers(){
@@ -103,8 +105,8 @@ public class UserController {
 		return response;
 	}
 
-	private UserGetResponse convertFromUserDTOToGetResponseWithChatIds(UserDTO userDTO) {
-		
+	private UserGetResponse convertFromUserDTOToGetResponseWithRolesAndChatInfo(UserDTO userDTO) {
+
 		UserGetResponse response = new UserGetResponse(
 				userDTO.getId(),
 				userDTO.getName(),
@@ -117,11 +119,33 @@ public class UserController {
 			for(ChatDTO chatDTO : userDTO.getChats()) {
 				listChatId.add(chatDTO.getId());
 			}
+			List<UserChatInfoGetResponse> userChatInfoList = new ArrayList<UserChatInfoGetResponse>();
+			for(UserChatInfoDTO userChatInfoDTO: userDTO.getUserChatInfo()) {
+				userChatInfoList.add(convertFromUserInfoDTOToGetResponse(userChatInfoDTO));
+			}
 			response.setChatId(listChatId);
+			response.setUserChatInfo(userChatInfoList);
 		}
 		if (userDTO.getRoleId() != null) {
 			response.setRoleId(userDTO.getRoleId());
 		}
+		return response;
+	}
+
+	private UserChatInfoGetResponse convertFromUserInfoDTOToGetResponse(UserChatInfoDTO userChatInfoDTO) {
+		Long joinedInMillis = userChatInfoDTO.getJoined().getTime();
+		
+		UserChatInfoGetResponse response = new UserChatInfoGetResponse(
+				userChatInfoDTO.getUserId(),
+				userChatInfoDTO.getChatId(),
+				joinedInMillis,
+				null
+				);		
+		if(userChatInfoDTO.getDeleted() != null) {			
+			Long deletedInMillis = userChatInfoDTO.getDeleted().getTime();
+			response.setDeleted(deletedInMillis);
+		}
+
 		return response;
 	}
 

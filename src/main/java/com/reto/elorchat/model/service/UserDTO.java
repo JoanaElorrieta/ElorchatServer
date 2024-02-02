@@ -13,6 +13,7 @@ public class UserDTO {
 	private Integer roleId;
 	private List<ChatDTO> chats;
 	private List<MessageDTO> messages;
+	private List<UserChatInfoDTO> userChatInfo;
 
 	public UserDTO(Integer id, String name, String surname, String email, Long phoneNumber1,
 			String photo) {
@@ -83,7 +84,13 @@ public class UserDTO {
 	public void setMessages(List<MessageDTO> messages) {
 		this.messages = messages;
 	}
-	
+
+	public List<UserChatInfoDTO> getUserChatInfo() {
+		return userChatInfo;
+	}
+	public void setUserChatInfo(List<UserChatInfoDTO> userChatInfo) {
+		this.userChatInfo = userChatInfo;
+	}
 	@Override
 	public String toString() {
 		return "UserDTO [id=" + id + ", name=" + name + ", surname=" + surname + ", email=" + email + ", phoneNumber1="

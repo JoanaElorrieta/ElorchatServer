@@ -1,6 +1,7 @@
 package com.reto.elorchat.model.socket;
 
 import com.reto.elorchat.model.enums.MessageType;
+import com.reto.elorchat.model.enums.TextTypeEnum;
 
 public class MessageFromServer {
 
@@ -11,17 +12,17 @@ public class MessageFromServer {
 	private String message;
 	private String authorName;
 	private Integer authorId;
-
 	private Long sent;
-
 	private Long saved;
+	private TextTypeEnum type;
+	
 
 
 	public MessageFromServer() {
 		super();
 	}
 
-	public MessageFromServer(MessageType messageType, Integer room, Integer messageServerId, Integer localId, String message, String authorName, Integer authorId, Long sent, Long saved) {
+	public MessageFromServer(MessageType messageType, Integer room, Integer messageServerId, Integer localId, String message, String authorName, Integer authorId, Long sent, Long saved, TextTypeEnum type) {
 		super();
 		this.messageType = messageType;
 		this.room = room;
@@ -32,6 +33,7 @@ public class MessageFromServer {
 		this.authorId = authorId;
 		this.sent = sent;
 		this.saved = saved;
+		this.type = type;
 	}
 
 	public Integer getRoom() {
@@ -104,6 +106,14 @@ public class MessageFromServer {
 
 	public void setMessageType(MessageType messageType) {
 		this.messageType = messageType;
+	}
+
+	public TextTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(TextTypeEnum type) {
+		this.type = type;
 	}
 
 	@Override

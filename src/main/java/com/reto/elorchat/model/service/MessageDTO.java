@@ -2,6 +2,8 @@ package com.reto.elorchat.model.service;
 
 import java.util.Date;
 
+import com.reto.elorchat.model.enums.TextTypeEnum;
+
 public class MessageDTO {
 	private Integer id;
 	private String text;
@@ -11,8 +13,9 @@ public class MessageDTO {
 	private Integer chatId;
 	private UserDTO user;
 	private Integer userId;
+	private TextTypeEnum textType;
 
-	public MessageDTO(Integer id, String text, Date sent, Date saved, ChatDTO chat, UserDTO user) {
+	public MessageDTO(Integer id, String text, Date sent, Date saved, ChatDTO chat, UserDTO user, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -20,8 +23,9 @@ public class MessageDTO {
 		this.saved = saved;
 		this.chat = chat;
 		this.user = user;
+		this.textType = textType;
 	}
-	public MessageDTO(Integer id, String text, Date sent, Date saved, Integer chatId,  Integer userId) {
+	public MessageDTO(Integer id, String text, Date sent, Date saved, Integer chatId,  Integer userId, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -29,14 +33,16 @@ public class MessageDTO {
 		this.saved = saved;
 		this.chatId = chatId;
 		this.userId = userId;
+		this.textType = textType;
 	}
 
-	public MessageDTO(Integer id, String text, Date sent, Date saved) {
+	public MessageDTO(Integer id, String text, Date sent, Date saved, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.sent = sent;
 		this.saved = saved;
+		this.textType = textType;
 	}
 
 	public Integer getId() {
@@ -97,6 +103,13 @@ public class MessageDTO {
 	}
 	public void setUserId(Integer userId) {
 		this.userId = userId;
+	}
+	
+	public TextTypeEnum getTextType() {
+		return textType;
+	}
+	public void setTextType(TextTypeEnum textType) {
+		this.textType = textType;
 	}
 
 

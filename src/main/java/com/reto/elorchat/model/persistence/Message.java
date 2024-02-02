@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.reto.elorchat.model.enums.TextTypeEnum;
 import com.reto.elorchat.security.persistance.User;
 
 import jakarta.persistence.Column;
@@ -46,35 +47,41 @@ public class Message {
 
 	@Column(name = "user_id", insertable = false, updatable = false)
 	private Integer userId;
-
+	
+	@Column(name = "type")
+	private TextTypeEnum textType;
+	
 	public Message () {}
 
-	public Message(Integer id, String text, Date sent, Date saved) {
+	public Message(Integer id, String text, Date sent, Date saved, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
 		this.sent = sent;
 		this.saved = saved;
+		this.textType = textType;
 	}
 
-	public Message(String text, Date sent, Date saved, Chat chat, User user) {
+	public Message(String text, Date sent, Date saved, Chat chat, User user, TextTypeEnum textType) {
 		super();
 		this.text = text;
 		this.sent = sent;
 		this.saved = saved;
 		this.chat = chat;
 		this.user = user;
+		this.textType = textType;
 	}
 
-	public Message(String text, Date sent, Date saved, Chat chat, Integer chatId) {
+	public Message(String text, Date sent, Date saved, Chat chat, Integer chatId, TextTypeEnum textType) {
 		super();
 		this.text = text;
 		this.sent = sent;
 		this.saved = saved;
 		this.chat = chat;
 		this.chatId= chatId;
+		this.textType = textType;
 	}
-	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId) {
+	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -82,9 +89,10 @@ public class Message {
 		this.saved = saved;
 		this.chat = chat;
 		this.chatId= chatId;
+		this.textType = textType;
 	}
 
-	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId, User user, Integer userId) {
+	public Message(Integer id, String text, Date sent, Date saved, Chat chat, Integer chatId, User user, Integer userId, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -94,9 +102,10 @@ public class Message {
 		this.chatId = chatId;
 		this.user = user;
 		this.userId = userId;
+		this.textType = textType;
 	}
 
-	public Message(Integer id, String text, Date sent, Date saved, Integer chatId, Integer userId) {
+	public Message(Integer id, String text, Date sent, Date saved, Integer chatId, Integer userId, TextTypeEnum textType) {
 		super();
 		this.id = id;
 		this.text = text;
@@ -104,6 +113,7 @@ public class Message {
 		this.saved = saved;
 		this.chatId = chatId;
 		this.userId = userId;
+		this.textType = textType;
 	}
 
 	public Integer getId() {
@@ -166,5 +176,11 @@ public class Message {
 		this.userId = userId;
 	}
 
+	public TextTypeEnum getTextType() {
+		return textType;
+	}
 
+	public void setTextType(TextTypeEnum textType) {
+		this.textType = textType;
+	}
 }

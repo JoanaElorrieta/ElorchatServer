@@ -25,7 +25,7 @@ public interface IChatService {
 
 	Integer canDeleteChat(Integer idChat, Integer idUser);
 
-	boolean existsByIdAndUsers_Id(Integer idChat, Integer idUser);
+	boolean existsOnChat(Integer idChat, Integer idUser);
 
 	void addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException;
 

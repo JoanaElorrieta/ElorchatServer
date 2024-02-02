@@ -111,7 +111,7 @@ public class ChatController {
 			Authentication authentication) throws ChatNotFoundException{
 		Integer response; 
 		User user = (User) authentication.getPrincipal();
-		boolean boolValue = chatService.existsByIdAndUsers_Id(idChat, user.getId());
+		boolean boolValue = chatService.existsOnChat(idChat, user.getId());
 
 		if (boolValue) {
 			response = 1;

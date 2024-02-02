@@ -1,6 +1,7 @@
 package com.reto.elorchat.security.persistance;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -11,9 +12,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.persistence.Role;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,8 +26,25 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SqlResultSetMapping;
 import jakarta.persistence.Table;
+
+@NamedNativeQuery(name = "User.findUsersJoinedAndDeletedFromChat",
+query = "SELECT uc.user_id, uc.chat_id, uc.joined, uc.deleted FROM users u " +
+		"JOIN user_chat uc ON u.id = uc.user_id " +
+		"JOIN chats c ON uc.chat_id = c.id " +
+		"WHERE c.id = :chatId AND u.id = :userId",
+		resultSetMapping = "Mapping.UserChatInfoDTO")
+
+@SqlResultSetMapping(name = "Mapping.UserChatInfoDTO",
+classes = @ConstructorResult(targetClass = UserChatInfoDTO.class,
+columns = {@ColumnResult(name = "user_id", type = Integer.class),
+		@ColumnResult(name = "chat_id", type = Integer.class),
+		@ColumnResult(name = "joined", type = Date.class),
+		@ColumnResult(name = "deleted", type = Date.class),}))
+
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {

@@ -4,19 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.model.controller.request.EmailRequest;
 import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Role;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.security.persistance.User;
@@ -51,19 +50,19 @@ public class UserService implements IUserService, UserDetailsService {
 
 	@Override
 	public List<UserDTO> findAll(Integer id) {
-		
+
 		List<UserDTO> response = new ArrayList<UserDTO>();
 
 
 		if(id == 0) {
 			Iterable<User> listUser = userRepository.findAll();
 			for(User actualUser: listUser) {
-				response.add(convertFromUserDAOToDTOWithRoles(actualUser));
+				response.add(convertFromUserDAOToDTOWithRolesAndChatInfo(actualUser));
 			}
 		}else {
 			Iterable<User> listUser = userRepository.findAllUsersCreatedAfterId(id);
 			for(User actualUser: listUser) {
-				response.add(convertFromUserDAOToDTOWithRoles(actualUser));
+				response.add(convertFromUserDAOToDTOWithRolesAndChatInfo(actualUser));
 			}
 		}
 		return response;	
@@ -132,7 +131,8 @@ public class UserService implements IUserService, UserDetailsService {
 	//AQUI TAMBIEN HAGO? PREGUNTAR PQ ENTONCES EN AUTH CONTROLLER LO CASTEAMOS AL MODELO DE HIBERNATE Y NO AL DEL CONTROLADOR
 	//POR EL USERDETAILS? PERO EN DEPENDIENDO PARA QUE NO NECESITO QUE LO IMPLEMENTE, VERDAD?
 	//CONVERTS
-	private UserDTO convertFromUserDAOToDTOWithRoles(User user) {
+	private UserDTO convertFromUserDAOToDTOWithRolesAndChatInfo(User user) {
+
 		UserDTO response = new UserDTO(
 				user.getId(),
 				user.getName(),
@@ -143,10 +143,15 @@ public class UserService implements IUserService, UserDetailsService {
 
 		if (user.getChats() != null) {
 			List<ChatDTO> chatList = new ArrayList<ChatDTO>();
+			List<UserChatInfoDTO> userChatInfoList = new ArrayList<UserChatInfoDTO>();
 			for(Chat chat: user.getChats()) {
 				chatList.add(convertFromChatDAOToDTO(chat));
+				UserChatInfoDTO userChatInfo = userRepository.findUsersJoinedAndDeletedFromChat(chat.getId(), user.getId())
+						.orElseThrow(() -> new UsernameNotFoundException("User " + user.getId() + " not found"));
+				userChatInfoList.add(userChatInfo);
 			}
 			response.setChats(chatList);
+			response.setUserChatInfo(userChatInfoList);
 		}
 
 		if (user.getRoles() != null) {

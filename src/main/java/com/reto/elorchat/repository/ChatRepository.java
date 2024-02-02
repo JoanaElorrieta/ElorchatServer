@@ -15,7 +15,8 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 
 	//CONSULTA SQL NATIVO
 	//USER HAS PERMISSION TO ENTRY CHAT
-	@Query(value ="SELECT COUNT(chat_Id) FROM user_chat WHERE chat_Id = :id AND user_id = :idUser", nativeQuery = true)
+	//@Query(value ="SELECT COUNT(chat_Id) FROM user_chat WHERE chat_Id = :id AND user_id = :idUser", nativeQuery = true)
+	@Query(value = "SELECT COUNT(chat_Id) FROM user_chat WHERE chat_Id = :id AND user_id = :idUser AND deleted IS NULL", nativeQuery = true)
 	Integer canEnterUserChat(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
 
 	//CONSULTA JPQL
@@ -25,7 +26,15 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 
 	//Consulta con KeyWords
 	//EXISTS ON CHAT
-	boolean existsByIdAndUsers_Id(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
+	//boolean existsByIdAndUsers_Id(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat cu " +
+			"JOIN chats c ON cu.chat_id = c.id " +
+			"JOIN users u ON cu.user_id = u.id " +
+			"WHERE c.id = :id AND u.id = :idUser AND cu.deleted IS NULL", nativeQuery = true)
+	Long existsOnChat(@Param("id") Integer idChat, @Param("idUser") Integer idUser);
+
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat u WHERE u.chat_id = :chatId AND u.user_id = :userId", nativeQuery = true)
+	Long existsUserChatRelation(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
 
 	//CONSULTA SQL NATIVO
 	//ADD TO CHAT (Add to user_chat)
@@ -54,6 +63,8 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	//FIND BY NAME
 	Optional<Chat> findByName(String name);
 
+	//SI QUIERO QUE ME DEVUELVA SOLO LOS QUE ESTAN REALMENTE
+	//@Query("SELECT c FROM Chat c LEFT JOIN FETCH c.users u WHERE c.id = :chatId AND u.deleted IS NOT NULL")
 	@Query("SELECT c FROM Chat c LEFT JOIN FETCH c.users WHERE c.id = :chatId")
 	Optional<Chat> findChatWithUsersById(@Param("chatId") Integer chatId);
 
@@ -62,10 +73,20 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	@Query("UPDATE Chat c SET c.deleted = :deleteDate WHERE c.id = :id")
 	void updateDeleteById(@Param("id") Integer id, @Param("deleteDate") Date deleteDate);
 
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE user_chat SET deleted = null, joined = :joinDate WHERE chat_id = :chatId AND user_id = :userId", nativeQuery = true)
+	void updateJoinDateInUserChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId, @Param("joinDate") Date joinDate);
+
 	@Query("SELECT c FROM Chat c WHERE c.id > :givenId")
 	Iterable<Chat> findAllChatsCreatedAfterId(@Param("givenId") Integer givenId);
 
 	//TODO CORREGIR Check if chat has been deleted
 	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Chat c WHERE c.id = :id AND c.deleted IS NOT NULL")
 	boolean isChatDeleted(@Param("id") Integer chatId);
+
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat u WHERE u.chat_id = :chatId AND u.user_id = :userId AND u.deleted IS NOT NULL", nativeQuery = true)
+	Long isDeletedUserChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
+
+
 }
