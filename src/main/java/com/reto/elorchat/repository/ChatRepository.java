@@ -87,6 +87,9 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 
 	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat u WHERE u.chat_id = :chatId AND u.user_id = :userId AND u.deleted IS NOT NULL", nativeQuery = true)
 	Long isDeletedUserChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
+	
+	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat u WHERE u.chat_id = :chatId AND u.user_id = :userId AND u.deleted IS NULL", nativeQuery = true)
+	Long isUserAlreadyOnChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
 
 
 }

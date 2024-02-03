@@ -206,7 +206,7 @@ public class ChatService implements IChatService{
 			userExistsOnChat(idChat, idAdmin);
 
 			//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
-			if(chatRepository.existsUserChatRelation(idChat, idUser) > 0) {
+			if(chatRepository.existsUserChatRelation(idChat, idAdmin) > 0) {
 				//Simplemente borramos seteamos el deleted a null
 				chatRepository.updateJoinDateInUserChat(idChat, idAdmin, joinDate);
 			}else {				
@@ -372,7 +372,7 @@ public class ChatService implements IChatService{
 	//---------------------------------------
 
 	private void userExistsOnChat(Integer idChat, Integer idUser) throws UserAlreadyExistsOnChat {
-		if(chatRepository.isDeletedUserChat(idChat, idUser) == 0) {	
+		if(chatRepository.isUserAlreadyOnChat(idChat, idUser) > 0) {	
 			throw new UserAlreadyExistsOnChat("User already exists on Chat");
 		}
 	}

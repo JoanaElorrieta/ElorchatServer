@@ -6,9 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.exception.message.MessageNotFoundException;
-import com.reto.elorchat.model.enums.TextTypeEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.service.MessageDTO;
@@ -45,7 +43,7 @@ public class MessageService implements IMessageService{
 	UserRepository userRepository;
 
 	@Override
-	public List<MessageDTO> findAll(Integer id) throws IOException {
+	public List<MessageDTO> findAll(Integer id){
 
 		List<MessageDTO> response = new ArrayList<MessageDTO>();		
 
@@ -63,27 +61,17 @@ public class MessageService implements IMessageService{
 		return response;
 	}
 
-	private void convertToBase64(MessageDTO actualMessage) throws IOException {
-		String fileName = actualMessage.getUserId() + "_" + actualMessage.getChatId() + "_" + actualMessage.getId() + getExtensionFromFileName(actualMessage.getText());
-		String filePath = "src/main/resources/public/images/" + fileName;
+	private void convertToBase64(MessageDTO actualMessage) throws IOException{
 
+		String filePath = actualMessage.getText(); // Assuming actualMessage.getText() contains the correct full path
 		File file = new File(filePath);
 		byte[] fileContent = Files.readAllBytes(file.toPath());
 		actualMessage.setText(Base64.getEncoder().encodeToString(fileContent));
 
 	}
 
-	private String getExtensionFromFileName(String fileName) {
-		int lastDotIndex = fileName.lastIndexOf('.');
-		if (lastDotIndex >= 0) {
-			return fileName.substring(lastDotIndex);
-		}
-		// Handle the case where the file name doesn't contain a dot (.)
-		return "";
-	}
-
 	@Override
-	public List<MessageDTO> findAllMessagesByChatId(Integer chatId) throws IOException {
+	public List<MessageDTO> findAllMessagesByChatId(Integer chatId){
 
 
 		Iterable<Message> listMessage = messageRepository.findAllMessagesByChatId(chatId);
@@ -98,7 +86,7 @@ public class MessageService implements IMessageService{
 	}
 
 	@Override
-	public MessageDTO createMessage(MessageDTO messageDTO) throws IOException {
+	public MessageDTO createMessage(MessageDTO messageDTO){
 
 		User user = userRepository.findById(messageDTO.getUserId()).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Creador no encontrado")
@@ -121,15 +109,17 @@ public class MessageService implements IMessageService{
 
 		String imageString = messageDTO.getText();
 		String fileExtension = detectMimeType(imageString);
-		String temporaryId = generateTemporaryId();  // Implement this method to generate a temporary ID
-		String fileName = messageDTO.getUserId() + "_" + messageDTO.getChatId() + "_" + temporaryId + fileExtension;
+		String fileName = messageDTO.getUserId() + "_" + messageDTO.getChatId() + "_" + generateUniqueFileName() + fileExtension;
 
 		String outputFile = "src/main/resources/public/images/" + fileName;
 
 		// Verificar si la imagen ya existe antes de crear una nueva ruta
-		if (imageAlreadyExists(imageString)) {
+		if (imageAlreadyExists(imageString, messageDTO.getChatId()) != null) {
 			// La imagen ya existe, puedes tomar decisiones adicionales aquí si es necesario
 			System.out.println("La imagen ya existe. No es necesario crear una nueva ruta.");
+			String filePath = imageAlreadyExists(imageString, messageDTO.getChatId());
+			System.out.println("FILE PATH TO SAVE: " + filePath);
+			messageDTO.setText(filePath);
 			response = createMessage(messageDTO);
 		}else {
 			// La imagen es nueva, puedes crear una nueva ruta
@@ -140,6 +130,7 @@ public class MessageService implements IMessageService{
 			try {
 				Files.write(destinationFile, decodedImg);
 				messageDTO.setText(destinationFile.toString());
+				System.out.println("HE ESCRITO EL MENSAJE COMO FICHERO" + destinationFile.toString());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -149,108 +140,54 @@ public class MessageService implements IMessageService{
 			System.out.println("La imagen es nueva. Debes crear una nueva ruta.");
 
 			response = createMessage(messageDTO);
-
-			// After the database creation, replace the temporary ID in the file name with the actual ID
-			Integer actualId = response.getId();
-			String actualFileName = messageDTO.getUserId() + "_" + messageDTO.getChatId() + "_" + actualId + fileExtension;
-			Path actualDestinationFile = Paths.get("src/main/resources/public/images/" + actualFileName);
-
-			try {
-				// Assuming the file has been moved and actualDestinationFile points to the new location
-				Files.move(destinationFile, actualDestinationFile, StandardCopyOption.REPLACE_EXISTING);
-
-				// After moving the file, write its content to the same path
-				Files.write(actualDestinationFile, decodedImg);
-			} catch (IOException e) {
-				// Handle the exception appropriately (e.g., log it)
-				e.printStackTrace();
-			}
-
-			response = updateMessage(messageDTO);
 		}
 		return response;
 	}
 
-	@Override
-	public MessageDTO updateMessage(MessageDTO messageDTO) throws MessageNotFoundException, IOException{
+	public String imageAlreadyExists(String imageString, Integer chatId) {
+		List<String> base64ImagesExistente = obtenerBase64ImagesExistente(chatId);
 
-		Message message = messageRepository.findById(messageDTO.getId()).orElseThrow(
-				() -> new MessageNotFoundException("No ese existe empleado")
-				);
-
-		if(messageDTO.getText() != null) {			
-			message.setText(messageDTO.getText());
-		}
-
-		//TODO CHANGE
-		Message messageResponse = messageRepository.updateTextForMessage(message.getText(), message.getId()).orElseThrow(
-				() -> new MessageNotFoundException("No ese existe empleado")
-				);;
-
-		MessageDTO response = convertFromMessageDAOToDTO(messageResponse);			
-
-		return response;
-	}
-
-	private boolean imageAlreadyExists(String imageString) throws NoSuchAlgorithmException, IOException{
-
-		String hashActual = calcularHashDeBase64(imageString);
-
-		// Supongamos que hashesExistente es una lista de hashes de imágenes ya almacenadas
-		List<String> hashesExistente = obtenerHashesExistente();
-
-		// Supongamos que hashesExistente es una lista de hashes de imágenes ya almacenadas
-		for (String hashExistente : hashesExistente) {
-			if (hashActual.equals(hashExistente)) {
-				return true; // La imagen ya existe
+		// Comparar la cadena Base64 con las imágenes existentes
+		for (String base64Existente : base64ImagesExistente) {
+			if (base64Existente.equals(imageString)) {
+				// Return the file path associated with the matched image
+				return obtenerFilePathDelMensaje(base64Existente, chatId);
 			}
 		}
-		return false; // La imagen es nueva
+		return null; // La imagen no existe
 	}
 
-	public List<String> obtenerHashesExistente() {
-
-		List<String> hashesExistente = new ArrayList<>();
-
-		// Supongamos que tienes un método en tu MessageRepository para obtener mensajes con type "FILE"
-		// Ajusta esto según la estructura de tu base de datos.
-		Iterable<Message> mensajes = messageRepository.findAllMessagesByType(TextTypeEnum.FILE);
+	public String obtenerFilePathDelMensaje(String imageString, Integer chatId) {
+		Iterable<Message> mensajes = messageRepository.findAllMessagesByChatId(chatId);
 
 		for (Message mensaje : mensajes) {
-			// Aquí asumo que cada mensaje tiene un método getRuta(). Ajusta según tus necesidades.
-			String rutaCompleta = mensaje.getText();
-
-			// Extracción del hash de la ruta (asumo un formato "userId_chatId_hash.extension")
-			String[] partesRuta = rutaCompleta.split("_");
-			if (partesRuta.length >= 3) {
-				//ANNADO
-				String hash = partesRuta[2];
-				hashesExistente.add(hash);
+			MessageDTO messageDTO = convertFromMessageDAOToDTO(mensaje);
+			if (messageDTO.getText().equals(imageString)) {
+				return mensaje.getText(); // Return the file path
 			}
 		}
-
-		return hashesExistente;
+		return null; // File path not found (should not happen if everything is consistent)
 	}
 
-	private String calcularHashDeBase64(String base64Content) throws NoSuchAlgorithmException, IOException {
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		byte[] decodedImg = Base64.getDecoder().decode(base64Content.getBytes(StandardCharsets.UTF_8));
-		digest.update(decodedImg);
-		byte[] hashBytes = digest.digest();
+	public List<String> obtenerBase64ImagesExistente(Integer chatId) {
+		List<String> base64ImagesExistente = new ArrayList<>();
 
-		// Convertir el hash a una representación hexadecimal
-		StringBuilder hexString = new StringBuilder();
-		for (byte hashByte : hashBytes) {
-			String hex = Integer.toHexString(0xff & hashByte);
-			if (hex.length() == 1) hexString.append('0');
-			hexString.append(hex);
+		Iterable<Message> mensajes = messageRepository.findAllMessagesByChatId(chatId);
+
+		for (Message mensaje : mensajes) {
+			MessageDTO messageDTO = convertFromMessageDAOToDTO(mensaje);
+			//String base64Existente = convertToBase64(mensaje.getText());
+			base64ImagesExistente.add(messageDTO.getText());
 		}
-		return hexString.toString();
+
+		return base64ImagesExistente;
 	}
 
-	private String generateTemporaryId() {
-		// Using UUID to generate a random and unique temporary ID
-		return UUID.randomUUID().toString();
+	private String generateUniqueFileName() {
+		long timestamp = System.currentTimeMillis();
+		Date date = new Date (timestamp);
+		String uniqueId = UUID.randomUUID().toString().replace("-", "");
+		return date + "_" + uniqueId;
 	}
 
 	private String detectMimeType(String base64Content) {
@@ -268,7 +205,6 @@ public class MessageService implements IMessageService{
 				response = entry.getValue();
 			}
 		}
-
 		return response;
 	}
 
@@ -290,7 +226,7 @@ public class MessageService implements IMessageService{
 		return response;
 	}
 
-	private MessageDTO convertFromMessageDAOToDTO(Message message) throws IOException {
+	private MessageDTO convertFromMessageDAOToDTO(Message message){
 		// TODO Auto-generated method stub
 		MessageDTO response = new MessageDTO(
 				message.getId(), 
@@ -302,7 +238,12 @@ public class MessageService implements IMessageService{
 				message.getTextType());
 
 		if(response.getTextType().value.equals("FILE")) {
-			convertToBase64(response);
+			try {
+				convertToBase64(response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return response;

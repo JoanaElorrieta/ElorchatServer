@@ -1,8 +1,5 @@
 package com.reto.elorchat.repository;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -22,8 +19,10 @@ public interface MessageRepository extends CrudRepository<Message,Integer>{
     @Query("SELECT m FROM Message m WHERE m.textType = :textType")
     Iterable<Message> findAllMessagesByType(@Param("textType") TextTypeEnum textType);
     
-    @Modifying
-    @Query("UPDATE Message m SET m.text = :newText WHERE m.id = :messageId")
-    Optional<Message> updateTextForMessage(@Param("newText") String newText, @Param("messageId") Integer messageId);
+
+    
+//    @Modifying
+//    @Query("UPDATE Message m SET m.text = :newText WHERE m.id = :messageId")
+//    Optional<Message> updateTextForMessage(@Param("newText") String newText, @Param("messageId") Integer messageId);
     
 }

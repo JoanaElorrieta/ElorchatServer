@@ -78,6 +78,11 @@ public class ChatController {
 	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException{
 		User user = (User) authentication.getPrincipal();
 		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest, user.getId())));
+
+		SocketIOClient client = findClientByUserId(user.getId());
+		if (client != null) {			
+			client.joinRoom(response.getId().toString());
+		}
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
 	}
 
@@ -138,12 +143,14 @@ public class ChatController {
 
 		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
 
-		//TODO ANNADIR A LA ROOM SI ESTA CONECTADO
-
 		//PARA ENVIAR SOLO A LA ROOM
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
-		//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
 
+		SocketIOClient client = findClientByUserId(idUser);
+		if (client != null) {			
+			client.joinRoom(idChat.toString());
+			client.sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
+		}
 		return new ResponseEntity<Integer>(HttpStatus.OK);
 
 	}
@@ -156,21 +163,19 @@ public class ChatController {
 
 		SocketIOClient client = findClientByUserId(user.getId());
 
+		UserDTO joiningUserDTO = userService.findById(user.getId());
+		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
+
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
+
 		if (client != null) {
-			UserDTO joiningUserDTO = userService.findById(user.getId());
-			UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
-
-			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
-
-			//PARA ENVIAR SOLO A LA ROOM
-			socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
-			//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_JOIN.value, room);
-
-			client.joinRoom(idChat.toString());				
-			return new ResponseEntity<Integer>(HttpStatus.OK);
-		}else {
-			return new ResponseEntity<Integer>(HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+			client.joinRoom(idChat.toString());		
+			client.sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
 		}
+
+		return new ResponseEntity<Integer>(HttpStatus.OK);
+
 	}
 
 	@DeleteMapping("/leaveChat/{idChat}")
@@ -180,20 +185,20 @@ public class ChatController {
 		chatService.leaveChat(idChat, null , user.getId());
 
 		SocketIOClient client = findClientByUserId(user.getId());
+		UserDTO joiningUserDTO = userService.findById(user.getId());
+		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+
+		//AQUI PODRIA PRIMERO MANDAR EL MENSAJE A TODA LA ROOM Y DESPUES SACAR AL CLIENTE PARA HACERLE LLEGAR EL EVENTO
+		//PERO PREFIERO ASEGURARME DE SACARLO PRIMERO, AVISARLE, Y DESPUES AL RESTO
 		if (client != null) {
-			UserDTO joiningUserDTO = userService.findById(user.getId());
-			UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
-
-			ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
-			//PARA ENVIAR SOLO A LA ROOM
-			socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
-			//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_CHAT_JOIN.value, room);
-			client.leaveRoom(idChat.toString());				
-			return new ResponseEntity<Integer>(HttpStatus.OK);
-		}else {
-			return new ResponseEntity<Integer>(HttpStatus.NON_AUTHORITATIVE_INFORMATION);
+			client.leaveRoom(idChat.toString());	
+			client.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 		}
+
+		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
+		return new ResponseEntity<Integer>(HttpStatus.OK);
 	}
 
 	@DeleteMapping("/throwFromChat/{idChat}/{idUser}")
@@ -209,11 +214,15 @@ public class ChatController {
 		UserDTO joiningAdminDTO = userService.findById(admin.getId());
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
-		//TODO QUITAR DE LA ROOM SI ESTA CONECTADO
-
 		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
 
-		//PARA ENVIAR SOLO A LA ROOM
+		//TODO QUITAR DE LA ROOM SI ESTA CONECTADO
+		SocketIOClient client = findClientByUserId(idUser);
+		if (client != null) {			
+			client.leaveRoom(idChat.toString());
+			client.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
+		}
+
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 		return new ResponseEntity<Integer>( HttpStatus.OK);
 	}

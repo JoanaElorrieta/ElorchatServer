@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +23,7 @@ import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
 import com.reto.elorchat.model.controller.response.UserGetResponse;
-import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.UserDTO;
-import com.reto.elorchat.model.socket.MessageFromServer;
 import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.service.IUserService;
@@ -49,29 +46,29 @@ public class SocketController {
 		this.socketIoServer = socketIoServer;
 	}
 
-	@GetMapping("/send-message")
-	public String sendMessage() {
-		// Envia un mensaje a todos los clientes conectados
-
-
-		MessageFromServer message = new MessageFromServer(
-				MessageType.SERVER, 
-				null, 
-				null,
-				null,
-				"Hola, clientes de Socket.IO!", 
-				"Server", 
-				0,
-				null, 
-				null, 
-				null
-				);
-		//PARA ENVIAR SOLO A LA ROOM
-		//socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
-		//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
-
-		return "Mensaje enviado";
-	}
+	//	@GetMapping("/send-message")
+	//	public String sendMessage() {
+	//		// Envia un mensaje a todos los clientes conectados
+	//
+	//
+	//		MessageFromServer message = new MessageFromServer(
+	//				MessageType.SERVER, 
+	//				null, 
+	//				null,
+	//				null,
+	//				"Hola, clientes de Socket.IO!", 
+	//				"Server", 
+	//				0,
+	//				null, 
+	//				null, 
+	//				null
+	//				);
+	//		//PARA ENVIAR SOLO A LA ROOM
+	//		//socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADDED.value, room);
+	//		//socketIoServer.getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
+	//
+	//		return "Mensaje enviado";
+	//	}
 
 	//	// deberia ser un POST y con body, pero para probar desde el navegador...
 	//	@PostMapping("/join-room")

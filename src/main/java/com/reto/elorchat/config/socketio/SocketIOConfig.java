@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collection;
 
-import org.hibernate.dialect.Database;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -334,6 +333,9 @@ public class SocketIOConfig {
 			ChatDTO chatDTO = new ChatDTO(data.getId(), data.getName(), data.getType(), authorId, null, null);
 			try {				
 				ChatDTO createdChat = chatService.createChat(chatDTO);
+				String room = createdChat.getId().toString();
+				System.out.println("ROOM CREADA: " + room);
+				senderClient.joinRoom(room);			
 				chatFromServer.setId(createdChat.getId());
 				chatFromServer.setCreated(createdChat.getCreated().getTime());
 				senderClient.sendEvent(SocketEvents.ON_SEND_CHAT.value, chatFromServer);
@@ -480,31 +482,6 @@ public class SocketIOConfig {
 			}
 		};
 	}
-
-	//	private DataListener<MessageFromClient> onSendFile() {
-	//		return (senderClient, data, acknowledge) -> {
-	//			System.out.println("SENDING A FILE");
-	//			String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
-	//			Integer authorId = Integer.valueOf(authorIdS);
-	//			String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
-	//			//String room = data.getRoom().toString();
-	//
-	//			ChatDTO chatDTO = chatService.findById(data.getRoom());
-	//
-	//			// Get the current timestamp
-	//			Instant currentInstant = Instant.now();
-	//			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
-	//			Timestamp savedDate = Timestamp.from(currentInstant);
-	//
-	//			Long sentValue = data.getSent();
-	//
-	//			// Convert the long value to a Timestamp
-	//			Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
-	//
-	//			MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId() , authorId, data.getTextType());
-	//			MessageDTO createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);
-	//		};
-	//	}
 
 
 	@PreDestroy
