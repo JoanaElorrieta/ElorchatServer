@@ -10,6 +10,7 @@ import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 
 public interface IChatService {
 
@@ -27,9 +28,9 @@ public interface IChatService {
 
 	boolean existsOnChat(Integer idChat, Integer idUser);
 
-	void addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException;
+	UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException;
 
-	void leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat;
+	UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat;
 
 	void deleteChat(Integer id) throws ChatNotFoundException;
 }

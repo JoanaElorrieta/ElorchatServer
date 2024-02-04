@@ -30,8 +30,10 @@ import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
+import com.reto.elorchat.model.controller.response.UserChatInfoGetResponse;
 import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.security.persistance.User;
@@ -128,11 +130,12 @@ public class ChatController {
 	}
 
 	@PostMapping("/addUserToChat/{idChat}/{idUser}")
-	public ResponseEntity<Integer> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	public ResponseEntity<UserChatInfoGetResponse> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
 
 		User admin = (User) authentication.getPrincipal();
-		chatService.addUserToChat(idChat, idUser, admin.getId()); 
-
+		
+		UserChatInfoDTO userChatInfoDTO= chatService.addUserToChat(idChat, idUser, admin.getId()); 
+		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
 		UserDTO joiningUserDTO = userService.findById(idUser);
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
@@ -151,16 +154,16 @@ public class ChatController {
 			client.joinRoom(idChat.toString());
 			client.sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
 		}
-		return new ResponseEntity<Integer>(HttpStatus.OK);
+		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
 
 	}
 
 	@PostMapping("/joinToChat/{idChat}")
-	public ResponseEntity<Integer> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	public ResponseEntity<UserChatInfoGetResponse> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
 
 		User user = (User) authentication.getPrincipal();
-		chatService.addUserToChat(idChat, null, user.getId()); 
-
+		UserChatInfoDTO userChatInfoDTO= chatService.addUserToChat(idChat, null, user.getId()); 
+		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 		SocketIOClient client = findClientByUserId(user.getId());
 
 		UserDTO joiningUserDTO = userService.findById(user.getId());
@@ -174,15 +177,33 @@ public class ChatController {
 			client.sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
 		}
 
-		return new ResponseEntity<Integer>(HttpStatus.OK);
+		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
 
 	}
 
+	private UserChatInfoGetResponse convertFromUserChatInfoDTOToGetResponse(UserChatInfoDTO userChatInfoDTO) {
+		Long joinedInMillis = userChatInfoDTO.getJoined().getTime();
+
+		UserChatInfoGetResponse response = new UserChatInfoGetResponse(
+				userChatInfoDTO.getUserId(),
+				userChatInfoDTO.getChatId(),
+				joinedInMillis,
+				null
+				);		
+		if(userChatInfoDTO.getDeleted() != null) {			
+			Long deletedInMillis = userChatInfoDTO.getDeleted().getTime();
+			response.setDeleted(deletedInMillis);
+		}
+
+		return response;
+	}
+
 	@DeleteMapping("/leaveChat/{idChat}")
-	public ResponseEntity<Integer> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<UserChatInfoGetResponse> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		User user = (User) authentication.getPrincipal();
-		chatService.leaveChat(idChat, null , user.getId());
+		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, null , user.getId());
+		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
 		SocketIOClient client = findClientByUserId(user.getId());
 		UserDTO joiningUserDTO = userService.findById(user.getId());
@@ -198,14 +219,15 @@ public class ChatController {
 		}
 
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
-		return new ResponseEntity<Integer>(HttpStatus.OK);
+		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/throwFromChat/{idChat}/{idUser}")
-	public ResponseEntity<Integer> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<UserChatInfoGetResponse> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		User admin = (User) authentication.getPrincipal();
-		chatService.leaveChat(idChat, idUser, admin.getId());
+		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, idUser, admin.getId());
+		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
 		UserDTO joiningUserDTO = userService.findById(idUser);
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
@@ -224,7 +246,7 @@ public class ChatController {
 		}
 
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
-		return new ResponseEntity<Integer>( HttpStatus.OK);
+		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
 	}
 
 	//CONVERTS

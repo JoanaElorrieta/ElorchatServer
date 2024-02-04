@@ -121,7 +121,7 @@ public class UserController {
 			}
 			List<UserChatInfoGetResponse> userChatInfoList = new ArrayList<UserChatInfoGetResponse>();
 			for(UserChatInfoDTO userChatInfoDTO: userDTO.getUserChatInfo()) {
-				userChatInfoList.add(convertFromUserInfoDTOToGetResponse(userChatInfoDTO));
+				userChatInfoList.add(convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO));
 			}
 			response.setChatId(listChatId);
 			response.setUserChatInfo(userChatInfoList);
@@ -132,7 +132,7 @@ public class UserController {
 		return response;
 	}
 
-	private UserChatInfoGetResponse convertFromUserInfoDTOToGetResponse(UserChatInfoDTO userChatInfoDTO) {
+	private UserChatInfoGetResponse convertFromUserChatInfoDTOToGetResponse(UserChatInfoDTO userChatInfoDTO) {
 		Long joinedInMillis = userChatInfoDTO.getJoined().getTime();
 		
 		UserChatInfoGetResponse response = new UserChatInfoGetResponse(

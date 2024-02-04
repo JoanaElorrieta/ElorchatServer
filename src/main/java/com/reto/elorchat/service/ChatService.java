@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +25,7 @@ import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.persistence.Role;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
+import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.security.persistance.User;
@@ -168,7 +170,7 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public void addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
+	public UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
 		// TODO Auto-generated method stub
 
 		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
@@ -197,8 +199,11 @@ public class ChatService implements IChatService{
 			} else {				
 				//Añadimos el usuario a tabla de la relación
 				chatRepository.addUserToChat(idChat, idUser, joinDate);
+
 			}
 
+			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
+			return userChatInfo;
 		} else {
 			System.out.println("NO hay un admin que mete a un usuario al grupo");
 
@@ -212,11 +217,13 @@ public class ChatService implements IChatService{
 			}else {				
 				chatRepository.addUserToChat(idChat, idAdmin, joinDate);
 			}
+			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+			return userChatInfo;
 		}
 	}
 
 	@Override
-	public void leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
@@ -234,8 +241,10 @@ public class ChatService implements IChatService{
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
 			chatRepository.leaveChat(idChat, idUser, deleteDate);
+			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+			return userChatInfo;
 		} else {
-			System.out.println("NO hay un admin que mete a un usuario al grupo");
+			System.out.println("NO hay un admin que echa a un usuario al grupo");
 			userDoesNotExistOnChat(idChat, idAdmin);
 			boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
 			if(isPrivate) {
@@ -245,6 +254,8 @@ public class ChatService implements IChatService{
 				throw new CantLeaveChatException("Admin Cant Leave the Group");
 			}	
 			chatRepository.leaveChat(idChat, idAdmin, deleteDate);
+			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+			return userChatInfo;
 		}
 	}
 
@@ -381,5 +392,11 @@ public class ChatService implements IChatService{
 		if(chatRepository.isDeletedUserChat(idChat, idUser) > 0) {				
 			throw new UserDoesNotExistOnChat("User does not exist on Chat");
 		}
+	}
+
+	private UserChatInfoDTO getUserChatInfoFromUser(Integer idChat, Integer idUser) {
+		return userRepository.findUsersJoinedAndDeletedFromChat(idChat, idUser)
+				.orElseThrow(() -> new UsernameNotFoundException("User " + idUser + " not found"));
+
 	}
 }

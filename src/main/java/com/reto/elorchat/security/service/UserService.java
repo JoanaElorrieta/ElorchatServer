@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reto.elorchat.model.controller.request.EmailRequest;
+import com.reto.elorchat.model.controller.response.UserChatInfoGetResponse;
 import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Role;
@@ -146,8 +147,7 @@ public class UserService implements IUserService, UserDetailsService {
 			List<UserChatInfoDTO> userChatInfoList = new ArrayList<UserChatInfoDTO>();
 			for(Chat chat: user.getChats()) {
 				chatList.add(convertFromChatDAOToDTO(chat));
-				UserChatInfoDTO userChatInfo = userRepository.findUsersJoinedAndDeletedFromChat(chat.getId(), user.getId())
-						.orElseThrow(() -> new UsernameNotFoundException("User " + user.getId() + " not found"));
+				UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(chat.getId(), user.getId());
 				userChatInfoList.add(userChatInfo);
 			}
 			response.setChats(chatList);
@@ -166,6 +166,12 @@ public class UserService implements IUserService, UserDetailsService {
 			}
 		}
 		return null;
+	}
+
+	private UserChatInfoDTO getUserChatInfoFromUser(Integer idChat, Integer idUser) {
+		return userRepository.findUsersJoinedAndDeletedFromChat(idChat, idUser)
+				.orElseThrow(() -> new UsernameNotFoundException("User " + idUser + " not found"));
+
 	}
 
 	private UserDTO convertFromUserDAOToDTO(User user) {
