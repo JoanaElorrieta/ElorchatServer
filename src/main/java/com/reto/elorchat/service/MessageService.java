@@ -21,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.exception.message.MessageNotFoundException;
+import com.reto.elorchat.model.controller.request.MessagePostRequest;
+import com.reto.elorchat.model.controller.request.PendingMessagePostRequest;
+import com.reto.elorchat.model.controller.response.MessageGetResponse;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.service.MessageDTO;
@@ -99,6 +102,19 @@ public class MessageService implements IMessageService{
 		Message message = messageRepository.save(convertFromMessageDTOToDAO(messageDTO, user, chat));
 		MessageDTO response = convertFromMessageDAOToDTO(message);
 
+		return response;
+	}
+	
+	@Override
+	public List<MessageDTO> insertPendingMessages(List<MessageDTO> listMessageDTO) {
+		
+		List<MessageDTO> response = new ArrayList<MessageDTO>(); 
+		
+		for(MessageDTO messageDTO : listMessageDTO){
+			MessageDTO createdMessage = createMessage(messageDTO);
+			response.add(createdMessage);
+		}
+		
 		return response;
 	}
 

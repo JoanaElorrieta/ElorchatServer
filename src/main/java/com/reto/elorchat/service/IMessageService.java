@@ -17,5 +17,7 @@ public interface IMessageService {
 	
 	public MessageDTO createBase64FileOnResourceFile(MessageDTO messageDTO) throws NoSuchAlgorithmException, IOException, MessageNotFoundException;
 
+	List<MessageDTO> insertPendingMessages(List<MessageDTO> pendingMessagePostRequest);
+
 	//MessageDTO updateMessage(MessageDTO messageDTO) throws MessageNotFoundException, IOException;
 }

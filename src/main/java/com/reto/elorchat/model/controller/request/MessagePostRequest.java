@@ -1,55 +1,73 @@
 package com.reto.elorchat.model.controller.request;
 
-import java.util.Date;
+import com.reto.elorchat.model.enums.TextTypeEnum;
 
 public class MessagePostRequest {
-
-	private String text;
-	private Date date;
-	private Integer chatId;
-	private Integer userId;
-
-	public MessagePostRequest() {}
 	
-	public MessagePostRequest(String text, Date date, Integer chatId, Integer userId) {
-		super();
-		this.text = text;
-		this.date = date;
-		this.chatId = chatId;
-		this.userId = userId;
+    private Integer room;
+    private Integer userId;
+    private Integer localId;
+    private String message;
+    private Long sent;
+    private TextTypeEnum type;
+
+    public MessagePostRequest() {
+        super();
+    }
+    public MessagePostRequest(Integer room, Integer userId, Integer localId, String message, Long sent, TextTypeEnum type) {
+    	super();
+        this.room = room;
+        this.userId = userId;
+        this.localId = localId;
+        this.message = message;
+        this.sent = sent;
+        this.type = type;
+    }
+
+	public Integer getRoom() {
+		return room;
 	}
 
-	public String getText() {
-		return text;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public Date getDate() {
-		return date;
-	}
-
-	public void setDate(Date date) {
-		this.date = date;
-	}
-
-	public Integer getChatId() {
-		return chatId;
-	}
-
-	public void setChatId(Integer chatId) {
-		this.chatId = chatId;
+	public void setRoom(Integer room) {
+		this.room = room;
 	}
 
 	public Integer getUserId() {
 		return userId;
 	}
-
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
+	public Integer getLocalId() {
+		return localId;
+	}
+	public void setLocalId(Integer localId) {
+		this.localId = localId;
+	}
+	public String getMessage() {
+		return message;
+	}
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public Long getSent() {
+		return sent;
+	}
+	public void setSent(Long sent) {
+		this.sent = sent;
+	}
 	
+	public TextTypeEnum getType() {
+		return type;
+	}
+	public void setType(TextTypeEnum type) {
+		this.type = type;
+	}
+	@Override
+	public String toString() {
+		return "MessageFromClient [room=" + room + ", message=" + message + "]";
+	}
+
 		
 }
