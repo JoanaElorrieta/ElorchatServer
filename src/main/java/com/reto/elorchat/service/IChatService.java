@@ -14,7 +14,9 @@ import com.reto.elorchat.model.service.UserChatInfoDTO;
 
 public interface IChatService {
 
-	List<ChatDTO> findAll(Integer id);
+	List<ChatDTO> findAll(Integer id, Integer idUser);
+	
+	//List<ChatDTO> getAllChatsOfUser(Integer userId);
 
 	ChatDTO findById(Integer id);
 

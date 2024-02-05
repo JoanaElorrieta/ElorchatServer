@@ -43,20 +43,51 @@ public class ChatService implements IChatService{
 	private UserRepository userRepository;
 
 	@Override
-	public List<ChatDTO> findAll(Integer id) {
+	public List<ChatDTO> findAll(Integer id, Integer idUser) {
 
 		List<ChatDTO> response = new ArrayList<ChatDTO>();
 
+		User user = userRepository.findById(idUser).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Usuario no encontrado")
+				);
+
+		UserDTO userDTO = convertFromUserDAOToDTO(user);
+
+		List <Integer> userChatIds = new ArrayList<Integer>();
+
+		for(ChatDTO chatDTO : userDTO.getChats()) {
+			userChatIds.add(chatDTO.getId());
+		}	
+
 		if(id == 0) {
-			Iterable<Chat> listChat = chatRepository.findAll();
-			for(Chat actualChat: listChat) {
-				response.add(convertFromChatDAOToDTO(actualChat));
+			if(!userChatIds.isEmpty()) {
+				//OBTENER TODOS LOS CHATS PUBLICOS Y LOS PRIVADOS DE ESE USUARIO
+				Iterable<Chat> listChat = chatRepository.findAllUserChats(userChatIds, ChatTypeEnum.PUBLIC);
+				for(Chat actualChat: listChat) {
+					response.add(convertFromChatDAOToDTO(actualChat));
+				}
+			}else {				
+				//OBTENER TODOS LOS CHATS PUBLICOS
+				Iterable<Chat> listChat = chatRepository.findAllPublicChats();
+				for(Chat actualChat: listChat) {
+					response.add(convertFromChatDAOToDTO(actualChat));
+				}
 			}
 		}else {
-			Iterable<Chat> listChat = chatRepository.findAllChatsCreatedAfterId(id);
-			for(Chat actualChat: listChat) {
-				response.add(convertFromChatDAOToDTO(actualChat));
+			if(!userChatIds.isEmpty()) {
+				//OBTENER TODOS LOS CHATS PUBLICOS Y LOS PRIVADOS DE ESE USUARIO DESPUES DE LA ID DADA
+				Iterable<Chat> listChat = chatRepository.findAllUserChatsCreatedAfterId(id, userChatIds, ChatTypeEnum.PUBLIC, ChatTypeEnum.PRIVATE);
+				for(Chat actualChat: listChat) {
+					response.add(convertFromChatDAOToDTO(actualChat));
+				}
+			}else {
+				//OBTENER TODOS LOS CHATS PUBLICOS DESPUES DE LA ID DADA
+				Iterable<Chat> listChat = chatRepository.findAllPublicChatsCreatedAfterId(id, ChatTypeEnum.PUBLIC);
+				for(Chat actualChat: listChat) {
+					response.add(convertFromChatDAOToDTO(actualChat));
+				}
 			}
+
 		}
 		return response;
 	}
@@ -240,8 +271,12 @@ public class ChatService implements IChatService{
 			if(chat.getAdminId() != idAdmin) {
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
+
+			if(idUser == chat.getAdminId()) {
+				throw new CantLeaveChatException("You cant throw out the admin");
+			}	
 			chatRepository.leaveChat(idChat, idUser, deleteDate);
-			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
 			return userChatInfo;
 		} else {
 			System.out.println("NO hay un admin que echa a un usuario al grupo");
@@ -279,6 +314,26 @@ public class ChatService implements IChatService{
 	}
 	//CONVERTS
 	//---------------------------------------
+	private UserDTO convertFromUserDAOToDTO(User user) {
+		UserDTO response = new UserDTO(
+				user.getId(),
+				user.getName(),
+				user.getSurname(),
+				user.getEmail(),
+				user.getPhoneNumber1(),
+				user.getPhoto());
+
+		if (user.getChats() != null) {
+			List<ChatDTO> chatList = new ArrayList<ChatDTO>();
+			for(Chat chat: user.getChats()) {
+				chatList.add(convertFromChatDAOToDTO(chat));
+			}
+			response.setChats(chatList);
+		}
+
+		return response;
+	}
+
 	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
 
 		ChatDTO response = new ChatDTO(
@@ -289,21 +344,6 @@ public class ChatService implements IChatService{
 				chat.getCreated(),
 				chat.getDeleted()
 				);
-		//
-		//		if (chat.getUsers() != null) {
-		//			List<UserDTO> userList = new ArrayList<UserDTO>();
-		//			for(User user : chat.getUsers()) {
-		//				userList.add(convertFromUserDAOToDTO(user));
-		//			}
-		//			response.setUsers(userList);
-		//		}
-		//		if (chat.getMessages() != null) {
-		//			List<MessageDTO> messageList = new ArrayList<MessageDTO>();
-		//			for(Message message : chat.getMessages()) {
-		//				messageList.add(convertFromMessageDAOToDTO(message));
-		//			}
-		//			response.setMessages(messageList);
-		//		}
 		return response;
 	}
 

@@ -11,7 +11,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.reto.elorchat.model.controller.request.EmailRequest;
-import com.reto.elorchat.model.controller.response.UserChatInfoGetResponse;
 import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Role;

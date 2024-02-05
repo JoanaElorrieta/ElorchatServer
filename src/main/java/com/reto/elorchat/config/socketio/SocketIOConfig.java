@@ -75,7 +75,8 @@ public class SocketIOConfig {
 		// vamos a permitir a una web que no este en el mismo host y port conectarse. Si no da error de Cross Domain
 		config.setAllowHeaders("Authorization");
 		config.setOrigin("http://localhost:" + webServerPort);
-
+		 config.setMaxFramePayloadLength(1024 * 1024); // 1 MB in bytes
+		 
 		server = new SocketIOServer(config);
 
 		server.addConnectListener(new MyConnectListener(server));
@@ -275,6 +276,7 @@ public class SocketIOConfig {
 				// enviamos a la room correspondiente:
 				System.out.printf("Mensaje enviado a la room" + message);
 				System.out.printf("A LAS " + createdMessage.getSent());
+				System.out.println(message.getMessage());
 				server.getRoomOperations(data.getRoom().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
 
 				// TODO esto es para mandar a todos los clientes. No para mandar a los de una Room

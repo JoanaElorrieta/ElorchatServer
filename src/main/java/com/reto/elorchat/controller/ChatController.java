@@ -59,8 +59,9 @@ public class ChatController {
 	//	}
 
 	@GetMapping("findAll/{id}")
-	public ResponseEntity<List<ChatGetResponse>> getChats(@PathVariable("id") Integer id){
-		List<ChatDTO> listChatDTO = chatService.findAll(id);
+	public ResponseEntity<List<ChatGetResponse>> getChats(@PathVariable("id") Integer id, Authentication authentication){
+		User user = (User) authentication.getPrincipal();
+		List<ChatDTO> listChatDTO = chatService.findAll(id, user.getId());
 		List<ChatGetResponse> response = new ArrayList<ChatGetResponse>(); 
 		//Transform every DTO from the list to GetResponse
 		for(ChatDTO chatDTO: listChatDTO) {
@@ -190,6 +191,7 @@ public class ChatController {
 				joinedInMillis,
 				null
 				);		
+		
 		if(userChatInfoDTO.getDeleted() != null) {			
 			Long deletedInMillis = userChatInfoDTO.getDeleted().getTime();
 			response.setDeleted(deletedInMillis);

@@ -21,12 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.reto.elorchat.exception.message.MessageNotFoundException;
-import com.reto.elorchat.model.controller.request.MessagePostRequest;
-import com.reto.elorchat.model.controller.request.PendingMessagePostRequest;
-import com.reto.elorchat.model.controller.response.MessageGetResponse;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
+import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
+import com.reto.elorchat.model.service.UserDTO;
 import com.reto.elorchat.repository.ChatRepository;
 import com.reto.elorchat.repository.MessageRepository;
 import com.reto.elorchat.security.persistance.User;
@@ -41,28 +40,46 @@ public class MessageService implements IMessageService{
 	@Autowired
 	ChatRepository chatRepository;
 
-
 	@Autowired
 	UserRepository userRepository;
 
+
 	@Override
-	public List<MessageDTO> findAll(Integer id){
+	public List<MessageDTO> findAll(Integer id, Integer idUser){
 
 		List<MessageDTO> response = new ArrayList<MessageDTO>();		
 
+		User user = userRepository.findById(idUser).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Usuario no encontrado")
+				);
+
+		UserDTO userDTO = convertFromUserDAOToDTO(user);
+
+		List <Integer> userChatIds = new ArrayList<Integer>();
+
+		for(ChatDTO chatDTO : userDTO.getChats()) {
+			userChatIds.add(chatDTO.getId());
+		}	
+
+
 		if(id == 0) {
-			Iterable<Message> listMessage = messageRepository.findAll();
-			for(Message actualMessage: listMessage) {
-				response.add(convertFromMessageDAOToDTO(actualMessage));
+			if(!userChatIds.isEmpty()) {
+				Iterable<Message> listMessage = messageRepository.findAllMessagesOfUser(userChatIds);				
+				for(Message actualMessage: listMessage) {
+					response.add(convertFromMessageDAOToDTO(actualMessage));
+				}
 			}
 		} else {
-			Iterable<Message> listMessage = messageRepository.findAllMessagesCreatedAfterId(id);
-			for(Message actualMessage: listMessage) {
-				response.add(convertFromMessageDAOToDTO(actualMessage));
+			if(!userChatIds.isEmpty()) {
+				Iterable<Message> listMessage = messageRepository.findAllMessagesOfUserCreatedAfterId(id, userChatIds);
+				for(Message actualMessage: listMessage) {
+					response.add(convertFromMessageDAOToDTO(actualMessage));
+				}	
 			}
 		}
 		return response;
 	}
+
 
 	private void convertToBase64(MessageDTO actualMessage) throws IOException{
 
@@ -104,17 +121,17 @@ public class MessageService implements IMessageService{
 
 		return response;
 	}
-	
+
 	@Override
 	public List<MessageDTO> insertPendingMessages(List<MessageDTO> listMessageDTO) {
-		
+
 		List<MessageDTO> response = new ArrayList<MessageDTO>(); 
-		
+
 		for(MessageDTO messageDTO : listMessageDTO){
 			MessageDTO createdMessage = createMessage(messageDTO);
 			response.add(createdMessage);
 		}
-		
+
 		return response;
 	}
 
@@ -261,6 +278,39 @@ public class MessageService implements IMessageService{
 				e.printStackTrace();
 			}
 		}
+
+		return response;
+	}
+	
+	private UserDTO convertFromUserDAOToDTO(User user) {
+		UserDTO response = new UserDTO(
+				user.getId(),
+				user.getName(),
+				user.getSurname(),
+				user.getEmail(),
+				user.getPhoneNumber1(),
+				user.getPhoto());
+
+		if (user.getChats() != null) {
+			List<ChatDTO> chatList = new ArrayList<ChatDTO>();
+			for(Chat chat: user.getChats()) {
+				chatList.add(convertFromChatDAOToDTO(chat));
+			}
+			response.setChats(chatList);
+		}
+
+		return response;
+	}
+
+	private ChatDTO convertFromChatDAOToDTO(Chat chat) {
+		ChatDTO response = new ChatDTO(
+				chat.getId(),
+				chat.getName(),
+				chat.getType(),
+				chat.getAdminId(),
+				chat.getCreated(),
+				chat.getDeleted()
+				);
 
 		return response;
 	}

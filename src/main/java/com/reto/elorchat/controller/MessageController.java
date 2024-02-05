@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import com.reto.elorchat.model.controller.response.MessageGetResponse;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
+import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.service.IChatService;
 import com.reto.elorchat.service.IMessageService;
 
@@ -35,9 +37,11 @@ public class MessageController {
 	private IChatService chatService;
 
 	@GetMapping("findAll/{id}")
-	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id) throws IOException{
+	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id, Authentication authentication) throws IOException{
 
-		List <MessageDTO> listMessageDTO = messageService.findAll(id);
+		User user = (User) authentication.getPrincipal();
+	
+		List <MessageDTO> listMessageDTO = messageService.findAll(id, user.getId());
 		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
 
 		//Transform every DTO from the list to GetResponse

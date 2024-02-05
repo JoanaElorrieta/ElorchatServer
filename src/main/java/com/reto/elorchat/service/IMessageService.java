@@ -11,7 +11,7 @@ public interface IMessageService {
 
 	List<MessageDTO> findAllMessagesByChatId(Integer chatId);
 
-	List<MessageDTO> findAll(Integer id);
+	List<MessageDTO> findAll(Integer id, Integer userId);
 
 	MessageDTO createMessage(MessageDTO messageDTO);
 	

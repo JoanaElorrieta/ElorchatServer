@@ -1,6 +1,7 @@
 package com.reto.elorchat.repository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.persistence.Chat;
 
 public interface ChatRepository extends CrudRepository<Chat, Integer>{
@@ -78,9 +80,6 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	@Query(value = "UPDATE user_chat SET deleted = null, joined = :joinDate WHERE chat_id = :chatId AND user_id = :userId", nativeQuery = true)
 	void updateJoinDateInUserChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId, @Param("joinDate") Date joinDate);
 
-	@Query("SELECT c FROM Chat c WHERE c.id > :givenId")
-	Iterable<Chat> findAllChatsCreatedAfterId(@Param("givenId") Integer givenId);
-
 	//TODO CORREGIR Check if chat has been deleted
 	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Chat c WHERE c.id = :id AND c.deleted IS NOT NULL")
 	boolean isChatDeleted(@Param("id") Integer chatId);
@@ -91,5 +90,16 @@ public interface ChatRepository extends CrudRepository<Chat, Integer>{
 	@Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END FROM user_chat u WHERE u.chat_id = :chatId AND u.user_id = :userId AND u.deleted IS NULL", nativeQuery = true)
 	Long isUserAlreadyOnChat(@Param("chatId") Integer chatId, @Param("userId") Integer userId);
 
+	@Query("SELECT c FROM Chat c WHERE c.id > :givenId AND c.type = :public")
+	Iterable<Chat> findAllPublicChatsCreatedAfterId(@Param("givenId") Integer givenId, @Param("public") ChatTypeEnum pub);
+	
+	@Query("SELECT c FROM Chat c WHERE c.deleted IS NULL")
+	Iterable<Chat> findAllPublicChats();
+
+	@Query("SELECT c FROM Chat c WHERE (c.type = :public AND c.deleted IS NULL) OR (c.type = 0 AND c.deleted IS NULL AND c.id IN :userChatList)")
+	Iterable<Chat> findAllUserChats(@Param("userChatList") List<Integer> userChatIds, @Param("public") ChatTypeEnum pub);
+
+	@Query("SELECT c FROM Chat c WHERE c.id > :givenId AND ((c.type = :public AND c.deleted IS NULL) OR (c.type = :private AND c.deleted IS NULL AND c.id IN :userChatList))")
+	Iterable<Chat> findAllUserChatsCreatedAfterId(@Param("givenId") Integer givenId, @Param("userChatList") List<Integer> userChatIds,@Param("public") ChatTypeEnum pub,@Param("private") ChatTypeEnum priv);
 
 }
