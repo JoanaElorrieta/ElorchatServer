@@ -6,6 +6,7 @@ import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.HasNoRightToJoinTheGroup;
 import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
@@ -30,9 +31,11 @@ public interface IChatService {
 
 	boolean existsOnChat(Integer idChat, Integer idUser);
 
-	UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException;
+	UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup;
 
-	UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat;
+	UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException;
 
-	void deleteChat(Integer id) throws ChatNotFoundException;
+	ChatDTO deleteChat(Integer id) throws ChatNotFoundException;
+
+	List<UserChatInfoDTO> insertPendingUserChatInfo(List<UserChatInfoDTO> listUserChatInfoDTO) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException;
 }

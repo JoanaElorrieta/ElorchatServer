@@ -32,7 +32,7 @@ import com.reto.elorchat.service.IMessageService;
 public class MessageController {
 	@Autowired
 	private IMessageService messageService;
-	
+
 	@Autowired
 	private IChatService chatService;
 
@@ -40,7 +40,7 @@ public class MessageController {
 	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id, Authentication authentication) throws IOException{
 
 		User user = (User) authentication.getPrincipal();
-	
+
 		List <MessageDTO> listMessageDTO = messageService.findAll(id, user.getId());
 		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
 
@@ -78,12 +78,12 @@ public class MessageController {
 		List<MessageDTO> listmessageDTO = convertFromListPendingMessagePostRequestToListDTO(pendingMessagePostRequest);
 
 		List <MessageDTO> listMessageDTOResponse = messageService.insertPendingMessages(listmessageDTO);
-		
+
 		//Transform every DTO from the list to GetResponse
 		for(MessageDTO messageDTOResponse: listMessageDTOResponse) {
 			response.add(convertFromMessageDTOToGetResponse(messageDTOResponse));
 		}
-		
+
 		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
 	}
 
@@ -102,10 +102,10 @@ public class MessageController {
 				messageDTO.getTextType());
 		return response;
 	}
-	
+
 	private List<MessageDTO> convertFromListPendingMessagePostRequestToListDTO(
-			PendingMessagePostRequest pendingMessagePostRequest) {
-		
+		PendingMessagePostRequest pendingMessagePostRequest) {
+
 		List<MessageDTO> response = new ArrayList<MessageDTO>();
 		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest.getPendingMessages()){
 			MessageDTO messageDTO = convertFromMessagePostRequestToDTO(messagePostRequest);
@@ -115,8 +115,8 @@ public class MessageController {
 	}
 
 	private MessageDTO convertFromMessagePostRequestToDTO(MessagePostRequest messagePostRequest) {
+
 		
-		//null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId(), authorId, data.getType());
 		// Get the current timestamp
 		Instant currentInstant = Instant.now();
 		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -126,19 +126,19 @@ public class MessageController {
 
 		ChatDTO chatDTO = chatService.findById(messagePostRequest.getRoom());
 		System.out.println("CHAT EN EL QUE GUARDAR EL MENSAJE " + messagePostRequest.getRoom());
-		
+
 		// Convert the long value to a Timestamp
-		Timestamp sentTimestamp = Timestamp.from(Instant.ofEpochMilli(sentValue));
-		
+		Timestamp sentDate = Timestamp.from(Instant.ofEpochMilli(sentValue));
+
 		MessageDTO response = new MessageDTO(
 				null, 
 				messagePostRequest.getMessage(),
-				sentTimestamp,
+				sentDate,
 				savedDate,
 				chatDTO.getId(),
 				messagePostRequest.getUserId(),
 				messagePostRequest.getType());
-		
+
 		return response;	
 	}
 	//////

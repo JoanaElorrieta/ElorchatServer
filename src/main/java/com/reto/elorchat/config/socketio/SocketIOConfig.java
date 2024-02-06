@@ -439,7 +439,7 @@ public class SocketIOConfig {
 				SocketIOClient kickedOutUserConnection  = findClientByUserId(joiningUserDTO.getId());
 
 				if(kickedOutUserConnection != null) {
-					senderClient.leaveRoom(room);
+					kickedOutUserConnection.leaveRoom(room);
 					kickedOutUserConnection.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 				}
 			}catch (Exception e) {
@@ -475,7 +475,7 @@ public class SocketIOConfig {
 				SocketIOClient addedUserConnection  = findClientByUserId(joiningUserDTO.getId());
 
 				if(addedUserConnection != null) {
-					senderClient.joinRoom(room);
+					addedUserConnection.joinRoom(room);
 					addedUserConnection.sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
 				}
 

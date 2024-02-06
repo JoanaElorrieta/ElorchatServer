@@ -17,6 +17,10 @@ public class ChatGetResponse {
 	private Long deleted;
 
 
+	public ChatGetResponse() {
+		super();
+	}
+	
 	public ChatGetResponse(Integer id, String name, ChatTypeEnum type, Integer adminId, Long created, Long deleted) {
 		super();
 		this.id = id;
@@ -35,6 +39,7 @@ public class ChatGetResponse {
 		this.adminId = adminId;
 		this.created = created;
 	}
+
 	public Integer getId() {
 		return id;
 	}

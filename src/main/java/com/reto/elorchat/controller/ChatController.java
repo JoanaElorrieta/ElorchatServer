@@ -1,5 +1,6 @@
 package com.reto.elorchat.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,10 +25,13 @@ import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.HasNoRightToJoinTheGroup;
 import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
+import com.reto.elorchat.model.controller.request.PendingUserChatPostRequest;
+import com.reto.elorchat.model.controller.request.UserChatInfoPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
 import com.reto.elorchat.model.controller.response.UserChatInfoGetResponse;
@@ -89,11 +93,12 @@ public class ChatController {
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
 	}
 
-
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Integer> deleteChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
-		chatService.deleteChat(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+	public ResponseEntity<ChatGetResponse> deleteChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
+		ChatGetResponse response = new ChatGetResponse();
+		ChatDTO chatDTO = chatService.deleteChat(id);
+		response = convertFromChatDTOToGetResponse(chatDTO);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@GetMapping("/entryPermission/{idChat}")
@@ -131,10 +136,10 @@ public class ChatController {
 	}
 
 	@PostMapping("/addUserToChat/{idChat}/{idUser}")
-	public ResponseEntity<UserChatInfoGetResponse> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	public ResponseEntity<UserChatInfoGetResponse> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup {
 
 		User admin = (User) authentication.getPrincipal();
-		
+
 		UserChatInfoDTO userChatInfoDTO= chatService.addUserToChat(idChat, idUser, admin.getId()); 
 		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
@@ -160,7 +165,7 @@ public class ChatController {
 	}
 
 	@PostMapping("/joinToChat/{idChat}")
-	public ResponseEntity<UserChatInfoGetResponse> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	public ResponseEntity<UserChatInfoGetResponse> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup {
 
 		User user = (User) authentication.getPrincipal();
 		UserChatInfoDTO userChatInfoDTO= chatService.addUserToChat(idChat, null, user.getId()); 
@@ -191,7 +196,7 @@ public class ChatController {
 				joinedInMillis,
 				null
 				);		
-		
+
 		if(userChatInfoDTO.getDeleted() != null) {			
 			Long deletedInMillis = userChatInfoDTO.getDeleted().getTime();
 			response.setDeleted(deletedInMillis);
@@ -201,7 +206,7 @@ public class ChatController {
 	}
 
 	@DeleteMapping("/leaveChat/{idChat}")
-	public ResponseEntity<UserChatInfoGetResponse> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<UserChatInfoGetResponse> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
 
 		User user = (User) authentication.getPrincipal();
 		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, null , user.getId());
@@ -225,7 +230,7 @@ public class ChatController {
 	}
 
 	@DeleteMapping("/throwFromChat/{idChat}/{idUser}")
-	public ResponseEntity<UserChatInfoGetResponse> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public ResponseEntity<UserChatInfoGetResponse> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
 
 		User admin = (User) authentication.getPrincipal();
 		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, idUser, admin.getId());
@@ -251,6 +256,43 @@ public class ChatController {
 		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/pendingUserChat")
+	public ResponseEntity<List<UserChatInfoGetResponse>> pendingMessages(@RequestBody PendingUserChatPostRequest pendingUserChatPostRequest) throws IOException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
+
+		List<UserChatInfoGetResponse> response = new ArrayList<UserChatInfoGetResponse>(); 
+
+		List<UserChatInfoDTO> listUserChatInfoDTO = convertFromListPendingUserChatInfoPostRequestToListDTO(pendingUserChatPostRequest);
+
+		List <UserChatInfoDTO> listUserChatInfoDTOResponse = chatService.insertPendingUserChatInfo(listUserChatInfoDTO);
+
+		//Transform every DTO from the list to GetResponse
+		for(UserChatInfoDTO userChatInfoDTOResponse: listUserChatInfoDTOResponse) {
+			response.add(convertFromUserChatInfoDTOToGetResponse(userChatInfoDTOResponse));
+		}
+
+		return new ResponseEntity<List<UserChatInfoGetResponse>>(response ,HttpStatus.OK);
+	}
+
+	private List<UserChatInfoDTO> convertFromListPendingUserChatInfoPostRequestToListDTO(
+			PendingUserChatPostRequest pendingUserChatPostRequest) {
+
+		List<UserChatInfoDTO> response = new ArrayList<UserChatInfoDTO>();
+
+		for(UserChatInfoPostRequest userChatInfoPostRequest : pendingUserChatPostRequest.getPendingUserChat()){
+			UserChatInfoDTO userChatInfoDTO = convertFromUserChatInfoPostRequestToDTO(userChatInfoPostRequest);
+			response.add(userChatInfoDTO);
+		}
+		return response;
+	}
+
+	private UserChatInfoDTO convertFromUserChatInfoPostRequestToDTO(UserChatInfoPostRequest userChatInfoPostRequest) {
+
+		UserChatInfoDTO response = new UserChatInfoDTO(
+				userChatInfoPostRequest.getUserId(),
+				userChatInfoPostRequest.getChatId());
+		return response;
+	}
+
 	//CONVERTS
 	//---------------------------------------
 	private ChatGetResponse convertFromChatDTOToGetResponse(ChatDTO chatDTO) {
@@ -268,23 +310,6 @@ public class ChatController {
 			Long deletedToMillis = chatDTO.getDeleted().getTime();
 			response.setDeleted(deletedToMillis);
 		}
-
-
-
-		//		if (chatDTO.getUsers() != null) {
-		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-		//			for(UserDTO userDTO : chatDTO.getUsers()) {
-		//				userList.add(convertFromUserDTOToGetResponse(userDTO));
-		//			}
-		//			response.setUsers(userList);
-		//		}
-		//		if (chatDTO.getMessages() != null) {
-		//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-		//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-		//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-		//			}
-		//			response.setMessages(messageList);
-		//		}
 		return response;
 	}
 
@@ -303,22 +328,6 @@ public class ChatController {
 			Long deletedToMillis = chatDTO.getDeleted().getTime();
 			response.setDeleted(deletedToMillis);
 		}
-
-
-		//		if (chatDTO.getUsers() != null) {
-		//			List<UserGetResponse> userList = new ArrayList<UserGetResponse>();
-		//			for(UserDTO userDTO : chatDTO.getUsers()) {
-		//				userList.add(convertFromUserDTOToGetResponse(userDTO));
-		//			}
-		//			response.setUsers(userList);
-		//		}
-		//		if (chatDTO.getMessages() != null) {
-		//			List<MessageGetResponse> messageList = new ArrayList<MessageGetResponse>();
-		//			for(MessageDTO messageDTO : chatDTO.getMessages()) {
-		//				messageList.add(convertFromMessageDTOToGetResponse(messageDTO));
-		//			}
-		//			response.setMessages(messageList);
-		//		}
 		return response;
 	}
 
@@ -336,16 +345,6 @@ public class ChatController {
 		return response;
 	}
 
-	//	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
-	//		MessageGetResponse response = new MessageGetResponse(
-	//				messageDTO.getId(),
-	//				messageDTO.getText(),
-	//				messageDTO.getDate()
-	//				);
-	//		return response;
-	//	}
-	//
-	//
 	private UserGetResponse convertFromUserDTOToGetResponse(UserDTO userDTO) {
 		UserGetResponse response = new UserGetResponse(
 				userDTO.getId(),

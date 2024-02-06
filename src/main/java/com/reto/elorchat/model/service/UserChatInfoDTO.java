@@ -21,6 +21,12 @@ public class UserChatInfoDTO {
 		this.joined = joined;
 		this.deleted = deleted;
 	}
+	
+	public UserChatInfoDTO(Integer userId,  Integer chatId) {
+		super();
+		this.user_Id = userId;
+		this.chat_Id = chatId;
+	}
 
 	public Integer getUserId() {
 		return user_Id;

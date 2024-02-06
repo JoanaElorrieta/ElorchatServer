@@ -15,6 +15,7 @@ import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
+import com.reto.elorchat.exception.chat.HasNoRightToJoinTheGroup;
 import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
@@ -92,6 +93,19 @@ public class ChatService implements IChatService{
 		return response;
 	}
 
+
+	@Override
+	public List<UserChatInfoDTO> insertPendingUserChatInfo(List<UserChatInfoDTO> listUserChatInfoDTO) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException {
+		List<UserChatInfoDTO> response = new ArrayList<UserChatInfoDTO>(); 
+
+		for(UserChatInfoDTO userChatInfoDTO : listUserChatInfoDTO){
+			UserChatInfoDTO userChatInfo = leaveChat(userChatInfoDTO.getChatId(), null, userChatInfoDTO.getUserId());
+			response.add(userChatInfo);
+		}
+
+		return response;
+	}
+
 	@Override
 	public ChatDTO findById(Integer id) {
 
@@ -139,7 +153,7 @@ public class ChatService implements IChatService{
 			throw new ChatNameAlreadyExists("El chat con ese nombre ya existe");
 		}else {
 			boolean isPrivate = checkIfGroupIsPrivate(chatDTO);
-			if(isPrivate) {
+			if(isPrivate){
 				boolean isProfessor = checkIfIsProfessor(admin);
 				if(isProfessor) {
 					chatDTO.setCreated(createdDate);
@@ -164,9 +178,8 @@ public class ChatService implements IChatService{
 		}
 	}
 
-	//TODO CORREGIR Check if chat has been deleted
 	@Override
-	public void deleteChat(Integer id) throws ChatNotFoundException{
+	public ChatDTO deleteChat(Integer id) throws ChatNotFoundException{
 
 		if(!chatRepository.isChatDeleted(id)) {
 			// Get the current timestamp
@@ -174,6 +187,11 @@ public class ChatService implements IChatService{
 			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 			Timestamp deleteDate = Timestamp.from(currentInstant);
 			chatRepository.updateDeleteById(id, deleteDate);
+			// Fetch the updated Chat entity using its ID
+			Chat updatedChat = chatRepository.findById(id).orElseThrow(
+					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+					);
+			return convertFromChatDAOToDTO(updatedChat);
 		}else {
 			throw new ChatNotFoundException("El chat no existe");
 		}
@@ -201,7 +219,7 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException{
+	public UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup{
 		// TODO Auto-generated method stub
 
 		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
@@ -212,49 +230,54 @@ public class ChatService implements IChatService{
 		Instant currentInstant = Instant.now();
 		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 		Timestamp joinDate = Timestamp.from(currentInstant);
+		if(!chatRepository.isChatDeleted(idChat)){
+			if(idUser != null) {
+				System.out.println("Hay un admin que mete a un usuario al grupo");
+				//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
+				userExistsOnChat(idChat, idUser);
 
-		if(idUser != null) {
-			System.out.println("Hay un admin que mete a un usuario al grupo");
+				//VERIFICA SI EL USUARIO ES EL ADMIN DEL CHAT
+				if(chat.getAdminId() != idAdmin) {
+					throw new IsNotTheGroupAdminException("Is not the chat Admin");
+				}
+				//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
+				if(chatRepository.existsUserChatRelation(idChat, idUser) > 0) {
+					//Simplemente borramos seteamos el deleted a null
+					chatRepository.updateJoinDateInUserChat(idChat, idUser, joinDate);
+				} else {				
+					//Añadimos el usuario a tabla de la relación
+					chatRepository.addUserToChat(idChat, idUser, joinDate);
 
-			//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
-			userExistsOnChat(idChat, idUser);
+				}
+				UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
+				return userChatInfo;
+			} else {
+				System.out.println("NO hay un admin que mete a un usuario al grupo");
+				//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
+				userExistsOnChat(idChat, idAdmin);
+				boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
+				if (isPrivate) {
+					throw new HasNoRightToJoinTheGroup("Cant Join a Private Group");
+				}
 
-			//VERIFICA SI EL USUARIO ES EL ADMIN DEL CHAT
-			if(chat.getAdminId() != idAdmin) {
-				throw new IsNotTheGroupAdminException("Is not the chat Admin");
-			}
-			//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
-			if(chatRepository.existsUserChatRelation(idChat, idUser) > 0) {
-				//Simplemente borramos seteamos el deleted a null
-				chatRepository.updateJoinDateInUserChat(idChat, idUser, joinDate);
-			} else {				
-				//Añadimos el usuario a tabla de la relación
-				chatRepository.addUserToChat(idChat, idUser, joinDate);
-
-			}
-
-			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
-			return userChatInfo;
-		} else {
-			System.out.println("NO hay un admin que mete a un usuario al grupo");
-
-			//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
-			userExistsOnChat(idChat, idAdmin);
-
-			//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
-			if(chatRepository.existsUserChatRelation(idChat, idAdmin) > 0) {
-				//Simplemente borramos seteamos el deleted a null
-				chatRepository.updateJoinDateInUserChat(idChat, idAdmin, joinDate);
-			}else {				
-				chatRepository.addUserToChat(idChat, idAdmin, joinDate);
-			}
-			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
-			return userChatInfo;
+				//VERIFICA SI EL USUARIO YA EXISTIA EN LA TABLA DE LA RELACION
+				if(chatRepository.existsUserChatRelation(idChat, idAdmin) > 0) {
+					//Simplemente borramos seteamos el deleted a null
+					chatRepository.updateJoinDateInUserChat(idChat, idAdmin, joinDate);
+				}else {				
+					chatRepository.addUserToChat(idChat, idAdmin, joinDate);
+				}
+				UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+				return userChatInfo;
+			}	
+		}else {
+			throw new ChatNotFoundException("El chat no existe");
 		}
+
 	}
 
 	@Override
-	public UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
+	public UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
 
 		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
@@ -264,34 +287,38 @@ public class ChatService implements IChatService{
 		Instant currentInstant = Instant.now();
 		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 		Timestamp deleteDate = Timestamp.from(currentInstant);
+		if(!chatRepository.isChatDeleted(idChat)){			
+			if(idUser != null) {
+				System.out.println("Hay un admin que echa a un usuario del grupo");
+				userDoesNotExistOnChat(idChat, idUser);
+				if(chat.getAdminId() != idAdmin) {
+					throw new IsNotTheGroupAdminException("Is not the chat Admin");
+				}
 
-		if(idUser != null) {
-			System.out.println("Hay un admin que echa a un usuario del grupo");
-			userDoesNotExistOnChat(idChat, idUser);
-			if(chat.getAdminId() != idAdmin) {
-				throw new IsNotTheGroupAdminException("Is not the chat Admin");
+				if(idUser == chat.getAdminId()) {
+					throw new CantLeaveChatException("You cant throw out the admin");
+				}	
+				chatRepository.leaveChat(idChat, idUser, deleteDate);
+				UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
+				return userChatInfo;
+			} else {
+				System.out.println("NO hay un admin que echa a un usuario al grupo");
+				userDoesNotExistOnChat(idChat, idAdmin);
+				boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
+				if(isPrivate) {
+					throw new CantLeaveChatException("Cant Leave a Private Group");
+				}
+				if(idUser == chat.getAdminId()) {
+					throw new CantLeaveChatException("Admin Cant Leave the Group");
+				}	
+				chatRepository.leaveChat(idChat, idAdmin, deleteDate);
+				UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
+				return userChatInfo;
 			}
-
-			if(idUser == chat.getAdminId()) {
-				throw new CantLeaveChatException("You cant throw out the admin");
-			}	
-			chatRepository.leaveChat(idChat, idUser, deleteDate);
-			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idUser);
-			return userChatInfo;
-		} else {
-			System.out.println("NO hay un admin que echa a un usuario al grupo");
-			userDoesNotExistOnChat(idChat, idAdmin);
-			boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
-			if(isPrivate) {
-				throw new CantLeaveChatException("Cant Leave a Private Group");
-			}
-			if(idUser == chat.getAdminId()) {
-				throw new CantLeaveChatException("Admin Cant Leave the Group");
-			}	
-			chatRepository.leaveChat(idChat, idAdmin, deleteDate);
-			UserChatInfoDTO userChatInfo = getUserChatInfoFromUser(idChat, idAdmin);
-			return userChatInfo;
+		}else {
+			throw new ChatNotFoundException("El chat no existe");
 		}
+
 	}
 
 	private boolean checkIfGroupIsPrivate(ChatDTO chatDTO) {

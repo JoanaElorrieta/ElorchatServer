@@ -19,6 +19,7 @@ import com.reto.elorchat.config.socketio.SocketEvents;
 import com.reto.elorchat.config.socketio.SocketIOConfig;
 import com.reto.elorchat.exception.chat.CantLeaveChatException;
 import com.reto.elorchat.exception.chat.ChatNotFoundException;
+import com.reto.elorchat.exception.chat.HasNoRightToJoinTheGroup;
 import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
@@ -136,7 +137,7 @@ public class SocketController {
 	}
 
 	@PostMapping("/addUserToChat/{idChat}/{idUser}")
-	public ResponseEntity<Integer> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException {
+	public ResponseEntity<Integer> addUserToChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, UserAlreadyExistsOnChat, IsNotTheGroupAdminException, HasNoRightToJoinTheGroup {
 
 		User admin = (User) authentication.getPrincipal();
 		chatService.addUserToChat(idChat, idUser, admin.getId()); 
