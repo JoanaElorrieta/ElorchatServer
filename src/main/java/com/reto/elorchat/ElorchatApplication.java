@@ -7,7 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ElorchatApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ElorchatApplication.class, args);
+		SpringApplication application = new SpringApplication(ElorchatApplication.class);
+		// incluir ssl para https
+		application.setAdditionalProfiles("ssl");
+		application.run(args);
 	}
 
 }

@@ -29,7 +29,7 @@ public enum SocketEvents {
 	
 	ON_FILE_RECEIVED ("send file"),
 	ON_SEND_FILE("receive file"),
-	ON_FILE__NOT_SENT("not send file");;
+	ON_FILE__NOT_SENT("not send file");
 	
 
 

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -16,7 +17,6 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
-import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.ChatDTO;
@@ -33,6 +33,8 @@ import com.reto.elorchat.security.service.IUserService;
 import com.reto.elorchat.service.IChatService;
 import com.reto.elorchat.service.IMessageService;
 
+import java.io.IOException;
+import java.io.InputStream;
 import io.netty.handler.codec.http.HttpHeaders;
 import jakarta.annotation.PreDestroy;
 
@@ -59,6 +61,12 @@ public class SocketIOConfig {
 	@Value("${server.port}")
 	private Integer webServerPort;
 
+	@Value("${server.ssl.key-store-password}")
+	private String keyStorePassword;
+
+	@Value("${server.ssl.key-store}")
+	private Resource keyStoreFile;
+
 	private SocketIOServer server;
 
 	public final static String CLIENT_USER_NAME_PARAM = "authorname";
@@ -67,7 +75,7 @@ public class SocketIOConfig {
 	public final static String AUTHORIZATION_HEADER = "Authorization";
 
 	@Bean
-	public SocketIOServer socketIOServer() {
+	public SocketIOServer socketIOServer() throws IOException {
 		com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
 		config.setHostname(host);
 		config.setPort(socketServerPort);
@@ -75,6 +83,12 @@ public class SocketIOConfig {
 		// vamos a permitir a una web que no este en el mismo host y port conectarse. Si no da error de Cross Domain
 		config.setAllowHeaders("Authorization");
 		config.setOrigin("http://localhost:" + webServerPort);
+		// nuevo: cargar el certificado
+		config.setKeyStorePassword(keyStorePassword);
+		InputStream stream = keyStoreFile.getInputStream();
+		config.setKeyStore(stream);
+		// fin cargar certificado en la configuracion
+
 		config.setMaxFramePayloadLength(1024 * 1024); // 1 MB in bytes
 
 		server = new SocketIOServer(config);
