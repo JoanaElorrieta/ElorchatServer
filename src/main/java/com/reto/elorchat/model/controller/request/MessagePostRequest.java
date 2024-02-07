@@ -66,8 +66,9 @@ public class MessagePostRequest {
 	}
 	@Override
 	public String toString() {
-		return "MessageFromClient [room=" + room + ", message=" + message + "]";
+		return "MessagePostRequest [room=" + room + ", userId=" + userId + ", localId=" + localId + ", message="
+				+ message + ", sent=" + sent + ", type=" + type + "]";
 	}
-
-		
+	
+	
 }

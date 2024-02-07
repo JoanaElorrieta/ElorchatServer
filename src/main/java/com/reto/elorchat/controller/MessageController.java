@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
+import com.reto.elorchat.config.socketio.SocketIOConfig;
 import com.reto.elorchat.model.controller.request.MessagePostRequest;
-import com.reto.elorchat.model.controller.request.PendingMessagePostRequest;
 import com.reto.elorchat.model.controller.response.MessageGetResponse;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.service.ChatDTO;
@@ -36,6 +39,9 @@ public class MessageController {
 	@Autowired
 	private IChatService chatService;
 
+	@Autowired
+	private SocketIOServer socketIoServer;
+	
 	@GetMapping("findAll/{id}")
 	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id, Authentication authentication) throws IOException{
 
@@ -70,22 +76,45 @@ public class MessageController {
 		return new ResponseEntity<Message>(HttpStatus.CREATED);
 	}
 
-	@PostMapping("/pendingMessages")
-	public ResponseEntity<List<MessageGetResponse>> pendingMessages(@RequestBody PendingMessagePostRequest pendingMessagePostRequest) throws IOException{
-
-		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
-
-		List<MessageDTO> listmessageDTO = convertFromListPendingMessagePostRequestToListDTO(pendingMessagePostRequest);
-
-		List <MessageDTO> listMessageDTOResponse = messageService.insertPendingMessages(listmessageDTO);
-
-		//Transform every DTO from the list to GetResponse
-		for(MessageDTO messageDTOResponse: listMessageDTOResponse) {
-			response.add(convertFromMessageDTOToGetResponse(messageDTOResponse));
-		}
-
-		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
-	}
+//	@PostMapping("/pendingMessages")
+//	public ResponseEntity<List<MessageGetResponse>> pendingMessages(@RequestBody List <MessagePostRequest> pendingMessagePostRequest) throws IOException{
+//
+//		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
+//		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest) {
+//			SocketIOClient client = findClientByUserId(messagePostRequest.getUserId());
+//
+//			System.out.println(messagePostRequest.toString());
+//			if(client != null) {
+//				String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
+//				Integer authorId = Integer.valueOf(authorIdS);
+//				String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
+//			}
+//			MessageFromServer message = new MessageFromServer(
+//					MessageType.CLIENT,
+//					messagePostRequest.getRoom(), 
+//					null,
+//					messagePostRequest.getLocalId(),
+//					messagePostRequest.getMessage(), 
+//					client.get(CLIENT_USER_NAME_PARAM);, 
+//					authorId,
+//					data.getSent(),	
+//					null,
+//					data.getType()
+//					);
+//		}
+//		List<MessageDTO> listmessageDTO = convertFromListPendingMessagePostRequestToListDTO(pendingMessagePostRequest);
+//
+//		List <MessageDTO> listMessageDTOResponse = messageService.insertPendingMessages(listmessageDTO);
+//
+//		//Transform every DTO from the list to GetResponse
+//		for(MessageDTO messageDTOResponse: listMessageDTOResponse) {
+//			response.add(convertFromMessageDTOToGetResponse(messageDTOResponse));
+//			
+//			socketIoServer.getRoomOperations(messageDTOResponse.getChatId().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
+//		}
+//
+//		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
+//	}
 
 	//CONVERTS
 	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
@@ -104,10 +133,10 @@ public class MessageController {
 	}
 
 	private List<MessageDTO> convertFromListPendingMessagePostRequestToListDTO(
-		PendingMessagePostRequest pendingMessagePostRequest) {
+		List<MessagePostRequest> pendingMessagePostRequest) {
 
 		List<MessageDTO> response = new ArrayList<MessageDTO>();
-		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest.getPendingMessages()){
+		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest){
 			MessageDTO messageDTO = convertFromMessagePostRequestToDTO(messagePostRequest);
 			response.add(messageDTO);
 		}
@@ -142,4 +171,17 @@ public class MessageController {
 		return response;	
 	}
 	//////
+	private SocketIOClient findClientByUserId(Integer idUser) {
+		SocketIOClient response = null;
+
+		Collection<SocketIOClient> clients = socketIoServer.getAllClients();
+		for (SocketIOClient client: clients) {
+			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
+			if (currentClientId == idUser) {
+				response = client;
+				break;
+			}
+		}
+		return response;
+	}
 }
