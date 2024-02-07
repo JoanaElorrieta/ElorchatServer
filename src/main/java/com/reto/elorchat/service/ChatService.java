@@ -61,34 +61,16 @@ public class ChatService implements IChatService{
 		}	
 
 		if(id == 0) {
-			if(!userChatIds.isEmpty()) {
-				//OBTENER TODOS LOS CHATS PUBLICOS Y LOS PRIVADOS DE ESE USUARIO
-				Iterable<Chat> listChat = chatRepository.findAllUserChats(userChatIds, ChatTypeEnum.PUBLIC);
-				for(Chat actualChat: listChat) {
-					response.add(convertFromChatDAOToDTO(actualChat));
-				}
-			}else {				
-				//OBTENER TODOS LOS CHATS PUBLICOS
-				Iterable<Chat> listChat = chatRepository.findAllPublicChats();
-				for(Chat actualChat: listChat) {
-					response.add(convertFromChatDAOToDTO(actualChat));
-				}
+			Iterable<Chat> listChat = chatRepository.findAllChats();
+			for(Chat actualChat: listChat) {
+				response.add(convertFromChatDAOToDTO(actualChat));
 			}
 		}else {
-			if(!userChatIds.isEmpty()) {
-				//OBTENER TODOS LOS CHATS PUBLICOS Y LOS PRIVADOS DE ESE USUARIO DESPUES DE LA ID DADA
-				Iterable<Chat> listChat = chatRepository.findAllUserChatsCreatedAfterId(id, userChatIds, ChatTypeEnum.PUBLIC, ChatTypeEnum.PRIVATE);
-				for(Chat actualChat: listChat) {
-					response.add(convertFromChatDAOToDTO(actualChat));
-				}
-			}else {
-				//OBTENER TODOS LOS CHATS PUBLICOS DESPUES DE LA ID DADA
-				Iterable<Chat> listChat = chatRepository.findAllPublicChatsCreatedAfterId(id, ChatTypeEnum.PUBLIC);
-				for(Chat actualChat: listChat) {
-					response.add(convertFromChatDAOToDTO(actualChat));
-				}
+			//OBTENER TODOS LOS CHATS PUBLICOS Y LOS PRIVADOS DE ESE USUARIO DESPUES DE LA ID DADA
+			Iterable<Chat> listChat = chatRepository.findAllUserChatsCreatedAfterId(id);
+			for(Chat actualChat: listChat) {
+				response.add(convertFromChatDAOToDTO(actualChat));
 			}
-
 		}
 		return response;
 	}
