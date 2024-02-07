@@ -75,8 +75,8 @@ public class SocketIOConfig {
 		// vamos a permitir a una web que no este en el mismo host y port conectarse. Si no da error de Cross Domain
 		config.setAllowHeaders("Authorization");
 		config.setOrigin("http://localhost:" + webServerPort);
-		 config.setMaxFramePayloadLength(1024 * 1024); // 1 MB in bytes
-		 
+		config.setMaxFramePayloadLength(1024 * 1024); // 1 MB in bytes
+
 		server = new SocketIOServer(config);
 
 		server.addConnectListener(new MyConnectListener(server));
@@ -368,15 +368,12 @@ public class SocketIOConfig {
 					authorName
 					);
 
-			// Los catch posibles UserAlreadyExistsOnChat, IsNotTheGroupAdminException
 			try {
 				System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " CONECTADOOOOOOOO a " + room);							
-				chatService.addUserToChat(data.getRoomId(), null, authorId);
+				chatService.joinToChat(data.getRoomId(), authorId);
 				senderClient.joinRoom(room);			
 				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
 			}catch (UserAlreadyExistsOnChat e) {
-				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_JOIN.value, chatUserFromServer);
-			}catch (IsNotTheGroupAdminException e) {
 				senderClient.sendEvent(SocketEvents.ON_CHAT_NOT_JOIN.value, chatUserFromServer);
 			}
 
@@ -400,7 +397,7 @@ public class SocketIOConfig {
 			// Los catch posibles CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat
 			try {
 				System.out.println("USUARIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + authorName + " se ha DESCONECTADOOOOOOOO de " + room);							
-				chatService.leaveChat(data.getRoomId(), null, authorId);
+				chatService.leaveChat(data.getRoomId(), authorId);
 				senderClient.leaveRoom(room);
 				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
 				senderClient.sendEvent(SocketEvents.ON_CHAT_LEAVE.value, chatUserFromServer);
@@ -431,7 +428,7 @@ public class SocketIOConfig {
 			// Los catch posibles CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat
 			try {
 				System.out.println("USUARIOOOOOOOOO " + authorName + " le ha ECHADO de " + room + " el admin: " + joiningUserDTO.getName());							
-				chatService.leaveChat(data.getRoomId(), joiningUserDTO.getId(), authorId);
+				chatService.throwFromChat(data.getRoomId(), joiningUserDTO.getId(), authorId);
 
 				//senderClient.sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);
 				server.getRoomOperations(room).sendEvent(SocketEvents.ON_CHAT_THROW_OUT.value, chatUserFromServer);

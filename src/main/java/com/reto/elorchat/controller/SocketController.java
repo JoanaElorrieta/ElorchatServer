@@ -164,7 +164,7 @@ public class SocketController {
 	public ResponseEntity<Integer> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws ChatNotFoundException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat{
 
 		User admin = (User) authentication.getPrincipal();
-		chatService.leaveChat(idChat, idUser, admin.getId());
+		chatService.throwFromChat(idChat, idUser, admin.getId());
 
 		UserDTO joiningUserDTO = userService.findById(idUser);
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);

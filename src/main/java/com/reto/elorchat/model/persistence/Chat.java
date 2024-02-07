@@ -166,5 +166,13 @@ public class Chat{
 	public void setDeleted(Date deleted) {
 		this.deleted = deleted;
 	}
+	
+	public boolean isChatPrivate(Chat chat) {
+		if (chat.getType() == ChatTypeEnum.PRIVATE) {
+			System.out.println("Es privado");
+			return true;
+		}
+		return false;
+	}
 
 }

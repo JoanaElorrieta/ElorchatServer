@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.reto.elorchat.model.enums.RoleEnum;
 import com.reto.elorchat.model.persistence.Chat;
 import com.reto.elorchat.model.persistence.Message;
 import com.reto.elorchat.model.persistence.Role;
@@ -229,6 +230,15 @@ public class User implements UserDetails {
 	public boolean isEnabled() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	public boolean isUserProffesor(User user){
+		for(Role role: user.getRoles()) {
+			if(role.getName().equalsIgnoreCase(RoleEnum.PROFESSOR.value)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class ChatDTO {
 	private List<MessageDTO> messages = new ArrayList<>();
 	private Date created;
 	private Date deleted;
-	
+
 	public ChatDTO(Integer id, String name, ChatTypeEnum type, Integer adminId, Date created, Date deleted) {
 		super();
 		this.id = id;
@@ -69,7 +69,7 @@ public class ChatDTO {
 	public void setMessages(List<MessageDTO> messages) {
 		this.messages = messages;
 	}
-	
+
 	public Date getCreated() {
 		return created;
 	}
@@ -81,6 +81,14 @@ public class ChatDTO {
 	}
 	public void setDeleted(Date deleted) {
 		this.deleted = deleted;
+	}
+
+	public boolean isChatPrivate(ChatDTO chatDTO) {
+		if (chatDTO.getType() == ChatTypeEnum.PRIVATE) {
+			System.out.println("Es privado");
+			return true;
+		}
+		return false;
 	}
 	@Override
 	public String toString() {

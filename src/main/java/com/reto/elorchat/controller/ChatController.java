@@ -168,7 +168,7 @@ public class ChatController {
 	public ResponseEntity<UserChatInfoGetResponse> joinToChat(@PathVariable("idChat") Integer idChat, Authentication authentication) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup {
 
 		User user = (User) authentication.getPrincipal();
-		UserChatInfoDTO userChatInfoDTO= chatService.addUserToChat(idChat, null, user.getId()); 
+		UserChatInfoDTO userChatInfoDTO= chatService.joinToChat(idChat, user.getId()); 
 		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 		SocketIOClient client = findClientByUserId(user.getId());
 
@@ -209,7 +209,7 @@ public class ChatController {
 	public ResponseEntity<UserChatInfoGetResponse> leaveChat(@PathVariable Integer idChat, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
 
 		User user = (User) authentication.getPrincipal();
-		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, null , user.getId());
+		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, user.getId());
 		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
 		SocketIOClient client = findClientByUserId(user.getId());
@@ -233,7 +233,7 @@ public class ChatController {
 	public ResponseEntity<UserChatInfoGetResponse> throwFromChat(@PathVariable("idChat") Integer idChat, @PathVariable("idUser") Integer idUser, Authentication authentication) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
 
 		User admin = (User) authentication.getPrincipal();
-		UserChatInfoDTO userChatInfoDTO = chatService.leaveChat(idChat, idUser, admin.getId());
+		UserChatInfoDTO userChatInfoDTO = chatService.throwFromChat(idChat, idUser, admin.getId());
 		UserChatInfoGetResponse response = convertFromUserChatInfoDTOToGetResponse(userChatInfoDTO);
 
 		UserDTO joiningUserDTO = userService.findById(idUser);

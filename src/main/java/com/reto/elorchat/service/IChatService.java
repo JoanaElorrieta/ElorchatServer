@@ -32,8 +32,14 @@ public interface IChatService {
 	boolean existsOnChat(Integer idChat, Integer idUser);
 
 	UserChatInfoDTO addUserToChat(Integer idChat, Integer idUser, Integer idAdmin) throws UserAlreadyExistsOnChat, IsNotTheGroupAdminException, ChatNotFoundException, HasNoRightToJoinTheGroup;
+	UserChatInfoDTO joinToChat(Integer idChat, Integer id) throws UserAlreadyExistsOnChat, HasNoRightToJoinTheGroup, ChatNotFoundException;
+	
+	UserChatInfoDTO leaveChat(Integer idChat, Integer idUser) throws CantLeaveChatException, UserDoesNotExistOnChat, ChatNotFoundException;
+	UserChatInfoDTO throwFromChat(Integer idChat, Integer idUser, Integer id) throws IsNotTheGroupAdminException, UserDoesNotExistOnChat, CantLeaveChatException, ChatNotFoundException;
+	
+	UserChatInfoDTO insertUserToChat(Integer idChat, Integer idUser) throws ChatNotFoundException;
 
-	UserChatInfoDTO leaveChat(Integer idChat, Integer idUser, Integer idAdmin) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException;
+	UserChatInfoDTO deleteUserFromChat(Integer idChat, Integer idUser) throws ChatNotFoundException;
 
 	ChatDTO deleteChat(Integer id) throws ChatNotFoundException;
 
