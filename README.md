@@ -1,5 +1,5 @@
-Elorchat
-Descripción del proyecto.
+# Elorchat
+# Descripción del proyecto.
 El proyecto consiste en una aplicación de Android “Elorchat” y un servidor API-REST. A continuación explicaremos las diferentes funcionalidades de cada una.
 Autenticación y Registro
 Iniciar sesión mediante autenticación con login/password.
@@ -25,7 +25,7 @@ Servidor : https://github.com/JoanaElorrieta/ElorchatServer
 App: https://github.com/Guslin-03/Reto-Final
 
 
-
+![Screenshot](RetoFinal_BBDD_E-R.drawio.png)
 
 
 Built With (construido con)
