@@ -1,10 +1,10 @@
 package com.reto.elorchat.controller;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +18,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import com.reto.elorchat.config.socketio.SocketIOConfig;
+import com.reto.elorchat.config.socketio.SocketEvents;
+import com.reto.elorchat.exception.message.MessageNotFoundException;
 import com.reto.elorchat.model.controller.request.MessagePostRequest;
 import com.reto.elorchat.model.controller.response.MessageGetResponse;
-import com.reto.elorchat.model.persistence.Message;
+import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.MessageDTO;
+import com.reto.elorchat.model.service.UserDTO;
+import com.reto.elorchat.model.socket.MessageFromServer;
 import com.reto.elorchat.security.persistance.User;
+import com.reto.elorchat.security.service.IUserService;
 import com.reto.elorchat.service.IChatService;
 import com.reto.elorchat.service.IMessageService;
 
@@ -40,8 +43,11 @@ public class MessageController {
 	private IChatService chatService;
 
 	@Autowired
+	private IUserService userService;
+
+	@Autowired
 	private SocketIOServer socketIoServer;
-	
+
 	@GetMapping("findAll/{id}")
 	public ResponseEntity<List<MessageGetResponse>> getMessages(@PathVariable("id") Integer id, Authentication authentication) throws IOException{
 
@@ -69,52 +75,29 @@ public class MessageController {
 		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
 	}
 
-	@PostMapping
-	public ResponseEntity<Message> createMessage(@RequestBody MessagePostRequest messagePostRequest){
+	@PostMapping("/pendingMessages")
+	public ResponseEntity<List<MessageGetResponse>> pendingMessages(@RequestBody List <MessagePostRequest> pendingMessagePostRequest) throws IOException, NoSuchAlgorithmException, MessageNotFoundException{
 
-		//messageService.createMessage(message);
-		return new ResponseEntity<Message>(HttpStatus.CREATED);
+		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
+
+		for (MessagePostRequest messagePostRequest : pendingMessagePostRequest) {
+			MessageDTO createdMessage;
+
+			if (messagePostRequest.isTypeText(messagePostRequest)) {
+				createdMessage = messageService.createMessage(convertFromMessagePostRequestToDTO(messagePostRequest));
+			} else {
+				createdMessage = messageService.createBase64FileOnResourceFile(convertFromMessagePostRequestToDTO(messagePostRequest));
+			}
+
+			UserDTO userDTO = userService.findById(messagePostRequest.getUserId());
+			
+			sendEvent(createdMessage, messagePostRequest, userDTO);
+
+			response.add(convertFromMessageDTOToGetResponse(createdMessage));
+		}
+		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
 	}
 
-//	@PostMapping("/pendingMessages")
-//	public ResponseEntity<List<MessageGetResponse>> pendingMessages(@RequestBody List <MessagePostRequest> pendingMessagePostRequest) throws IOException{
-//
-//		List<MessageGetResponse> response = new ArrayList<MessageGetResponse>(); 
-//		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest) {
-//			SocketIOClient client = findClientByUserId(messagePostRequest.getUserId());
-//
-//			System.out.println(messagePostRequest.toString());
-//			if(client != null) {
-//				String authorIdS = senderClient.get(CLIENT_USER_ID_PARAM);
-//				Integer authorId = Integer.valueOf(authorIdS);
-//				String authorName = senderClient.get(CLIENT_USER_NAME_PARAM);
-//			}
-//			MessageFromServer message = new MessageFromServer(
-//					MessageType.CLIENT,
-//					messagePostRequest.getRoom(), 
-//					null,
-//					messagePostRequest.getLocalId(),
-//					messagePostRequest.getMessage(), 
-//					client.get(CLIENT_USER_NAME_PARAM);, 
-//					authorId,
-//					data.getSent(),	
-//					null,
-//					data.getType()
-//					);
-//		}
-//		List<MessageDTO> listmessageDTO = convertFromListPendingMessagePostRequestToListDTO(pendingMessagePostRequest);
-//
-//		List <MessageDTO> listMessageDTOResponse = messageService.insertPendingMessages(listmessageDTO);
-//
-//		//Transform every DTO from the list to GetResponse
-//		for(MessageDTO messageDTOResponse: listMessageDTOResponse) {
-//			response.add(convertFromMessageDTOToGetResponse(messageDTOResponse));
-//			
-//			socketIoServer.getRoomOperations(messageDTOResponse.getChatId().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);
-//		}
-//
-//		return new ResponseEntity<List<MessageGetResponse>>(response ,HttpStatus.OK);
-//	}
 
 	//CONVERTS
 	private MessageGetResponse convertFromMessageDTOToGetResponse(MessageDTO messageDTO) {
@@ -132,20 +115,8 @@ public class MessageController {
 		return response;
 	}
 
-	private List<MessageDTO> convertFromListPendingMessagePostRequestToListDTO(
-		List<MessagePostRequest> pendingMessagePostRequest) {
-
-		List<MessageDTO> response = new ArrayList<MessageDTO>();
-		for(MessagePostRequest messagePostRequest : pendingMessagePostRequest){
-			MessageDTO messageDTO = convertFromMessagePostRequestToDTO(messagePostRequest);
-			response.add(messageDTO);
-		}
-		return response;
-	}
-
 	private MessageDTO convertFromMessagePostRequestToDTO(MessagePostRequest messagePostRequest) {
 
-		
 		// Get the current timestamp
 		Instant currentInstant = Instant.now();
 		// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -171,17 +142,26 @@ public class MessageController {
 		return response;	
 	}
 	//////
-	private SocketIOClient findClientByUserId(Integer idUser) {
-		SocketIOClient response = null;
+	private void sendEvent(MessageDTO createdMessage, MessagePostRequest messagePostRequest, UserDTO userDTO) {
+		MessageFromServer message = new MessageFromServer(
+				MessageType.CLIENT,
+				messagePostRequest.getRoom(), 
+				null,
+				messagePostRequest.getLocalId(),
+				messagePostRequest.getMessage(), 
+				userDTO.getName(), 
+				userDTO.getId(),
+				messagePostRequest.getSent(),   
+				null,
+				messagePostRequest.getType()
+				);
 
-		Collection<SocketIOClient> clients = socketIoServer.getAllClients();
-		for (SocketIOClient client: clients) {
-			Integer currentClientId = Integer.valueOf(client.get(SocketIOConfig.CLIENT_USER_ID_PARAM));
-			if (currentClientId == idUser) {
-				response = client;
-				break;
-			}
+		if (createdMessage != null) {
+			message.setMessageServerId(createdMessage.getId());
+			message.setSaved(createdMessage.getSaved().getTime());
+			System.out.println(createdMessage.getSaved().getTime());
+			message.setSaved(createdMessage.getSaved().getTime());
 		}
-		return response;
+		socketIoServer.getRoomOperations(createdMessage.getChatId().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);	
 	}
 }

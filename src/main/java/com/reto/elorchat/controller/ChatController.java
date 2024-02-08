@@ -30,7 +30,6 @@ import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.exception.chat.UserDoesNotExistOnChat;
 import com.reto.elorchat.model.controller.request.ChatPostRequest;
-import com.reto.elorchat.model.controller.request.PendingUserChatPostRequest;
 import com.reto.elorchat.model.controller.request.UserChatInfoPostRequest;
 import com.reto.elorchat.model.controller.response.ChatGetResponse;
 import com.reto.elorchat.model.controller.response.ChatPostResponse;
@@ -39,6 +38,7 @@ import com.reto.elorchat.model.controller.response.UserGetResponse;
 import com.reto.elorchat.model.service.ChatDTO;
 import com.reto.elorchat.model.service.UserChatInfoDTO;
 import com.reto.elorchat.model.service.UserDTO;
+import com.reto.elorchat.model.socket.ChatFromServer;
 import com.reto.elorchat.model.socket.ChatUserFromServer;
 import com.reto.elorchat.security.persistance.User;
 import com.reto.elorchat.security.service.IUserService;
@@ -85,11 +85,20 @@ public class ChatController {
 	public ResponseEntity<ChatPostResponse> createChat(@RequestBody ChatPostRequest chatPostRequest, Authentication authentication) throws ChatNameAlreadyExists, HasNoRightToCreatePrivateException{
 		User user = (User) authentication.getPrincipal();
 		ChatPostResponse response = convertFromChatDTOToPostResponse(chatService.createChat(convertFromChatPostRequestToDTO(chatPostRequest, user.getId())));
-
+		ChatFromServer chatFromServer = new ChatFromServer(
+				chatPostRequest.getId(),
+				chatPostRequest.getName(), 
+				chatPostRequest.getType(),
+				response.getCreated(),
+				response.getDeleted(),
+				chatPostRequest.getAdminId()
+				);
 		SocketIOClient client = findClientByUserId(user.getId());
 		if (client != null) {			
 			client.joinRoom(response.getId().toString());
+			client.getNamespace().getBroadcastOperations().sendEvent(SocketEvents.ON_SEND_CHAT.value, chatFromServer);
 		}
+
 		return new ResponseEntity<ChatPostResponse>(response, HttpStatus.CREATED);
 	}
 
@@ -150,7 +159,7 @@ public class ChatController {
 		UserDTO joiningAdminDTO = userService.findById(admin.getId());
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
-		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName());
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName(), joiningAdminGetResponse.getName(), response.getJoined(), response.getDeleted());
 
 		//PARA ENVIAR SOLO A LA ROOM
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_ADD.value, chatUserFromServer);
@@ -175,7 +184,7 @@ public class ChatController {
 		UserDTO joiningUserDTO = userService.findById(user.getId());
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName(), response.getJoined(), response.getDeleted());
 		socketIoServer.getRoomOperations(idChat.toString()).sendEvent(SocketEvents.ON_CHAT_JOIN.value, chatUserFromServer);
 
 		if (client != null) {
@@ -184,7 +193,6 @@ public class ChatController {
 		}
 
 		return new ResponseEntity<UserChatInfoGetResponse>(response, HttpStatus.OK);
-
 	}
 
 	private UserChatInfoGetResponse convertFromUserChatInfoDTOToGetResponse(UserChatInfoDTO userChatInfoDTO) {
@@ -216,7 +224,7 @@ public class ChatController {
 		UserDTO joiningUserDTO = userService.findById(user.getId());
 		UserGetResponse joiningUserGetResponse = convertFromUserDTOToGetResponse(joiningUserDTO);
 
-		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName());
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningUserGetResponse.getName(), response.getJoined(), response.getDeleted());
 
 		//AQUI PODRIA PRIMERO MANDAR EL MENSAJE A TODA LA ROOM Y DESPUES SACAR AL CLIENTE PARA HACERLE LLEGAR EL EVENTO
 		//PERO PREFIERO ASEGURARME DE SACARLO PRIMERO, AVISARLE, Y DESPUES AL RESTO
@@ -243,7 +251,7 @@ public class ChatController {
 		UserDTO joiningAdminDTO = userService.findById(admin.getId());
 		UserGetResponse joiningAdminGetResponse = convertFromUserDTOToGetResponse(joiningAdminDTO);
 
-		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName());
+		ChatUserFromServer chatUserFromServer = new ChatUserFromServer(idChat, joiningUserGetResponse.getId(), joiningAdminGetResponse.getId(), joiningUserGetResponse.getName() , joiningAdminGetResponse.getName(), response.getJoined(), response.getDeleted());
 
 		//TODO QUITAR DE LA ROOM SI ESTA CONECTADO
 		SocketIOClient client = findClientByUserId(idUser);
@@ -257,40 +265,16 @@ public class ChatController {
 	}
 
 	@PostMapping("/pendingUserChat")
-	public ResponseEntity<List<UserChatInfoGetResponse>> pendingMessages(@RequestBody PendingUserChatPostRequest pendingUserChatPostRequest) throws IOException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException{
+	public ResponseEntity<List<UserChatInfoGetResponse>> pendingUserChat(@RequestBody List<UserChatInfoPostRequest> pendingUserChatPostRequest, Authentication authentication) throws IOException, CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException, UserAlreadyExistsOnChat, HasNoRightToJoinTheGroup{
 
 		List<UserChatInfoGetResponse> response = new ArrayList<UserChatInfoGetResponse>(); 
 
-		List<UserChatInfoDTO> listUserChatInfoDTO = convertFromListPendingUserChatInfoPostRequestToListDTO(pendingUserChatPostRequest);
-
-		List <UserChatInfoDTO> listUserChatInfoDTOResponse = chatService.insertPendingUserChatInfo(listUserChatInfoDTO);
-
 		//Transform every DTO from the list to GetResponse
-		for(UserChatInfoDTO userChatInfoDTOResponse: listUserChatInfoDTOResponse) {
-			response.add(convertFromUserChatInfoDTOToGetResponse(userChatInfoDTOResponse));
+		for(UserChatInfoPostRequest userChatInfoPostRequest: pendingUserChatPostRequest) {
+			UserChatInfoGetResponse deletedRelation = leaveChat(userChatInfoPostRequest.getChatId(), authentication).getBody();
+			response.add(deletedRelation);
 		}
-
 		return new ResponseEntity<List<UserChatInfoGetResponse>>(response ,HttpStatus.OK);
-	}
-
-	private List<UserChatInfoDTO> convertFromListPendingUserChatInfoPostRequestToListDTO(
-			PendingUserChatPostRequest pendingUserChatPostRequest) {
-
-		List<UserChatInfoDTO> response = new ArrayList<UserChatInfoDTO>();
-
-		for(UserChatInfoPostRequest userChatInfoPostRequest : pendingUserChatPostRequest.getPendingUserChat()){
-			UserChatInfoDTO userChatInfoDTO = convertFromUserChatInfoPostRequestToDTO(userChatInfoPostRequest);
-			response.add(userChatInfoDTO);
-		}
-		return response;
-	}
-
-	private UserChatInfoDTO convertFromUserChatInfoPostRequestToDTO(UserChatInfoPostRequest userChatInfoPostRequest) {
-
-		UserChatInfoDTO response = new UserChatInfoDTO(
-				userChatInfoPostRequest.getUserId(),
-				userChatInfoPostRequest.getChatId());
-		return response;
 	}
 
 	//CONVERTS

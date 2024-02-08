@@ -64,6 +64,13 @@ public class MessagePostRequest {
 	public void setType(TextTypeEnum type) {
 		this.type = type;
 	}
+	
+	public boolean isTypeText(MessagePostRequest messagePostRequest){
+		if (messagePostRequest.getType() == TextTypeEnum.TEXT) {
+			return true;
+		}
+		return false;
+	}
 	@Override
 	public String toString() {
 		return "MessagePostRequest [room=" + room + ", userId=" + userId + ", localId=" + localId + ", message="

@@ -1,0 +1,563 @@
+{
+	"info": {
+		"_postman_id": "e8c59171-20b2-4ae9-8801-9ebafb260c79",
+		"name": "Eclipse_Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29844563"
+	},
+	"item": [
+		{
+			"name": "getAllUsers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJOYXlhcmFDYXphcmVzQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA2ODg4NzY0LCJleHAiOjE3MDY5NzUxNjQsInVzZXJJZCI6OX0.IbxxZW8xEn9hOyDr52TVrcJ5wLoSema9OTWIGOXS6tDP3ERXyoeK7IS_lnd7o32JXU0Ox1U5AZiBa0MZvbxk7w",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/users/findAll/2",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"users",
+						"findAll",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllGroups",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBbHZhcm9DYXNhcmVzQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA3MTYxNTQwLCJleHAiOjE3MDcyNDc5NDAsInVzZXJJZCI6Mjd9.6MMr_66uduGroX9muJnzxECtxTbNPyreQ5sb1Iw_tG6MkhyPqiBTMLreHfpuWrnR01nIQgoBUq1O-O6yZ1LVWQ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/findAll/6",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"findAll",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllMessages",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBbHZhcm9DYXNhcmVzQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA3MTYxNTQwLCJleHAiOjE3MDcyNDc5NDAsInVzZXJJZCI6Mjd9.6MMr_66uduGroX9muJnzxECtxTbNPyreQ5sb1Iw_tG6MkhyPqiBTMLreHfpuWrnR01nIQgoBUq1O-O6yZ1LVWQ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/messages/findAll/0",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"messages",
+						"findAll",
+						"0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getMessagesFromGroup",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBbmRlckdhbHZhbkBlbG9ycmlldGEuY29tIiwiaXNzIjoiQURUX0RBTSIsImlhdCI6MTcwNjE5ODQ0NSwiZXhwIjoxNzA2Mjg0ODQ1LCJ1c2VySWQiOjU4fQ.af0PY8WGqSe5wMT0G1nNZxY7wU2UXoMfIHGPBA1a93uwRxv3VkxY2MBjMFjNA4n6eUXtLGHCq9SjhF-tHaDGpA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/messages/chat/2",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"messages",
+						"chat",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getUsersFromGroup",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBbmRlckdhbHZhbkBlbG9ycmlldGEuY29tIiwiaXNzIjoiQURUX0RBTSIsImlhdCI6MTcwNjE5ODQ0NSwiZXhwIjoxNzA2Mjg0ODQ1LCJ1c2VySWQiOjU4fQ.af0PY8WGqSe5wMT0G1nNZxY7wU2UXoMfIHGPBA1a93uwRxv3VkxY2MBjMFjNA4n6eUXtLGHCq9SjhF-tHaDGpA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/users/chat/1",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"users",
+						"chat",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "findGroupById",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBbmFDYXNhc0BlbG9ycmlldGEuY29tIiwiaXNzIjoiQURUX0RBTSIsImlhdCI6MTcwNTUxMDIxMSwiZXhwIjoxNzA1NTk2NjExLCJ1c2VySWQiOjMyfQ.knlKpNwnvlNaGsyFFw3tNGt0qW7SPZZkGh-ltvxyWG0KdCVvwWFRIicbKCmcJjzts2AdEPZzs2J1kPnhTcxweQ",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/1",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "canEnter",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJJbm1hY3VsYWRhWmFwYXRhQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA2OTI3Mzk0LCJleHAiOjE3MDcwMTM3OTQsInVzZXJJZCI6NTB9.lU_PHpUhKgcl--CB9dwpFiyn_CPv86eUi0ZsI_FemlMaTwMUE6jwfRSqY_ez-NiTnWlMjnMElz1U2tRyVImg0g",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/chats/entryPermission/6",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"entryPermission",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "canDelete",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNYXJjU2FuYWJyaWFAZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDU1MDM3MTgsImV4cCI6MTcwNTU5MDExOCwidXNlcklkIjo1Mn0.kI-CvqZZKNRLxqprnvwNizaffk6pDn1Z9y3IpfDdAahxhaDy1kW6IMaqWqppRaHDvSoEyCHknNQx8QgKuTJYeg",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/deletePermission/2",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"deletePermission",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insertMessage",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"text\": \"Hola Joaneta\",\r\n    \"date\": \"2024-01-12\",\r\n    \"chatId\": 2,\r\n    \"userId\": 4\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/messages",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insertGroup",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJWaWN0b3JOZWdyb25AZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcxNDU1NTgsImV4cCI6MTcwNzIzMTk1OCwidXNlcklkIjoxNH0.2nFtOxf4gX_OH7H3ath9MJX5xJ55S3qxplqz3b7KzD0zzbpHwU62RhVSxvHTfaMwC9iAZIl0nSMeih340OSqdw",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"aaaaaaaaaaaaaaaaaaaaaa\",\r\n    \"type\": \"PUBLIC\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/chats",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"SaulBallesteros@elorrieta.com\",\r\n    \"password\": \"elorrieta00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/auth/login",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "leaveGroup",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTYXVsQmFsbGVzdGVyb3NAZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcyNDMyNjcsImV4cCI6MTcwNzMyOTY2NywidXNlcklkIjoxM30.LpBfRAW5XnbQeG1Zgqpg0Ms1qikjuKs27DBD5Evx-PHbbtmfPScJ5tOQZdF-VZKsESkB_JCFP2Oge5plBrF9hA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/leaveChat/5",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"leaveChat",
+						"5"
+					],
+					"query": [
+						{
+							"key": "A",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "existsOnChat",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJJbm1hY3VsYWRhWmFwYXRhQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA2OTI3Mzk0LCJleHAiOjE3MDcwMTM3OTQsInVzZXJJZCI6NTB9.lU_PHpUhKgcl--CB9dwpFiyn_CPv86eUi0ZsI_FemlMaTwMUE6jwfRSqY_ez-NiTnWlMjnMElz1U2tRyVImg0g",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/existsOnChat/5",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"existsOnChat",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addUserToChat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJWaWN0b3JOZWdyb25AZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcxNDU1NTgsImV4cCI6MTcwNzIzMTk1OCwidXNlcklkIjoxNH0.2nFtOxf4gX_OH7H3ath9MJX5xJ55S3qxplqz3b7KzD0zzbpHwU62RhVSxvHTfaMwC9iAZIl0nSMeih340OSqdw",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/addUserToChat/15/33",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"addUserToChat",
+						"15",
+						"33"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "joinChat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTYXVsQmFsbGVzdGVyb3NAZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcyNDMyNjcsImV4cCI6MTcwNzMyOTY2NywidXNlcklkIjoxM30.LpBfRAW5XnbQeG1Zgqpg0Ms1qikjuKs27DBD5Evx-PHbbtmfPScJ5tOQZdF-VZKsESkB_JCFP2Oge5plBrF9hA",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/joinToChat/1",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"joinToChat",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "throwFromGroup",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJWaWN0b3JOZWdyb25AZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcxNDU1NTgsImV4cCI6MTcwNzIzMTk1OCwidXNlcklkIjoxNH0.2nFtOxf4gX_OH7H3ath9MJX5xJ55S3qxplqz3b7KzD0zzbpHwU62RhVSxvHTfaMwC9iAZIl0nSMeih340OSqdw",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/throwFromChat/15/33",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"throwFromChat",
+						"15",
+						"33"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteGroup",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNYW51ZWxBbGZvbnNvQGVsb3JyaWV0YS5jb20iLCJpc3MiOiJBRFRfREFNIiwiaWF0IjoxNzA2ODA5MzM4LCJleHAiOjE3MDY4OTU3MzgsInVzZXJJZCI6MzJ9.gAcFcr_b_DEoxgB33WhHPsJ3UgQ4m6dhdyQZN7xz-ybBMPGokz180MRz-ytAZiWgrcC-HU1-n46dJer6WTEHng",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/chats/10",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"10"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insertPendingMessages",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJKZXN1c1JvY2FAZWxvcnJpZXRhLmNvbSIsImlzcyI6IkFEVF9EQU0iLCJpYXQiOjE3MDcwNjI0NjYsImV4cCI6MTcwNzE0ODg2NiwidXNlcklkIjoxOX0.XsVbVQhv0wJdn6Cx8LtDC4iwy7mVQFZaLRa0RgsO_fdldjfsxjFpIBGo5kwqvFXzcSKROGlqTXo4WCclLP8eBg",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"pendingMessages\": [\r\n        {\r\n            \"room\": 14,\r\n            \"userId\": 14,\r\n            \"localId\": 25,\r\n            \"message\": \"Claro que si\",\r\n            \"sent\": 1707066235082,\r\n            \"type\": \"TEXT\"\r\n        },\r\n        {\r\n            \"room\": 13,\r\n            \"userId\": 14,\r\n            \"localId\": 25,\r\n            \"message\": \"Hola holita\",\r\n            \"sent\": 1707066235082,\r\n            \"type\": \"TEXT\"\r\n        },\r\n        {\r\n            \"room\": 15,\r\n            \"userId\": 19,\r\n            \"localId\": 25,\r\n            \"message\": \"jajajajaja\",\r\n            \"sent\": 1707066235082,\r\n            \"type\": \"TEXT\"\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/messages/pendingMessages",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"messages",
+						"pendingMessages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "InsertPendingUserChatRelation",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"pendingUserChat\": [\r\n        {\r\n            \"userId\": 13,\r\n            \"chatId\": 2\r\n        },\r\n        {\r\n            \"userId\": 13,\r\n            \"chatId\": 4\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/chats/pendingUserChat",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"chats",
+						"pendingUserChat"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API_URI",
+			"value": "http://localhost:8063/api",
+			"type": "string"
+		},
+		{
+			"key": "Socket_URI",
+			"value": "http://localhost:8085/socket",
+			"type": "string"
+		}
+	]
+}

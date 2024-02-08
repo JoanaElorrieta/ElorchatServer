@@ -6,21 +6,21 @@ public class ChatFromServer {
 	private Integer id;
 	private String name;
 	private ChatTypeEnum type;
-	private Integer adminId;
 	private Long created;
 	private Long deleted;
+	private Integer adminId;
 	
     public ChatFromServer() {
         super();
     }
-	public ChatFromServer(Integer id, String name, ChatTypeEnum type, Integer adminId, Long created, Long deleted) {
+	public ChatFromServer(Integer id, String name, ChatTypeEnum type, Long created, Long deleted,  Integer adminId) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.type = type;
-		this.adminId = adminId;
 		this.created = created;
 		this.deleted = deleted;
+		this.adminId = adminId;
 	}
 	
 	public ChatFromServer(Integer id, String name, ChatTypeEnum type, Integer adminId) {

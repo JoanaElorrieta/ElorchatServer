@@ -51,4 +51,11 @@ public class UserChatInfoGetResponse {
 	public void setDeleted(Long deleted) {
 		this.deleted = deleted;
 	}
+
+	@Override
+	public String toString() {
+		return "UserChatInfoGetResponse [userId=" + userId + ", chatId=" + chatId + ", joined=" + joined + ", deleted="
+				+ deleted + "]";
+	}
+	
 }

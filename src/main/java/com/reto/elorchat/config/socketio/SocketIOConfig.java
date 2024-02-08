@@ -16,7 +16,6 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.reto.elorchat.exception.chat.ChatNameAlreadyExists;
 import com.reto.elorchat.exception.chat.HasNoRightToCreatePrivateException;
-import com.reto.elorchat.exception.chat.IsNotTheGroupAdminException;
 import com.reto.elorchat.exception.chat.UserAlreadyExistsOnChat;
 import com.reto.elorchat.model.enums.MessageType;
 import com.reto.elorchat.model.service.ChatDTO;
@@ -260,7 +259,7 @@ public class SocketIOConfig {
 
 				MessageDTO messageDTO = new MessageDTO(null, data.getMessage(), sentTimestamp, savedDate, chatDTO.getId(), authorId, data.getType());
 
-				if (messageDTO.getTextType().value.equals("TEXT")) {
+				if (messageDTO.isTextTypeText(messageDTO)) {
 					createdMessage = messageService.createMessage(messageDTO);
 				} else {
 					createdMessage = messageService.createBase64FileOnResourceFile(messageDTO);

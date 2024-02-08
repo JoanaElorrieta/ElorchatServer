@@ -25,4 +25,10 @@ public class UserChatInfoPostRequest {
 	public void setChatId(Integer chatId) {
 		this.chatId = chatId;
 	}
+
+	@Override
+	public String toString() {
+		return "UserChatInfoPostRequest [userId=" + userId + ", chatId=" + chatId + "]";
+	}
+	
 }

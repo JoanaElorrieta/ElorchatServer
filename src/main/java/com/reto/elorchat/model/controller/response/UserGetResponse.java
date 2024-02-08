@@ -12,7 +12,6 @@ public class UserGetResponse {
 	private List<Integer> chatId;
 	private List<UserChatInfoGetResponse> userChatInfo;
 
-
 	public UserGetResponse(Integer id, String name, String surname, String email, Long phoneNumber1) {
 		super();
 		this.id = id;

@@ -35,6 +35,18 @@ public class MessageFromServer {
 		this.saved = saved;
 		this.type = type;
 	}
+	
+//	public MessageFromServer(MessageType messageType, Integer room, Integer localId, String message, String authorName, Integer authorId, Long sent, TextTypeEnum type) {
+//		super();
+//		this.messageType = messageType;
+//		this.room = room;
+//		this.localId = localId;
+//		this.message = message;
+//		this.authorName = authorName;
+//		this.authorId = authorId;
+//		this.sent = sent;
+//		this.type = type;
+//	}
 
 	public Integer getRoom() {
 		return room;

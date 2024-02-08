@@ -453,7 +453,8 @@ public class ChatService implements IChatService{
 	}
 
 	private void userDoesNotExistOnChat(Integer idChat, Integer idUser) throws UserDoesNotExistOnChat {
-		if(chatRepository.isDeletedUserChat(idChat, idUser) > 0) {				
+		if(chatRepository.isDeletedUserChat(idChat, idUser) > 0) {		
+			System.out.println("ENTRO AQUI POR LO QUE ESTA BORRADO");
 			throw new UserDoesNotExistOnChat("User does not exist on Chat");
 		}
 	}

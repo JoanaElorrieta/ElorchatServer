@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "82afe28b-17ca-4592-9bdd-f37a4ba21d39",
+		"name": "Laravel_Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29844563"
+	},
+	"item": [
+		{
+			"name": "confirmRegister",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 41|x7uHUKwDVkNo7HBAMrmF78BC9MyLZnxNGfVA6Xha21832b71",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"ClaraAguado@elorrieta.com\",\r\n    \"DNI\": \"44629314S\",\r\n    \"name\": \"nuevoNombre\",\r\n    \"surname\": \"nuevoApellido\",\r\n    \"phoneNumber1\": 123456,\r\n    \"phoneNumber2\": 654321,\r\n    \"address\": \"Nuevo address\",\r\n    \"photo\": \"aaaa\",\r\n    \"oldPassword\": \"elorrieta00\",\r\n    \"newPassword\": \"elorrieta00\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/confirmRegister",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"confirmRegister"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\" : \"DarioBarroso@elorrieta.com\",\r\n    \"password\" : \"elorrieta00\",\r\n    \"device_name\" : \"aaaa\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/login",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 16|gfC18EqWJDIkNJCsExZ0kwSg8BF6bLBHVfGrHEs5f0298329",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{API_URI}}/logout",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "changePassword",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 30|D7rz66OzcBimyw8cB5IbNrxSKWbafv9QTtmysM8W58f2a478",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"YeraySamaniego@elorrieta-errekamari.com\",\r\n    \"oldPassword\": \"elorrieta00\",\r\n    \"newPassword\": \"elorrieta1234\" \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{API_URI}}/changePassword",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"changePassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllUsers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_URI}}/documentation/users",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"documentation",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllRoles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_URI}}/documentation/roles",
+					"host": [
+						"{{API_URI}}"
+					],
+					"path": [
+						"documentation",
+						"roles"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API_URI",
+			"value": "http://10.5.7.210/api",
+			"type": "string"
+		}
+	]
+}

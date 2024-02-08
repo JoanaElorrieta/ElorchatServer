@@ -111,6 +111,12 @@ public class MessageDTO {
 	public void setTextType(TextTypeEnum textType) {
 		this.textType = textType;
 	}
-
+	
+	public boolean isTextTypeText(MessageDTO messageDTO){
+		if (messageDTO.getTextType() == TextTypeEnum.TEXT) {
+			return true;
+		}
+		return false;
+	}
 
 }

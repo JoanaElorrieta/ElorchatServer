@@ -10,7 +10,6 @@ public enum SocketEvents {
 	ON_SEND_CHAT("receive chat"),
 	ON_CHAT_NOT_SENT("not sent chat"),
 	
-	
 	ON_CHAT_JOIN_RECEIVED("chat join"),
 	ON_CHAT_JOIN("receive chat join"),
 	ON_CHAT_NOT_JOIN("not chat join"),
