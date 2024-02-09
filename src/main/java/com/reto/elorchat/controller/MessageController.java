@@ -125,7 +125,6 @@ public class MessageController {
 		Long sentValue = messagePostRequest.getSent();
 
 		ChatDTO chatDTO = chatService.findById(messagePostRequest.getRoom());
-		System.out.println("CHAT EN EL QUE GUARDAR EL MENSAJE " + messagePostRequest.getRoom());
 
 		// Convert the long value to a Timestamp
 		Timestamp sentDate = Timestamp.from(Instant.ofEpochMilli(sentValue));
@@ -159,7 +158,6 @@ public class MessageController {
 		if (createdMessage != null) {
 			message.setMessageServerId(createdMessage.getId());
 			message.setSaved(createdMessage.getSaved().getTime());
-			System.out.println(createdMessage.getSaved().getTime());
 			message.setSaved(createdMessage.getSaved().getTime());
 		}
 		socketIoServer.getRoomOperations(createdMessage.getChatId().toString()).sendEvent(SocketEvents.ON_SEND_MESSAGE.value, message);	

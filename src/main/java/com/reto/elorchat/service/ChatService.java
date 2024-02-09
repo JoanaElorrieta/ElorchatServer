@@ -158,16 +158,25 @@ public class ChatService implements IChatService{
 	}
 
 	@Override
-	public ChatDTO deleteChat(Integer id) throws ChatNotFoundException{
+	public ChatDTO deleteChat(Integer idChat,  Integer userId) throws ChatNotFoundException, IsNotTheGroupAdminException{
 
-		if(!chatRepository.isChatDeleted(id)) {
+		if(!chatRepository.isChatDeleted(idChat)) {
+			Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
+					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+					);
 			// Get the current timestamp
 			Instant currentInstant = Instant.now();
 			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
 			Timestamp deleteDate = Timestamp.from(currentInstant);
-			chatRepository.updateDeleteById(id, deleteDate);
-			// Fetch the updated Chat entity using its ID
-			Chat updatedChat = chatRepository.findById(id).orElseThrow(
+			if(chat.getAdminId() != userId) {
+				throw new IsNotTheGroupAdminException("Is not the chat Admin");
+			}
+			//Sofdeleteamos el chat
+			chatRepository.updateDeleteById(idChat, deleteDate);
+			//Despues de sotfdeletear el chat sofdeleteamos las relaciones
+			chatRepository.deleteUserChatRelations(idChat, deleteDate);
+			//Obtenemos el chatsoftdeleteado para devolver la fecha de borrado
+			Chat updatedChat = chatRepository.findById(idChat).orElseThrow(
 					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 					);
 			return convertFromChatDAOToDTO(updatedChat);
@@ -175,6 +184,7 @@ public class ChatService implements IChatService{
 			throw new ChatNotFoundException("El chat no existe");
 		}
 	}
+
 
 	@Override
 	public Integer canEnterUserChat(Integer idChat, Integer idUser) {
@@ -243,7 +253,6 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);		
 
-		System.out.println("Hay un admin que mete a un usuario al grupo");
 		//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
 		userExistsOnChat(idChat, idUser);
 		//VERIFICA SI EL USUARIO ES EL ADMIN DEL CHAT
@@ -263,7 +272,6 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);
 
-		System.out.println("NO hay un admin que mete a un usuario al grupo");
 		//VERIFICA SI EL USUARIO YA EXISTE EN EL CHAT
 		userExistsOnChat(idChat, idUser);
 		//boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
@@ -282,7 +290,6 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);
 
-		System.out.println("Hay un admin que echa a un usuario del grupo");
 		if(chat.getAdminId() != idAdmin) {
 			throw new IsNotTheGroupAdminException("Is not the chat Admin");
 		}
@@ -302,7 +309,6 @@ public class ChatService implements IChatService{
 				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 				);
 
-		System.out.println("NO hay un admin que echa a un usuario al grupo");
 		userDoesNotExistOnChat(idChat, idUser);
 
 		//boolean isPrivate = checkIfGroupIsPrivate(convertFromChatDAOToDTO(chat));
@@ -317,25 +323,6 @@ public class ChatService implements IChatService{
 		return userChatInfo;
 	}
 
-	//
-	//	private boolean checkIfGroupIsPrivate(ChatDTO chatDTO) {
-	//		if (chatDTO.getType() == ChatTypeEnum.PRIVATE) {
-	//			System.out.println("Es privado");
-	//			return true;
-	//		}
-	//		return false;
-	//	}
-
-	//	private boolean checkIfIsProfessor(User admin) {
-	//
-	//		for(Role role: admin.getRoles()) {
-	//			if(role.getName().equalsIgnoreCase(RoleEnum.PROFESSOR.value)) {
-	//				return true;
-	//			}
-	//		}
-	//		return false;
-	//
-	//	}
 	//CONVERTS
 	//---------------------------------------
 	private UserDTO convertFromUserDAOToDTO(User user) {
@@ -454,7 +441,6 @@ public class ChatService implements IChatService{
 
 	private void userDoesNotExistOnChat(Integer idChat, Integer idUser) throws UserDoesNotExistOnChat {
 		if(chatRepository.isDeletedUserChat(idChat, idUser) > 0) {		
-			System.out.println("ENTRO AQUI POR LO QUE ESTA BORRADO");
 			throw new UserDoesNotExistOnChat("User does not exist on Chat");
 		}
 	}

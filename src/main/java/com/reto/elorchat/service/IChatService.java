@@ -41,7 +41,7 @@ public interface IChatService {
 
 	UserChatInfoDTO deleteUserFromChat(Integer idChat, Integer idUser) throws ChatNotFoundException;
 
-	ChatDTO deleteChat(Integer id) throws ChatNotFoundException;
+	ChatDTO deleteChat(Integer id, Integer userId) throws ChatNotFoundException, IsNotTheGroupAdminException;
 
 	List<UserChatInfoDTO> insertPendingUserChatInfo(List<UserChatInfoDTO> listUserChatInfoDTO) throws CantLeaveChatException, IsNotTheGroupAdminException, UserDoesNotExistOnChat, ChatNotFoundException;
 }

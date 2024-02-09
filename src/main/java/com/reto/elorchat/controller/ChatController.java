@@ -103,9 +103,10 @@ public class ChatController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ChatGetResponse> deleteChatById(@PathVariable("id") Integer id) throws ChatNotFoundException{
+	public ResponseEntity<ChatGetResponse> deleteChatById(@PathVariable("id") Integer idChat, Authentication authentication) throws ChatNotFoundException, IsNotTheGroupAdminException{
+		User user = (User) authentication.getPrincipal();
 		ChatGetResponse response = new ChatGetResponse();
-		ChatDTO chatDTO = chatService.deleteChat(id);
+		ChatDTO chatDTO = chatService.deleteChat(idChat, user.getId());
 		response = convertFromChatDTOToGetResponse(chatDTO);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

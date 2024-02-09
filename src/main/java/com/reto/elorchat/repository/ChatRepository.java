@@ -91,4 +91,9 @@ public interface ChatRepository extends CrudRepository<Chat, Integer> {
 	@Query("SELECT c FROM Chat c WHERE c.id > :givenId AND c.deleted IS NULL")
 	Iterable<Chat> findAllUserChatsCreatedAfterId(@Param("givenId") Integer givenId);
 
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE user_chat SET deleted = :deleteDate WHERE chat_Id = :idChat", nativeQuery = true)
+	void deleteUserChatRelations(@Param("idChat") Integer idChat, @Param("deleteDate") Date deleteDate);
+
 }
