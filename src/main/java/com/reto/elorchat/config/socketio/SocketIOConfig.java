@@ -140,7 +140,7 @@ public class SocketIOConfig {
 				String token = authorization.split(" ")[1].trim();
 
 				Integer userId = jwtUtil.getUserId(token);
-				//ASK necesito hacer aqui otro converter? para que no dependa del modelo del service?
+
 				UserDTO userDTO = userService.findById(userId);
 				String authorId = userDTO.getId().toString();
 				String authorName = userDTO.getName();
@@ -148,10 +148,7 @@ public class SocketIOConfig {
 
 				client.set(CLIENT_USER_ID_PARAM, authorId);
 				client.set(CLIENT_USER_NAME_PARAM, authorName);
-				//client.set(CLIENT_USER_PHOTO_PARAM, authorPhoto);
 
-				//ASK DEBO COMPROBAR SI YA ESTABA JOINEADO A UNA ROOM? O ESTA BIEN QUE SI EXISTE UNA NUEVA CONEXION CON EL SOCKET ME LO META OTRA VEZ A LA SALA?? SE PODRIA ENTENDER COMO UNA CONEX CON EL SOCKER
-				//DESDE WHATSAPP WEB Y MOVIL POR LO TANTO ESTA BIEN?
 				System.out.println(userDTO.getChats().size());
 				for(ChatDTO chat: userDTO.getChats()) {			
 					client.joinRoom(chat.getId().toString());

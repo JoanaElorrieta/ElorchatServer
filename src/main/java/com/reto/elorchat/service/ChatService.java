@@ -159,11 +159,12 @@ public class ChatService implements IChatService{
 
 	@Override
 	public ChatDTO deleteChat(Integer idChat,  Integer userId) throws ChatNotFoundException, IsNotTheGroupAdminException{
+		Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
+				() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+				);
 
 		if(!chatRepository.isChatDeleted(idChat)) {
-			Chat chat = chatRepository.findChatWithUsersById(idChat).orElseThrow(
-					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-					);
+
 			// Get the current timestamp
 			Instant currentInstant = Instant.now();
 			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -179,7 +180,9 @@ public class ChatService implements IChatService{
 			Chat updatedChat = chatRepository.findById(idChat).orElseThrow(
 					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
 					);
-			return convertFromChatDAOToDTO(updatedChat);
+			ChatDTO response = convertFromChatDAOToDTO(updatedChat);
+			System.out.println(response.getDeleted());
+			return response;
 		}else {
 			throw new ChatNotFoundException("El chat no existe");
 		}
