@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.reto.elorchat.model.enums.ChatTypeEnum;
 import com.reto.elorchat.model.persistence.Chat;
+import com.reto.elorchat.security.persistance.User;
 
 public interface ChatRepository extends CrudRepository<Chat, Integer> {
 
@@ -63,7 +64,7 @@ public interface ChatRepository extends CrudRepository<Chat, Integer> {
 	@Modifying
 	@Transactional
 	@Query("UPDATE Chat c SET c.deleted = :deleteDate WHERE c.id = :id")
-	void updateDeleteById(@Param("id") Integer id, @Param("deleteDate") Date deleteDate);
+	Integer updateDeleteById(@Param("id") Integer id, @Param("deleteDate") Date deleteDate);
 
 	@Modifying
 	@Transactional
@@ -95,5 +96,8 @@ public interface ChatRepository extends CrudRepository<Chat, Integer> {
 	@Transactional
 	@Query(value = "UPDATE user_chat SET deleted = :deleteDate WHERE chat_Id = :idChat", nativeQuery = true)
 	void deleteUserChatRelations(@Param("idChat") Integer idChat, @Param("deleteDate") Date deleteDate);
+	
+	@Query("SELECT c FROM Chat c WHERE c.id = :chatId")
+	Optional<Chat> findByIdUpdatedChat(@Param("chatId") Integer chatId);
 
 }

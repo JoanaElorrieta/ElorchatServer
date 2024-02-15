@@ -164,7 +164,6 @@ public class ChatService implements IChatService{
 				);
 
 		if(!chatRepository.isChatDeleted(idChat)) {
-
 			// Get the current timestamp
 			Instant currentInstant = Instant.now();
 			// Convert Instant to Timestamp para obtener la date con la hora/min/sec
@@ -173,16 +172,23 @@ public class ChatService implements IChatService{
 				throw new IsNotTheGroupAdminException("Is not the chat Admin");
 			}
 			//Sofdeleteamos el chat
-			chatRepository.updateDeleteById(idChat, deleteDate);
+			Integer updated = chatRepository.updateDeleteById(idChat, deleteDate);
 			//Despues de sotfdeletear el chat sofdeleteamos las relaciones
 			chatRepository.deleteUserChatRelations(idChat, deleteDate);
-			//Obtenemos el chatsoftdeleteado para devolver la fecha de borrado
-			Chat updatedChat = chatRepository.findById(idChat).orElseThrow(
-					() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
-					);
-			ChatDTO response = convertFromChatDAOToDTO(updatedChat);
-			System.out.println(response.getDeleted());
-			return response;
+			if(updated == 1) {
+				//Obtenemos el chatsoftdeleteado para devolver la fecha de borrado
+				Chat updatedChat = chatRepository.findByIdUpdatedChat(idChat).orElseThrow(
+						() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Chat no encontrado")
+						);
+				System.out.println(updatedChat.getDeleted());
+				ChatDTO response = convertFromChatDAOToDTO(updatedChat);
+				//response.setDeleted(deleteDate);
+				System.out.println(response.getDeleted());
+				return response;	
+			} else {
+				System.out.println("NO SE ACTUALIZA Y DEVOLVEMOS EL CHAT");
+				return convertFromChatDAOToDTO(chat);
+			}
 		}else {
 			throw new ChatNotFoundException("El chat no existe");
 		}
